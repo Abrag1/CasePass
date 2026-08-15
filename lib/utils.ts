@@ -1,4 +1,5 @@
 import type { SessionStatus } from "@/lib/supabase/types";
+import { CAMPUS_TZ } from "@/lib/scheduling";
 
 export function getMyRole(
   session: { interviewer_id: string; interviewee_id: string },
@@ -7,13 +8,17 @@ export function getMyRole(
   return session.interviewer_id === userId ? "interviewer" : "interviewee";
 }
 
+// All session times display in the single campus timezone (ET) so they read the
+// same whether rendered on the server (UTC) or in any browser, and match the
+// times shown in the scheduling flow.
 export function formatDateTime(iso: string) {
   const d = new Date(iso);
+  const timeZone = CAMPUS_TZ;
   return {
-    mon: d.toLocaleDateString(undefined, { month: "short" }).toUpperCase(),
-    day: d.toLocaleDateString(undefined, { day: "2-digit" }),
-    full: d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
-    time: d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }),
+    mon: d.toLocaleDateString("en-US", { timeZone, month: "short" }).toUpperCase(),
+    day: d.toLocaleDateString("en-US", { timeZone, day: "2-digit" }),
+    full: d.toLocaleDateString("en-US", { timeZone, weekday: "short", month: "short", day: "numeric" }),
+    time: d.toLocaleTimeString("en-US", { timeZone, hour: "numeric", minute: "2-digit" }) + " ET",
   };
 }
 

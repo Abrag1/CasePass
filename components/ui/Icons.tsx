@@ -68,6 +68,17 @@ export function GearIcon({ size }: IconProps) {
   );
 }
 
+export function CalendarCheckIcon({ size }: IconProps) {
+  return base(
+    <>
+      <rect x="3.5" y="5" width="17" height="16" rx="2" />
+      <path d="M3.5 9.5h17M8 2.5v4M16 2.5v4" />
+      <path d="M9 15l2 2 4-4" />
+    </>,
+    size
+  );
+}
+
 export function MailIcon({ size }: IconProps) {
   return base(
     <>

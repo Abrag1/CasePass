@@ -55,6 +55,7 @@ export interface Database {
           email: string;
           avatar_color: string | null;
           is_admin: boolean;
+          booking_rule: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string; full_name: string; email: string };
@@ -84,6 +85,24 @@ export interface Database {
         };
         Insert: Partial<Database["public"]["Tables"]["cases"]["Row"]>;
         Update: Partial<Database["public"]["Tables"]["cases"]["Row"]>;
+      };
+      availability: {
+        Row: {
+          id: string;
+          owner_id: string;
+          kind: "one_off" | "recurring";
+          weekday: number | null;
+          slot_date: string | null;
+          start_minute: number;
+          duration_min: number;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["availability"]["Row"]> & {
+          owner_id: string;
+          kind: "one_off" | "recurring";
+          start_minute: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["availability"]["Row"]>;
       };
       invites: {
         Row: {
@@ -127,6 +146,9 @@ export interface Database {
           presented: Presented;
           presented_updated_at: string | null;
           timer_started_at: string | null;
+          location_kind: "online" | "in_person";
+          location_note: string | null;
+          rule_ack: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["mock_sessions"]["Row"]> & {

@@ -13,6 +13,7 @@ import {
   ClockIcon,
   GearIcon,
   MailIcon,
+  CalendarCheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@/components/ui/Icons";
@@ -41,7 +42,8 @@ export function Sidebar({ profile }: { profile: Profile }) {
       label: "Home",
       items: [
         { href: "/home", label: "Home", icon: HomeIcon },
-        { href: "/schedule", label: "Schedule a mock", icon: CalendarPlusIcon },
+        { href: "/schedule", label: "Book a mock", icon: CalendarPlusIcon },
+        { href: "/availability", label: "My availability", icon: CalendarCheckIcon },
       ],
     },
     {

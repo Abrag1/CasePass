@@ -7,7 +7,8 @@ import { Card, Badge } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { AddToCalendar } from "@/components/ui/AddToCalendar";
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ booked?: string }> }) {
+  const { booked } = await searchParams;
   const profile = await getMyProfile();
   const [sessions, invites] = await Promise.all([listMySessions(profile.id), listMyPendingInvites(profile.id)]);
 
@@ -29,9 +30,20 @@ export default async function HomePage() {
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
         <h2 className="font-serif text-[23px] font-semibold">Your mocks</h2>
         <Link href="/schedule">
-          <Button>+ Schedule a mock</Button>
+          <Button>+ Book a mock</Button>
         </Link>
       </div>
+
+      {booked && (
+        <div className="flex items-center gap-3 bg-[#e9f1ec] border border-[#cfe3d7] rounded-xl px-4 py-3.5 mb-6">
+          <div className="w-[28px] h-[28px] shrink-0 rounded-full bg-(--color-green) text-white flex items-center justify-center text-[14px]">
+            ✓
+          </div>
+          <div className="text-[13.5px] text-[#1f3a2b]">
+            Mock booked — it’s confirmed and on your calendar below.
+          </div>
+        </div>
+      )}
 
       {invites.length > 0 && (
         <Card className="p-5 mb-6">
