@@ -139,16 +139,21 @@ export async function getInviteStatusBySession(userId: string, sessionIds: strin
   return map;
 }
 
+// Partner directory for the schedule picker. Deliberately does NOT return email
+// (or any contact info) -- a user only needs a name and enough to disambiguate
+// two same-named people (year tag) to pick who to practice with. Contact details
+// are never required to schedule, so they're never exposed here.
 export async function searchPartners(query: string, excludeUserId: string) {
   const supabase = await createClient();
   let req = supabase
     .from("profiles")
-    .select("id, full_name, initials, email")
+    .select("id, full_name, initials, year_tag")
     .neq("id", excludeUserId)
-    .limit(10);
+    .order("full_name")
+    .limit(50);
 
   if (query.trim()) {
-    req = req.or(`full_name.ilike.%${query}%,email.ilike.%${query}%`);
+    req = req.ilike("full_name", `%${query}%`);
   }
 
   const { data } = await req;

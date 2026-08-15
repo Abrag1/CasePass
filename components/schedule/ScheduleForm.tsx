@@ -8,7 +8,7 @@ import { Input, Label, Select, Textarea, FormError } from "@/components/ui/Field
 interface Partner {
   id: string;
   full_name: string;
-  email: string;
+  year_tag: string | null;
 }
 
 export function ScheduleForm({ partners }: { partners: Partner[] }) {
@@ -58,7 +58,8 @@ export function ScheduleForm({ partners }: { partners: Partner[] }) {
               </option>
               {partners.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.full_name} ({p.email})
+                  {p.full_name}
+                  {p.year_tag ? ` · ${p.year_tag}` : ""}
                 </option>
               ))}
             </Select>
