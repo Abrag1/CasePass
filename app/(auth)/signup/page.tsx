@@ -1,14 +1,18 @@
-"use client";
-
 import Link from "next/link";
-import { useActionState } from "react";
-import { signup } from "@/lib/actions/auth";
 import { Logo, Wordmark } from "@/components/ui/Logo";
-import { Button } from "@/components/ui/Button";
-import { Input, Label, FormError } from "@/components/ui/Field";
+import { SignupForm } from "@/components/auth/SignupForm";
+import { checkInvite } from "@/lib/queries/invites";
 
-export default function SignupPage() {
-  const [state, action, pending] = useActionState(signup, undefined);
+export default async function SignupPage({ searchParams }: { searchParams: Promise<{ invite?: string }> }) {
+  const { invite } = await searchParams;
+  const check = await checkInvite(invite);
+
+  const gateMessage =
+    check.status === "used"
+      ? "This invite link has already been used."
+      : check.status === "expired"
+        ? "This invite link has expired. Ask for a new one."
+        : "CasePass is invite-only. You'll need a personal invite link to create an account.";
 
   return (
     <main className="flex-1 flex items-center justify-center px-4 py-16">
@@ -18,24 +22,14 @@ export default function SignupPage() {
           <Wordmark />
         </div>
 
-        <form action={action} className="flex flex-col gap-4">
-          <div>
-            <Label>Full name</Label>
-            <Input name="fullName" required placeholder="Jordan Liu" />
+        {check.status === "ok" ? (
+          <SignupForm inviteToken={check.token} email={check.email} />
+        ) : (
+          <div className="rounded-xl border border-(--color-border) bg-white p-5 text-center">
+            <div className="text-[15px] font-semibold mb-1.5">Invite only</div>
+            <p className="text-[13px] text-(--color-muted) leading-relaxed">{gateMessage}</p>
           </div>
-          <div>
-            <Label>Email</Label>
-            <Input name="email" type="email" required placeholder="you@example.com" />
-          </div>
-          <div>
-            <Label>Password</Label>
-            <Input name="password" type="password" required minLength={8} placeholder="At least 8 characters" />
-          </div>
-          <FormError message={state?.error} />
-          <Button type="submit" disabled={pending} className="w-full mt-1">
-            {pending ? "Creating account…" : "Create account"}
-          </Button>
-        </form>
+        )}
 
         <p className="text-sm text-(--color-muted) text-center mt-6">
           Already have an account?{" "}

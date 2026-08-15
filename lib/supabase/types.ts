@@ -54,6 +54,7 @@ export interface Database {
           year_tag: string | null;
           email: string;
           avatar_color: string | null;
+          is_admin: boolean;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string; full_name: string; email: string };
@@ -83,6 +84,20 @@ export interface Database {
         };
         Insert: Partial<Database["public"]["Tables"]["cases"]["Row"]>;
         Update: Partial<Database["public"]["Tables"]["cases"]["Row"]>;
+      };
+      invites: {
+        Row: {
+          id: string;
+          token: string;
+          email: string;
+          created_by: string | null;
+          created_at: string;
+          expires_at: string;
+          used_at: string | null;
+          used_by: string | null;
+        };
+        Insert: Partial<Database["public"]["Tables"]["invites"]["Row"]> & { token: string; email: string; expires_at: string };
+        Update: Partial<Database["public"]["Tables"]["invites"]["Row"]>;
       };
       case_exhibits: {
         Row: {

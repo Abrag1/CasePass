@@ -68,6 +68,16 @@ export function GearIcon({ size }: IconProps) {
   );
 }
 
+export function MailIcon({ size }: IconProps) {
+  return base(
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3.5 6.5 12 12.5l8.5-6" />
+    </>,
+    size
+  );
+}
+
 export function ChevronLeftIcon({ size = 15 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">

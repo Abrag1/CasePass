@@ -12,6 +12,7 @@ import {
   UserIcon,
   ClockIcon,
   GearIcon,
+  MailIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "@/components/ui/Icons";
@@ -21,6 +22,7 @@ interface Profile {
   full_name: string;
   initials: string;
   email: string;
+  is_admin?: boolean;
 }
 
 interface NavItem {
@@ -53,6 +55,9 @@ export function Sidebar({ profile }: { profile: Profile }) {
       label: "Mock session",
       items: [{ href: "/mocks", label: "Upcoming mocks", icon: ClockIcon }],
     },
+    ...(profile.is_admin
+      ? [{ label: "Admin", items: [{ href: "/invite", label: "Invite people", icon: MailIcon }] }]
+      : []),
   ];
 
   return (
