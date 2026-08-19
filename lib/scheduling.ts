@@ -22,6 +22,7 @@ export interface AvailabilityRow {
   slot_date: string | null; // 'YYYY-MM-DD'
   start_minute: number;
   duration_min: number;
+  recur_until: string | null; // 'YYYY-MM-DD' or null (repeats indefinitely)
 }
 
 export interface Slot {
@@ -84,6 +85,8 @@ export function expandSlots(rows: AvailabilityRow[], bookedStartMs: Set<number>)
         (row.kind === "recurring" && row.weekday === wd) ||
         (row.kind === "one_off" && row.slot_date === dateStr);
       if (!match) continue;
+      // Recurring blocks stop after their end date, if set.
+      if (row.kind === "recurring" && row.recur_until && dateStr > row.recur_until) continue;
 
       const startMs = campusWallToUtcMs(y, mo, d, row.start_minute);
       if (startMs <= now || bookedStartMs.has(startMs) || seen.has(startMs)) continue;
@@ -147,6 +150,64 @@ export function describeAvailabilityRow(row: AvailabilityRow): string {
     new Date(Date.UTC(y, (mo ?? 1) - 1, d ?? 1))
   );
   return `${dayLabel} · ${time} ${CAMPUS_TZ_LABEL} · ${row.duration_min}m`;
+}
+
+/* -------- calendar date helpers (campus wall-clock, DST-safe date math) -------- */
+
+export interface Ymd {
+  y: number;
+  mo: number; // 1-12
+  d: number;
+}
+
+// Today's date in campus time.
+export function campusToday(): Ymd {
+  const p = etPartsOf(new Date());
+  return { y: p.y, mo: p.mo, d: p.d };
+}
+
+// A UTC-midnight token used purely for calendar-date arithmetic (no time-of-day,
+// so DST never shifts the day).
+export function dateToken({ y, mo, d }: Ymd): number {
+  return Date.UTC(y, mo - 1, d);
+}
+
+export function tokenToYmd(ms: number): Ymd {
+  const t = new Date(ms);
+  return { y: t.getUTCFullYear(), mo: t.getUTCMonth() + 1, d: t.getUTCDate() };
+}
+
+export function addDays(ymd: Ymd, n: number): Ymd {
+  return tokenToYmd(dateToken(ymd) + n * 86400000);
+}
+
+export function weekdayOf(ymd: Ymd): number {
+  return new Date(dateToken(ymd)).getUTCDay(); // 0=Sun..6=Sat
+}
+
+// The Monday that starts the week containing `ymd`.
+export function mondayOf(ymd: Ymd): Ymd {
+  const wd = weekdayOf(ymd);
+  const back = (wd + 6) % 7; // days since Monday
+  return addDays(ymd, -back);
+}
+
+export function ymdString({ y, mo, d }: Ymd): string {
+  return `${y}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
+export function ymdFromString(s: string): Ymd {
+  const [y, mo, d] = s.split("-").map(Number);
+  return { y, mo, d };
+}
+
+export function formatDayHeader({ y, mo, d }: Ymd): { weekday: string; monthDay: string; d: number } {
+  const label = new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "short", month: "short" }).formatToParts(
+    new Date(Date.UTC(y, mo - 1, d))
+  );
+  const weekday = label.find((p) => p.type === "weekday")?.value ?? "";
+  const month = label.find((p) => p.type === "month")?.value ?? "";
+  return { weekday, monthDay: `${month} ${d}`, d };
 }
 
 // Parse an "HH:MM" time input into minutes from midnight.

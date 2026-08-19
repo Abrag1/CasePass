@@ -95,6 +95,7 @@ export interface Database {
           slot_date: string | null;
           start_minute: number;
           duration_min: number;
+          recur_until: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["availability"]["Row"]> & {
