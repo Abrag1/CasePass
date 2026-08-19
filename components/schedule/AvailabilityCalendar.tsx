@@ -60,6 +60,8 @@ export function AvailabilityCalendar({ rows }: { rows: AvailabilityRow[] }) {
 
   const weekDates = Array.from({ length: 7 }, (_, i) => addDays(viewMonday, i));
   const rangeLabel = formatRange(weekDates[0], weekDates[6]);
+  const today = campusToday();
+  const isToday = (d: Ymd) => d.y === today.y && d.mo === today.mo && d.d === today.d;
 
   function openCreate(dayCol: number, ymd: Ymd, clientY: number, colEl: HTMLElement, clientX: number) {
     const rect = colEl.getBoundingClientRect();
@@ -71,10 +73,10 @@ export function AvailabilityCalendar({ rows }: { rows: AvailabilityRow[] }) {
       kind: "create",
       dayCol,
       ymd,
-      anchor: clampAnchor(clientX - gridRect.left, clientY - gridRect.top),
+      anchor: clampAnchor(clientX - gridRect.left, clientY - gridRect.top, gridRect.width),
       startMinute,
       endMinute,
-      repeatMode: "weekly",
+      repeatMode: "none",
       customDays: [weekdayOf(ymd)],
       endsOn: "",
     });
@@ -88,7 +90,7 @@ export function AvailabilityCalendar({ rows }: { rows: AvailabilityRow[] }) {
       origKind: row.kind,
       dayCol,
       ymd,
-      anchor: clampAnchor(clientX - gridRect.left, clientY - gridRect.top),
+      anchor: clampAnchor(clientX - gridRect.left, clientY - gridRect.top, gridRect.width),
       startMinute: row.start_minute,
       endMinute: Math.min(row.start_minute + row.duration_min, END_MIN),
       repeatMode: row.kind === "recurring" ? "weekly" : "none",
@@ -159,7 +161,14 @@ export function AvailabilityCalendar({ rows }: { rows: AvailabilityRow[] }) {
         <div className="flex-1 grid grid-cols-7">
           {weekDates.map((d, i) => (
             <div key={i} className="text-center text-[11px] text-(--color-muted) pb-1">
-              {DAY_COLS[i]} <span className="font-semibold text-(--color-fg)">{d.d}</span>
+              {DAY_COLS[i]}{" "}
+              {isToday(d) ? (
+                <span className="inline-flex items-center justify-center w-[19px] h-[19px] rounded-full bg-(--color-green) text-white font-semibold text-[11px] align-middle">
+                  {d.d}
+                </span>
+              ) : (
+                <span className="font-semibold text-(--color-fg)">{d.d}</span>
+              )}
             </div>
           ))}
         </div>
@@ -415,8 +424,8 @@ function EditorPopover({
   );
 }
 
-function clampAnchor(left: number, top: number) {
-  return { left: Math.max(4, Math.min(left, 640 - 260)), top: Math.max(4, top) };
+function clampAnchor(left: number, top: number, width: number) {
+  return { left: Math.max(4, Math.min(left, width - 264)), top: Math.max(4, top) };
 }
 
 function formatRange(a: Ymd, b: Ymd): string {

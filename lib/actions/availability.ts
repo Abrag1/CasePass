@@ -102,11 +102,13 @@ export async function deleteAvailability(id: string): Promise<void> {
   revalidatePath("/availability");
 }
 
-export async function saveBookingRule(_prev: AvailabilityActionState, formData: FormData): Promise<AvailabilityActionState> {
+export async function updateBookingRule(rule: string): Promise<AvailabilityActionState> {
   const user = await requireUser();
-  const raw = String(formData.get("booking_rule") ?? "").trim();
   const supabase = await createClient();
-  const { error } = await supabase.from("profiles").update({ booking_rule: raw || null }).eq("id", user.id);
+  const { error } = await supabase
+    .from("profiles")
+    .update({ booking_rule: rule.trim() || null })
+    .eq("id", user.id);
   if (error) return { error: error.message };
   revalidatePath("/availability");
   return undefined;
