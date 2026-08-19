@@ -41,78 +41,85 @@ export interface SessionViewMeta {
   actionHref: string | null;
 }
 
-// Derives the badge + primary action shown for a session card on Home, from the
-// viewer's own role in that specific session -- mirrors the prototype's per-role
-// status/action mapping, but computed from real session state instead of demo data.
+// The "Join mock" button is time-gated: it opens shortly before the scheduled
+// time so the button always means "it's time", not "a case exists".
+export const JOIN_OPEN_BEFORE_MS = 15 * 60 * 1000; // 15 min before
+export const JOIN_CLOSE_AFTER_MS = 6 * 60 * 60 * 1000; // 6 hr after
+
+export function getJoinWindow(scheduledIso: string, now: number = Date.now()) {
+  const start = new Date(scheduledIso).getTime();
+  return {
+    start,
+    open: now >= start - JOIN_OPEN_BEFORE_MS && now <= start + JOIN_CLOSE_AFTER_MS,
+    tooEarly: now < start - JOIN_OPEN_BEFORE_MS,
+    closed: now > start + JOIN_CLOSE_AFTER_MS,
+  };
+}
+
+// Short countdown for a future time: "in 20 min", "in 3 hr", "tomorrow", "in 4 days".
+export function relativeWhen(scheduledIso: string, now: number = Date.now()): string {
+  const diff = new Date(scheduledIso).getTime() - now;
+  if (diff <= 0) return "now";
+  const min = Math.round(diff / 60000);
+  if (min < 60) return `in ${min} min`;
+  const hr = Math.round(diff / 3600000);
+  if (hr < 24) return `in ${hr} hr`;
+  const days = Math.round(diff / 86400000);
+  return days === 1 ? "tomorrow" : `in ${days} days`;
+}
+
+// Derives the badge + primary action shown for a session card, from the viewer's
+// role AND the clock: before the mock it points at prep (choose case / review
+// brief), and only inside the join window does it become "Join mock".
 export function getSessionViewMeta(
-  session: { id: string; status: SessionStatus; assigned_case_id: string | null },
+  session: { id: string; status: SessionStatus; assigned_case_id: string | null; scheduled_at: string },
   role: "interviewer" | "interviewee",
   inviteStatus?: string
 ): SessionViewMeta {
   if (session.status === "pending_invite") {
     if (inviteStatus === "reschedule_requested") {
-      return {
-        statusLabel: "Reschedule requested",
-        tone: "warn",
-        actionLabel: "Pick a new time",
-        actionHref: `/mocks/${session.id}/reschedule`,
-      };
+      return { statusLabel: "Reschedule requested", tone: "warn", actionLabel: "Pick a new time", actionHref: `/mocks/${session.id}/reschedule` };
     }
-    return {
-      statusLabel: "Awaiting confirmation",
-      tone: "navy",
-      actionLabel: "Invite sent",
-      actionHref: null,
-    };
+    return { statusLabel: "Awaiting confirmation", tone: "navy", actionLabel: "Invite sent", actionHref: null };
   }
 
   if (session.status === "declined") {
-    return {
-      statusLabel: "Declined",
-      tone: "neutral",
-      actionLabel: "Declined",
-      actionHref: null,
-    };
+    return { statusLabel: "Declined", tone: "neutral", actionLabel: "Declined", actionHref: null };
   }
 
   if (session.status === "completed") {
     return {
       statusLabel: "Completed",
       tone: "neutral",
-      actionLabel: role === "interviewer" ? "View feedback" : "My profile",
-      actionHref: role === "interviewer" ? `/mocks/${session.id}/feedback` : null,
+      actionLabel: "View feedback",
+      actionHref: role === "interviewer" ? `/mocks/${session.id}/feedback` : `/mocks/${session.id}/feedback/summary`,
     };
   }
+
+  const win = getJoinWindow(session.scheduled_at);
 
   if (role === "interviewer") {
     if (!session.assigned_case_id) {
-      return {
-        statusLabel: "Needs case selection",
-        tone: "warn",
-        actionLabel: "Select case",
-        actionHref: `/mocks/${session.id}/assign`,
-      };
+      return { statusLabel: "Needs a case", tone: "warn", actionLabel: "Choose the case", actionHref: `/mocks/${session.id}/assign` };
     }
-    return {
-      statusLabel: "Ready",
-      tone: "green",
-      actionLabel: "Join mock",
-      actionHref: `/mocks/${session.id}/live`,
-    };
+    if (win.tooEarly) {
+      return { statusLabel: relativeWhen(session.scheduled_at), tone: "navy", actionLabel: "Review case", actionHref: `/cases/${session.assigned_case_id}` };
+    }
+    // window open or already started -> the interviewer drives, so they can always join
+    return { statusLabel: win.open ? "Join now" : "Ready", tone: "green", actionLabel: "Join mock", actionHref: `/mocks/${session.id}/live` };
   }
 
+  // interviewee
   if (!session.assigned_case_id) {
-    return {
-      statusLabel: "Awaiting case",
-      tone: "warn",
-      actionLabel: "Awaiting case",
-      actionHref: null,
-    };
+    return { statusLabel: "Awaiting case", tone: "warn", actionLabel: "Waiting for the case", actionHref: null };
+  }
+  if (win.open) {
+    return { statusLabel: "Join now", tone: "green", actionLabel: "Join mock", actionHref: `/mocks/${session.id}/live` };
   }
   return {
-    statusLabel: "Case shared",
-    tone: "green",
-    actionLabel: "View preview",
+    statusLabel: win.tooEarly ? relativeWhen(session.scheduled_at) : "Case shared",
+    tone: "navy",
+    actionLabel: "Review brief",
     actionHref: `/mocks/${session.id}/preview`,
   };
 }
