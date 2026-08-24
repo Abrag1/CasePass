@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { PreppedButton } from "@/components/cases/PreppedButton";
 import { CaseHistoryList } from "@/components/profile/CaseHistoryList";
 import { CaseFilterForm } from "@/components/cases/CaseFilterForm";
+import { displayChips } from "@/lib/cases/meta";
 
 interface SearchParams {
   tab?: string;
@@ -154,7 +155,7 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
                       </p>
                     )}
                     <div className="flex gap-1.5 flex-wrap">
-                      {c.tags.map((t) => (
+                      {displayChips(c).map((t) => (
                         <span key={t} className="text-[11px] font-semibold px-2.5 py-1 rounded bg-[#eef2f0] text-[#3a5a4a]">
                           {t}
                         </span>
@@ -187,7 +188,7 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
                     <div className="font-semibold text-[15px] mt-2">{c.name}</div>
                     <div className="text-[12px] text-(--color-muted) mt-1 leading-snug">{caseMetaLine(c)}</div>
                     <div className="flex gap-1.5 mt-2.5 flex-wrap">
-                      {c.tags.map((t) => (
+                      {displayChips(c).map((t) => (
                         <span key={t} className="text-[11px] font-semibold px-2.5 py-1 rounded bg-[#eef2f0] text-[#3a5a4a]">
                           {t}
                         </span>

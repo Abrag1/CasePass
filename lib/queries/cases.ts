@@ -18,6 +18,7 @@ export interface CaseListItem {
   is_seed: boolean;
   extraction_status: ExtractionStatus;
   case_format: string | null;
+  skills_tested: string[];
 }
 
 // Canonical filter option lists -- must match the display labels the import
@@ -51,7 +52,7 @@ export async function listCases(filters: {
   let req = supabase
     .from("cases_public")
     .select(
-      "id, name, case_type, difficulty, difficulty_note, source_book, casebook, casebook_year, industry, tags, synopsis, is_seed, extraction_status, case_format"
+      "id, name, case_type, difficulty, difficulty_note, source_book, casebook, casebook_year, industry, tags, synopsis, is_seed, extraction_status, case_format, skills_tested"
     )
     .order("extraction_status", { ascending: false }) // enriched cases surface first
     .order("name");
