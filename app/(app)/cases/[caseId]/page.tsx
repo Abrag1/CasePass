@@ -30,7 +30,7 @@ export default async function CaseDocPage({ params }: { params: Promise<{ caseId
           <div className="text-[11px] tracking-widest uppercase text-[#9fb2cf] font-semibold mb-2.5">Case study</div>
           <div className="font-serif text-[27px] font-semibold leading-tight">{c.name}</div>
           <div className="text-[13px] text-[#c3cee0] mt-2">
-            {c.case_type} · {c.difficulty} · {c.casebook ?? `${c.source_book} casebook`}
+            {c.case_type} · {c.difficulty} · {c.source_book}
             {c.casebook_year ? ` ${c.casebook_year}` : ""} · {c.industry}
             {c.source_page ? ` · p.${c.source_page}` : ""}
           </div>
@@ -145,20 +145,27 @@ function MetaRow({ label, children }: { label: string; children: React.ReactNode
 
 // Placeholder for the ~543 catalog-imported cases: no full prompt/steps/exhibits
 // exist in CasePass yet, so don't pretend they're "coming soon" section by section
-// -- just point directly at where the real case lives today.
+// -- just point directly at where the real case lives today. Leads with the
+// school (recognizable at a glance) and pairs it with the casebook's own
+// printed title (what's actually on the cover, useful for finding the PDF) --
+// and says plainly when a page number wasn't captured, rather than hiding it.
 function FindInSourceCallout({ c }: { c: CaseDetail }) {
-  const book = c.casebook ?? `${c.source_book} casebook`;
-  const location = [book, c.casebook_year, c.source_page ? `page ${c.source_page}` : null].filter(Boolean).join(", ");
+  const bookTitle =
+    c.casebook && !c.casebook.toLowerCase().includes(c.source_book.toLowerCase()) ? c.casebook : null;
 
   return (
     <div className="px-8 py-8">
       <div className="rounded-lg border border-dashed border-(--color-border) bg-(--color-bg) px-6 py-6 text-center">
         <div className="text-[11px] uppercase tracking-wide font-semibold text-(--color-muted) mb-2">
-          Not yet written up in CasePass
+          Find this case
         </div>
-        <p className="text-[14.5px] text-[#2a2f2b] leading-relaxed max-w-md mx-auto">
-          The full prompt, exhibits, and guidance for this case haven&apos;t been added yet. Until then, find
-          it in <span className="font-semibold">{location || book}</span>.
+        <p className="text-[17px] font-serif font-semibold text-[#2a2f2b]">
+          {c.source_book}
+          {c.casebook_year ? ` · ${c.casebook_year}` : ""}
+        </p>
+        {bookTitle && <p className="text-[13.5px] text-(--color-muted) mt-0.5">&quot;{bookTitle}&quot;</p>}
+        <p className="text-[13.5px] text-(--color-muted) mt-2.5">
+          {c.source_page ? `Page ${c.source_page}` : "Page not recorded during extraction"}
         </p>
       </div>
     </div>

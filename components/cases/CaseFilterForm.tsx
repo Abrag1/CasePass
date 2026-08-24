@@ -42,11 +42,14 @@ export function CaseFilterForm({
   difficulties: string[];
 }) {
   return (
-    <form method="get" className="flex items-end gap-3 flex-wrap w-full">
+    <form
+      method="get"
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[minmax(200px,2fr)_repeat(4,minmax(130px,1fr))_auto] gap-3 items-end w-full"
+    >
       <input type="hidden" name="tab" value={tab} />
       {view === "grid" && <input type="hidden" name="view" value="grid" />}
       {preppedOnly && <input type="hidden" name="prepped" value="1" />}
-      <div className="flex-1 min-w-[180px]">
+      <div className="col-span-2 sm:col-span-3 lg:col-span-1">
         <FieldLabel>Search</FieldLabel>
         <Input name="q" defaultValue={q} placeholder="Case name, industry, or casebook — press Enter" />
       </div>
@@ -94,7 +97,7 @@ export function CaseFilterForm({
           ))}
         </Select>
       </div>
-      <Button type="submit" variant="secondary">
+      <Button type="submit" variant="secondary" className="col-span-2 sm:col-span-1 justify-self-start lg:justify-self-auto">
         Apply
       </Button>
     </form>

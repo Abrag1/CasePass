@@ -87,13 +87,6 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
 
       {tab === "browse" && (
         <>
-          <div className="bg-[#f3f6f4] border border-[#e1ebe5] rounded-lg px-4 py-3 mb-4 text-[12.5px] text-[#3a5a4a] leading-relaxed">
-            Solid-bordered cases have a full write-up in CasePass. Dashed-bordered (&quot;Outline&quot;) cases
-            are confirmed from a real casebook — type, difficulty, industry, skills tested — but point you to
-            the source casebook for the full prompt for now. To assign a case to a specific mock, use{" "}
-            <strong>Home → Select case</strong> on that session.
-          </div>
-
           <Card className="p-3 mb-4">
             <CaseFilterForm
               tab="browse"

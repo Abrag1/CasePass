@@ -174,13 +174,23 @@ function SessionGroup({
                   )}
                 </div>
                 <Badge tone={meta.tone}>{meta.statusLabel}</Badge>
-                {meta.actionHref ? (
-                  <Link href={meta.actionHref}>
-                    <Button variant="secondary">{meta.actionLabel}</Button>
-                  </Link>
-                ) : (
-                  <span className="text-[13px] text-(--color-muted) whitespace-nowrap">{meta.actionLabel}</span>
-                )}
+                <div className="flex items-center gap-2">
+                  {meta.secondaryActionHref && (
+                    <Link
+                      href={meta.secondaryActionHref}
+                      className="text-[12.5px] text-(--color-muted) hover:text-(--color-fg) whitespace-nowrap underline decoration-dotted underline-offset-2"
+                    >
+                      {meta.secondaryActionLabel}
+                    </Link>
+                  )}
+                  {meta.actionHref ? (
+                    <Link href={meta.actionHref}>
+                      <Button variant="secondary">{meta.actionLabel}</Button>
+                    </Link>
+                  ) : (
+                    <span className="text-[13px] text-(--color-muted) whitespace-nowrap">{meta.actionLabel}</span>
+                  )}
+                </div>
               </Card>
             );
           })}

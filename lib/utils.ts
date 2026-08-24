@@ -39,6 +39,10 @@ export interface SessionViewMeta {
   tone: "green" | "warn" | "neutral" | "navy";
   actionLabel: string;
   actionHref: string | null;
+  // A quieter secondary action alongside the primary one -- currently just
+  // "Change case", offered to the interviewer any time before the mock starts.
+  secondaryActionLabel?: string;
+  secondaryActionHref?: string;
 }
 
 // The "Join mock" button is time-gated: it opens shortly before the scheduled
@@ -103,7 +107,17 @@ export function getSessionViewMeta(
       return { statusLabel: "Needs a case", tone: "warn", actionLabel: "Choose the case", actionHref: `/mocks/${session.id}/assign` };
     }
     if (win.tooEarly) {
-      return { statusLabel: relativeWhen(session.scheduled_at), tone: "navy", actionLabel: "Review case", actionHref: `/cases/${session.assigned_case_id}` };
+      // Only offered before the join window opens -- once the interviewer can
+      // actually join, swapping the case mid-flow risks orphaning live-session
+      // state (which page/step is on screen), so "Change case" stops here.
+      return {
+        statusLabel: relativeWhen(session.scheduled_at),
+        tone: "navy",
+        actionLabel: "Review case",
+        actionHref: `/cases/${session.assigned_case_id}`,
+        secondaryActionLabel: "Change case",
+        secondaryActionHref: `/mocks/${session.id}/assign`,
+      };
     }
     // window open or already started -> the interviewer drives, so they can always join
     return { statusLabel: win.open ? "Join now" : "Ready", tone: "green", actionLabel: "Join mock", actionHref: `/mocks/${session.id}/live` };
