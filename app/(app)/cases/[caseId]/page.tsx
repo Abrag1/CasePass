@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCase } from "@/lib/queries/cases";
+import { getCase, type CaseDetail } from "@/lib/queries/cases";
 import { getCasePages } from "@/lib/cases/content";
 import { Card, Badge } from "@/components/ui/Card";
 import { ExhibitCard } from "@/components/ui/Exhibit";
@@ -19,7 +19,10 @@ export default async function CaseDocPage({ params }: { params: Promise<{ caseId
         <Link href="/cases" className="text-[13px] text-(--color-muted) hover:text-(--color-fg)">
           ← Back to case library
         </Link>
-        {c.is_seed && <Badge tone="warn">Full casebook · preview build</Badge>}
+        <div className="flex gap-2">
+          {c.is_seed && <Badge tone="warn">Full casebook · preview build</Badge>}
+          {c.extraction_status === "basic" && <Badge tone="neutral">Outline only — full write-up not yet authored</Badge>}
+        </div>
       </div>
 
       <Card className="overflow-hidden shadow-sm">
@@ -27,7 +30,9 @@ export default async function CaseDocPage({ params }: { params: Promise<{ caseId
           <div className="text-[11px] tracking-widest uppercase text-[#9fb2cf] font-semibold mb-2.5">Case study</div>
           <div className="font-serif text-[27px] font-semibold leading-tight">{c.name}</div>
           <div className="text-[13px] text-[#c3cee0] mt-2">
-            {c.case_type} · {c.difficulty} · {c.source_book} casebook · {c.industry}
+            {c.case_type} · {c.difficulty} · {c.casebook ?? `${c.source_book} casebook`}
+            {c.casebook_year ? ` ${c.casebook_year}` : ""} · {c.industry}
+            {c.source_page ? ` · p.${c.source_page}` : ""}
           </div>
           <div className="flex gap-1.5 mt-3.5 flex-wrap">
             {c.tags.map((t) => (
@@ -41,6 +46,8 @@ export default async function CaseDocPage({ params }: { params: Promise<{ caseId
             ))}
           </div>
         </div>
+
+        <CaseMetaPanel c={c} />
 
         {pages ? (
           pages.map((p) => (
@@ -56,11 +63,105 @@ export default async function CaseDocPage({ params }: { params: Promise<{ caseId
               <PageBody page={p} />
             </div>
           ))
+        ) : c.extraction_status === "basic" ? (
+          <FindInSourceCallout c={c} />
         ) : (
           <FallbackDoc c={c} />
         )}
       </Card>
     </section>
+  );
+}
+
+// What the source casebook itself states about this case -- skills tested, firm
+// style, and an honest (never cross-school-compared) difficulty note. Only
+// renders fields that are actually present; a school that didn't state something
+// simply doesn't show that row, per the catalog's own "don't fake it" rule.
+function CaseMetaPanel({ c }: { c: CaseDetail }) {
+  const hasSkills = c.skills_tested.length > 0;
+  const hasFirms = c.firm_style.length > 0;
+  if (!hasSkills && !hasFirms && !c.difficulty_note && !c.adapted_from && !c.notes) return null;
+
+  return (
+    <div className="px-8 py-6 border-b border-(--color-border-soft) bg-(--color-bg) flex flex-col gap-3.5">
+      <div className="text-[11px] uppercase tracking-wide font-semibold text-(--color-muted)">
+        From the source casebook
+      </div>
+
+      {c.difficulty_note && (
+        <MetaRow label="Difficulty (this school's own scale)">
+          <p className="text-[13px] text-[#3a3f3b] leading-relaxed">{c.difficulty_note}</p>
+        </MetaRow>
+      )}
+
+      {hasSkills && (
+        <MetaRow label="Skills / concepts tested">
+          <div className="flex gap-1.5 flex-wrap">
+            {c.skills_tested.map((s) => (
+              <span key={s} className="text-[11.5px] font-medium px-2.5 py-1 rounded bg-white border border-(--color-border)">
+                {s}
+              </span>
+            ))}
+          </div>
+        </MetaRow>
+      )}
+
+      {hasFirms && (
+        <MetaRow label="Similar to cases at">
+          <div className="flex gap-1.5 flex-wrap">
+            {c.firm_style.map((f, i) => (
+              <span key={i} className="text-[11.5px] font-medium px-2.5 py-1 rounded bg-white border border-(--color-border)">
+                {f.firm}
+                {f.round ? ` · Round ${f.round}` : ""}
+              </span>
+            ))}
+          </div>
+        </MetaRow>
+      )}
+
+      {c.adapted_from && (
+        <MetaRow label="Adapted from">
+          <p className="text-[13px] text-[#3a3f3b]">{c.adapted_from}</p>
+        </MetaRow>
+      )}
+
+      {c.notes && (
+        <MetaRow label="Extraction note">
+          <p className="text-[12.5px] text-(--color-muted) italic leading-relaxed">{c.notes}</p>
+        </MetaRow>
+      )}
+    </div>
+  );
+}
+
+function MetaRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[11px] font-semibold text-[#8a8f8a] mb-1">{label}</div>
+      {children}
+    </div>
+  );
+}
+
+// Placeholder for the ~543 catalog-imported cases: no full prompt/steps/exhibits
+// exist in CasePass yet, so don't pretend they're "coming soon" section by section
+// -- just point directly at where the real case lives today.
+function FindInSourceCallout({ c }: { c: CaseDetail }) {
+  const book = c.casebook ?? `${c.source_book} casebook`;
+  const location = [book, c.casebook_year, c.source_page ? `page ${c.source_page}` : null].filter(Boolean).join(", ");
+
+  return (
+    <div className="px-8 py-8">
+      <div className="rounded-lg border border-dashed border-(--color-border) bg-(--color-bg) px-6 py-6 text-center">
+        <div className="text-[11px] uppercase tracking-wide font-semibold text-(--color-muted) mb-2">
+          Not yet written up in CasePass
+        </div>
+        <p className="text-[14.5px] text-[#2a2f2b] leading-relaxed max-w-md mx-auto">
+          The full prompt, exhibits, and guidance for this case haven&apos;t been added yet. Until then, find
+          it in <span className="font-semibold">{location || book}</span>.
+        </p>
+      </div>
+    </div>
   );
 }
 

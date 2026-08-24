@@ -32,9 +32,16 @@ export interface SkillRatings {
   [key: string]: string | undefined;
 }
 
-export type CaseType = "Profitability" | "Market entry" | "Pricing" | "Operations" | "Growth" | "M&A";
-export type Difficulty = "Easy" | "Medium" | "Hard";
-export type SourceBook = "Kellogg" | "Cornell" | "UVA Darden" | "Ross" | "Wharton" | "Booth" | "Tuck";
+// Open string types (not DB-enforced -- see supabase/migrations/0011_case_catalog_import.sql).
+// The canonical option lists live in lib/queries/cases.ts (CASE_TYPES / SOURCE_BOOKS / DIFFICULTIES).
+export type CaseType = string;
+export type Difficulty = "Easy" | "Medium" | "Hard" | "Not rated";
+export type SourceBook = string;
+export type ExtractionStatus = "basic" | "enriched";
+export interface FirmStyle {
+  firm: string;
+  round: string | null;
+}
 export type SessionFormat = "45_full" | "30_short" | "60_case_feedback";
 export type SessionStatus = "pending_invite" | "confirmed" | "case_selected" | "completed" | "declined";
 // Index into a case's live step list (prompt + Q&A pages), or null when nothing
@@ -70,9 +77,20 @@ export interface Database {
           source_book: SourceBook;
           industry: string | null;
           tags: string[];
-          synopsis: string;
-          full_prompt: string;
+          synopsis: string | null;
+          full_prompt: string | null;
           case_steps: CaseStep[];
+          catalog_case_id: string | null;
+          casebook: string | null;
+          casebook_year: string | null;
+          source_page: number | null;
+          extraction_status: ExtractionStatus;
+          skills_tested: string[];
+          case_format: string | null;
+          firm_style: FirmStyle[];
+          difficulty_note: string | null;
+          adapted_from: string | null;
+          notes: string | null;
           answer_notes: string | null;
           doc_interviewer_guide: string | null;
           doc_candidate_prompt: string | null;

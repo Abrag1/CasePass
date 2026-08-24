@@ -1,18 +1,27 @@
 import Link from "next/link";
 import { getMyProfile } from "@/lib/dal";
-import { listCases, getMyPreppedCaseIds, CASE_TYPES, SOURCE_BOOKS, DIFFICULTIES } from "@/lib/queries/cases";
+import {
+  listCases,
+  getMyPreppedCaseIds,
+  CASE_TYPES,
+  SOURCE_BOOKS,
+  INDUSTRIES,
+  DIFFICULTIES,
+  caseMetaLine,
+} from "@/lib/queries/cases";
 import { getMyCaseHistory } from "@/lib/queries/profile";
 import { Card, Badge } from "@/components/ui/Card";
-import { Input, Select } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { PreppedButton } from "@/components/cases/PreppedButton";
 import { CaseHistoryList } from "@/components/profile/CaseHistoryList";
+import { CaseFilterForm } from "@/components/cases/CaseFilterForm";
 
 interface SearchParams {
   tab?: string;
   q?: string;
   type?: string;
   source?: string;
+  industry?: string;
   difficulty?: string;
   prepped?: string;
   view?: string;
@@ -26,7 +35,7 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
   const preppedOnly = sp.prepped === "1";
 
   const [allCases, preppedIds, history] = await Promise.all([
-    listCases({ type: sp.type, source: sp.source, difficulty: sp.difficulty, q: sp.q }),
+    listCases({ type: sp.type, source: sp.source, industry: sp.industry, difficulty: sp.difficulty, q: sp.q }),
     getMyPreppedCaseIds(profile.id),
     getMyCaseHistory(profile.id),
   ]);
@@ -79,56 +88,27 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
       {tab === "browse" && (
         <>
           <div className="bg-[#f3f6f4] border border-[#e1ebe5] rounded-lg px-4 py-3 mb-4 text-[12.5px] text-[#3a5a4a] leading-relaxed">
-            Browse and prep any case — click a case to open the full prompt, steps, and exhibits. To
-            assign a case to a specific mock, use <strong>Home → Select case</strong> on that session.
+            Solid-bordered cases have a full write-up in CasePass. Dashed-bordered (&quot;Outline&quot;) cases
+            are confirmed from a real casebook — type, difficulty, industry, skills tested — but point you to
+            the source casebook for the full prompt for now. To assign a case to a specific mock, use{" "}
+            <strong>Home → Select case</strong> on that session.
           </div>
 
           <Card className="p-3 mb-4">
-            <form method="get" className="flex items-end gap-3 flex-wrap w-full">
-              <input type="hidden" name="tab" value="browse" />
-              {view === "grid" && <input type="hidden" name="view" value="grid" />}
-              {preppedOnly && <input type="hidden" name="prepped" value="1" />}
-              <div className="flex-1 min-w-[180px]">
-                <FieldLabel>Search</FieldLabel>
-                <Input name="q" defaultValue={sp.q ?? ""} placeholder="Case name or industry" />
-              </div>
-              <div>
-                <FieldLabel>Case type</FieldLabel>
-                <Select name="type" defaultValue={sp.type ?? "All"}>
-                  <option value="All">All</option>
-                  {CASE_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div>
-                <FieldLabel>Source</FieldLabel>
-                <Select name="source" defaultValue={sp.source ?? "All"}>
-                  <option value="All">All</option>
-                  {SOURCE_BOOKS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div>
-                <FieldLabel>Difficulty</FieldLabel>
-                <Select name="difficulty" defaultValue={sp.difficulty ?? "All"}>
-                  <option value="All">All</option>
-                  {DIFFICULTIES.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <Button type="submit" variant="secondary">
-                Apply
-              </Button>
-            </form>
+            <CaseFilterForm
+              tab="browse"
+              view={view}
+              preppedOnly={preppedOnly}
+              q={sp.q ?? ""}
+              type={sp.type ?? "All"}
+              source={sp.source ?? "All"}
+              industry={sp.industry ?? "All"}
+              difficulty={sp.difficulty ?? "All"}
+              caseTypes={CASE_TYPES}
+              sourceBooks={SOURCE_BOOKS}
+              industries={INDUSTRIES}
+              difficulties={DIFFICULTIES}
+            />
           </Card>
 
           <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
@@ -160,15 +140,26 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
           {view === "list" ? (
             <div className="flex flex-col gap-2.5">
               {cases.map((c) => (
-                <Card key={c.id} className="p-4 flex items-center gap-4 hover:border-(--color-green)/40 transition-colors">
+                <Card
+                  key={c.id}
+                  className={`p-4 flex items-center gap-4 hover:border-(--color-green)/40 transition-colors ${
+                    c.extraction_status === "basic" ? "border-dashed" : ""
+                  }`}
+                >
                   <Link href={`/cases/${c.id}`} className="flex-1 min-w-0">
                     <div className="flex items-center gap-2.5 flex-wrap mb-1">
                       <span className="font-semibold text-[15px]">{c.name}</span>
                       {c.is_seed && <Badge tone="warn">Example</Badge>}
+                      {c.extraction_status === "basic" && <Badge tone="neutral">Outline</Badge>}
                     </div>
-                    <div className="text-[12.5px] text-(--color-muted) mb-2">
-                      {c.case_type} · {c.difficulty} · {c.source_book} · {c.industry}
-                    </div>
+                    <div className="text-[12.5px] text-(--color-muted) mb-2">{caseMetaLine(c)}</div>
+                    {c.synopsis ? (
+                      <p className="text-[12.5px] text-[#5b615c] leading-relaxed mb-2 max-w-xl">{c.synopsis}</p>
+                    ) : (
+                      <p className="text-[12px] text-(--color-muted) italic mb-2">
+                        No synopsis yet — school, type, difficulty, and industry are confirmed from the source casebook.
+                      </p>
+                    )}
                     <div className="flex gap-1.5 flex-wrap">
                       {c.tags.map((t) => (
                         <span key={t} className="text-[11px] font-semibold px-2.5 py-1 rounded bg-[#eef2f0] text-[#3a5a4a]">
@@ -178,7 +169,9 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
                     </div>
                   </Link>
                   <Link href={`/cases/${c.id}`}>
-                    <Button>Open case</Button>
+                    <Button variant={c.extraction_status === "basic" ? "secondary" : "primary"}>
+                      {c.extraction_status === "basic" ? "View outline" : "Open case"}
+                    </Button>
                   </Link>
                   <PreppedButton caseId={c.id} prepped={preppedIds.has(c.id)} />
                 </Card>
@@ -187,13 +180,19 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
           ) : (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
               {cases.map((c) => (
-                <Card key={c.id} className="p-4 flex flex-col hover:border-(--color-green)/40 transition-colors">
+                <Card
+                  key={c.id}
+                  className={`p-4 flex flex-col hover:border-(--color-green)/40 transition-colors ${
+                    c.extraction_status === "basic" ? "border-dashed" : ""
+                  }`}
+                >
                   <Link href={`/cases/${c.id}`} className="flex-1">
-                    {c.is_seed && <Badge tone="warn">Example</Badge>}
-                    <div className="font-semibold text-[15px] mt-2">{c.name}</div>
-                    <div className="text-[12px] text-(--color-muted) mt-1 leading-snug">
-                      {c.case_type} · {c.difficulty} · {c.source_book} · {c.industry}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {c.is_seed && <Badge tone="warn">Example</Badge>}
+                      {c.extraction_status === "basic" && <Badge tone="neutral">Outline</Badge>}
                     </div>
+                    <div className="font-semibold text-[15px] mt-2">{c.name}</div>
+                    <div className="text-[12px] text-(--color-muted) mt-1 leading-snug">{caseMetaLine(c)}</div>
                     <div className="flex gap-1.5 mt-2.5 flex-wrap">
                       {c.tags.map((t) => (
                         <span key={t} className="text-[11px] font-semibold px-2.5 py-1 rounded bg-[#eef2f0] text-[#3a5a4a]">
@@ -204,7 +203,9 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
                   </Link>
                   <div className="flex gap-2 mt-3.5">
                     <Link href={`/cases/${c.id}`} className="flex-1">
-                      <Button className="w-full">Open case</Button>
+                      <Button className="w-full" variant={c.extraction_status === "basic" ? "secondary" : "primary"}>
+                        {c.extraction_status === "basic" ? "View outline" : "Open case"}
+                      </Button>
                     </Link>
                     <PreppedButton caseId={c.id} prepped={preppedIds.has(c.id)} />
                   </div>
@@ -250,6 +251,3 @@ function ViewLink({ href, active, label }: { href: string; active: boolean; labe
   );
 }
 
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <div className="text-[11px] uppercase tracking-wide font-semibold text-(--color-muted) mb-1">{children}</div>;
-}
