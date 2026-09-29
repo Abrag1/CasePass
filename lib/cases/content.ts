@@ -197,6 +197,9 @@ export interface CasePage {
 // Stable UUIDs — must match supabase/seed.sql.
 export const ACES_CASE_ID = "11111111-1111-1111-1111-111111111111";
 export const AMAIR_CASE_ID = "22222222-2222-2222-2222-222222222222";
+// Authored from the catalog: Fire Proof Inc. (UVA Darden 2018-19, p.83). This id
+// is the existing catalog row's UUID in the cases table.
+export const FIRE_PROOF_CASE_ID = "72dea52c-0cf9-42eb-afb5-5d7cc5ff9c93";
 
 export function pageHasExhibit(p: CasePage): boolean {
   return !!(
@@ -637,9 +640,254 @@ const AMAIR_PAGES: CasePage[] = [
   },
 ];
 
+const FIRE_PROOF_PAGES: CasePage[] = [
+  {
+    n: "01",
+    label: "Candidate prompt",
+    title: "The prompt",
+    kind: "ready",
+    body: "The CEO of Fire Proof Inc. wants to find new ways to diversify her revenue and product line. Currently, Fire Proof only sells fire-resistant jackets, gloves, hard-hats, and tools to government-sponsored fire departments nationwide. The CEO believes the company can expand its operations to make equipment for other industries. How would you advise Fire Proof Inc.?",
+    note: "Interviewer-led case (Parthenon EY · Round 1 style). Optional behavioral warm-ups first: (1) What is your favorite class at Darden and why? (2) Tell me about a time you had to make a decision with limited information — what was your approach? Then read the prompt and let the candidate structure before you reveal anything below.",
+  },
+  {
+    n: "02",
+    label: "Clarifying information",
+    title: "Answers to give only if asked",
+    kind: "qa",
+    guidancePreLabel: "Clarifying information",
+    guidancePreNote: "Provide each answer only if the candidate asks the matching question.",
+    guidancePreLines: [
+      "How does Fire Proof make money? — It signs contracts with municipalities and cities to supply fire-proof apparel to fire departments.",
+      "How large is Fire Proof? — About $500M in annual sales, growing ~4% per year over the last 5 years.",
+      "How many competitors / market position? — #1 in the fire-equipment market, with 3 main competitors that compete for government contracts.",
+      "How diversified are the competitors? — Fire equipment is no more than 25% of each of the 3 competitors' revenue.",
+      "Why hasn't Fire Proof diversified before? — It focused on mastering what it knew and improving its fire-equipment operations.",
+    ],
+  },
+  {
+    n: "03",
+    label: "Framework guidance",
+    title: "A strong structure for this case",
+    kind: "qa",
+    infoBoxLabel: "Framework guidance",
+    infoSections: [
+      {
+        paragraphs: [
+          "Many frameworks work — these are suggestions, not the only answer. A strong structure covers internal fit, product similarity, market attractiveness, and the financials.",
+        ],
+        groups: [
+          {
+            heading: "Internal capabilities",
+            items: [
+              "Manufacturing capacity — can we build it?",
+              "Supply-chain capacity — do we have the network?",
+              "Industry knowledge — do we have the talent to make a good product?",
+              "Financial resources — can Fire Proof afford the investment?",
+            ],
+          },
+          {
+            heading: "Product similarities",
+            items: [
+              "Raw-material overlap — can we use the same materials?",
+              "Customer overlap — are the customers similar (government)?",
+              "Production overlap — is the manufacturing process similar?",
+            ],
+          },
+          {
+            heading: "Market attractiveness",
+            items: [
+              "How many competitors are in the new industry?",
+              "How big is the new market?",
+              "Is the new market growing?",
+              "Are there high barriers to entry?",
+            ],
+          },
+          {
+            heading: "Financials",
+            items: [
+              "What investment is required to enter?",
+              "Acquire a company or build internally?",
+              "What profit margins can Fire Proof achieve?",
+              "When does the company break even?",
+            ],
+          },
+        ],
+      },
+    ],
+    guidanceLabel: "How to move forward",
+    guidanceLines: [
+      "The candidate should include product similarity somewhere in their framework — call attention to that bullet.",
+      "Then mention: the client has already researched supplying equipment for police departments, and Exhibit 1 details what they found. Present Exhibit 1 (the next step).",
+    ],
+  },
+  {
+    n: "04",
+    label: "Question 1 · Exhibit 1",
+    title: "Most and least attractive market to enter",
+    kind: "qa",
+    qText:
+      "Which product market is the most, and least, attractive for Fire Proof to enter — and why? (Present Exhibit 1.)",
+    dataTableTitle: "Exhibit 1 · Police-equipment markets (production overlap shown where the source rates it)",
+    dataTableCols: "1.7fr 1fr 1fr 1.1fr 1.2fr",
+    dataTableHeaders: [
+      { v: "Product market", align: "left" },
+      { v: "Prod. overlap", align: "left" },
+      { v: "Market size", align: "right" },
+      { v: "Growth (3-yr)", align: "right" },
+      { v: "# competitors", align: "right" },
+    ],
+    dataTableRows: [
+      { cells: [
+        { v: "Officer uniforms", align: "left", w: 400, fg: "#3a3f3b" },
+        { v: "High", align: "left", w: 400, fg: "#3a3f3b" },
+        { v: "$1.5B", align: "right", w: 400, fg: "#3a3f3b" },
+        { v: "5%", align: "right", w: 400, fg: "#3a3f3b" },
+        { v: "3", align: "right", w: 400, fg: "#3a3f3b" },
+      ] },
+      { cells: [
+        { v: "Hand cuffs", align: "left", w: 400, fg: "#3a3f3b" },
+        { v: "—", align: "left", w: 400, fg: "#8a8f8a" },
+        { v: "$300M", align: "right", w: 400, fg: "#3a3f3b" },
+        { v: "−2%", align: "right", w: 400, fg: "#3a3f3b" },
+        { v: "8", align: "right", w: 400, fg: "#3a3f3b" },
+      ] },
+      { cells: [
+        { v: "Police badges", align: "left", w: 700, fg: "#b0453a" },
+        { v: "Low", align: "left", w: 700, fg: "#b0453a" },
+        { v: "$100M", align: "right", w: 700, fg: "#b0453a" },
+        { v: "3%", align: "right", w: 700, fg: "#b0453a" },
+        { v: "4", align: "right", w: 700, fg: "#b0453a" },
+      ] },
+      { cells: [
+        { v: "Bullet-proof vests", align: "left", w: 700, fg: "#2d6a4f" },
+        { v: "High", align: "left", w: 700, fg: "#2d6a4f" },
+        { v: "$600M", align: "right", w: 700, fg: "#2d6a4f" },
+        { v: "10%", align: "right", w: 700, fg: "#2d6a4f" },
+        { v: "20", align: "right", w: 700, fg: "#2d6a4f" },
+      ] },
+      { cells: [
+        { v: "Weapon holsters", align: "left", w: 400, fg: "#3a3f3b" },
+        { v: "—", align: "left", w: 400, fg: "#8a8f8a" },
+        { v: "$300M", align: "right", w: 400, fg: "#3a3f3b" },
+        { v: "5%", align: "right", w: 400, fg: "#3a3f3b" },
+        { v: "12", align: "right", w: 400, fg: "#3a3f3b" },
+      ] },
+      { cells: [
+        { v: "Riot shields", align: "left", w: 400, fg: "#3a3f3b" },
+        { v: "High", align: "left", w: 400, fg: "#3a3f3b" },
+        { v: "$450M", align: "right", w: 400, fg: "#3a3f3b" },
+        { v: "12%", align: "right", w: 400, fg: "#3a3f3b" },
+        { v: "6", align: "right", w: 400, fg: "#3a3f3b" },
+      ] },
+      { cells: [
+        { v: "Body cameras", align: "left", w: 400, fg: "#3a3f3b" },
+        { v: "Low", align: "left", w: 400, fg: "#3a3f3b" },
+        { v: "$250M", align: "right", w: 400, fg: "#3a3f3b" },
+        { v: "50%", align: "right", w: 400, fg: "#3a3f3b" },
+        { v: "25", align: "right", w: 400, fg: "#3a3f3b" },
+      ] },
+    ],
+    answerText:
+      "Most attractive: Bullet-proof vests. Weigh four dimensions — production overlap, market size, growth, and number of competitors (MORE competitors means a more fragmented, easier-to-enter market). Bullet-proof vests win on all four: high overlap, second-largest market ($600M), 10% growth, and 20 competitors. Least attractive: Police badges — low overlap, smallest market ($100M), 3% growth, and only 4 competitors (concentrated).",
+    insightText:
+      "Strong candidates read all four dimensions together and catch the counter-intuitive point that a higher competitor count (fragmentation) is a plus here — it signals easier entry than a concentrated market dominated by a few players.",
+    guidanceLabel: "Bonus call-outs",
+    guidanceLines: [
+      "Officer uniforms: large and high-overlap, but only 3 competitors — too concentrated to enter easily.",
+      "Body cameras: high growth and fragmented, but low overlap — outside Fire Proof's expertise.",
+      "Riot shields: a close second to bullet-proof vests (faster 12% growth) but fewer competitors (6), so a more concentrated market.",
+      "Once the candidate lands on bullet-proof vests, move to Question 2.",
+    ],
+  },
+  {
+    n: "05",
+    label: "Question 2 · Revenue",
+    title: "Project Year-3 bullet-proof-vest revenue",
+    kind: "qa",
+    qText:
+      "Our team estimates Fire Proof can realistically capture 30% of the bullet-proof vest market within 3 years. What are Fire Proof's projected bullet-proof-vest revenues in Year 3?",
+    guidancePreNote: "Supply only when asked:",
+    guidancePreLines: ["Assume the bullet-proof vest market keeps growing 10% each year for the next 3 years (it is $600M today)."],
+    calcNote: "Grow the $600M market 10%/yr, then take 30% share in Year 3.",
+    calcLines: [
+      { q: "Year 1 market", a: "$600M × 1.1 = $660M" },
+      { q: "Year 2 market", a: "$660M × 1.1 = $726M" },
+      { q: "Year 3 market", a: "$726M × 1.1 ≈ $798.6M (~$800M)" },
+      { q: "Fire Proof Year-3 revenue", a: "$800M × 30% = $240M" },
+    ],
+    answerText: "About $240M in Year 3 — 30% of an ~$800M market.",
+  },
+  {
+    n: "06",
+    label: "Question 3 · ROI",
+    title: "Does the investment clear the 15% target?",
+    kind: "qa",
+    qText:
+      "Fire Proof will need to invest $100M in capex to reconfigure its plants for bullet-proof vests. With a target 3-year ROI of at least 15%, will they hit the goal?",
+    guidancePreNote: "Supply only when asked:",
+    guidancePreLines: [
+      "Estimated market share by year: Year 1 = 10%, Year 2 = 20%, Year 3 = 30%.",
+      "Average yearly net profit margin: 25%.",
+    ],
+    calcNote: "Use the Q2 market sizes ($660M / $726M / ~$800M), apply each year's share, then a 25% margin.",
+    calcLines: [
+      { q: "Year 1: 10% × $660M = $66M", a: "net profit 25% × $66M = $16.5M" },
+      { q: "Year 2: 20% × $726M = $145.2M", a: "net profit 25% × $145.2M = $36.3M" },
+      { q: "Year 3: 30% × $800M = $240M", a: "net profit 25% × $240M = $60M" },
+      { q: "Total 3-year net profit", a: "$16.5M + $36.3M + $60M = $112.8M" },
+      { q: "ROI = (profit − investment) ÷ investment", a: "($112.8M − $100M) ÷ $100M ≈ 13%" },
+    ],
+    answerText:
+      "No — the ROI comes to ≈13% over 3 years, just short of the 15% target (a $12.8M net gain on a $100M investment).",
+    guidanceLabel: "Post-analysis question",
+    guidanceLines: [
+      "Ask: is this still a good investment even though it misses 15%? There is no right answer — assess the reasoning.",
+      "Reasonable “yes”: it's very close, and diversification is the CEO's stated priority. Reasonable “no”: there may be other markets not yet explored that could clear 15%.",
+    ],
+  },
+  {
+    n: "07",
+    label: "Brainstorming",
+    title: "Other markets and products to diversify into",
+    kind: "qa",
+    qText:
+      "Beyond police departments, what other markets or products could Fire Proof consider to diversify its revenue stream?",
+    infoBoxLabel: "Brainstorming guidance",
+    infoSections: [
+      {
+        paragraphs: [
+          "One possible set of categories — many more are valid. Assess both the volume and the relevance of ideas; the best candidates give clear industry buckets, each with a few concrete product lines.",
+        ],
+        groups: [
+          { heading: "Military equipment", items: ["Military vests", "Weapon harnesses", "Military uniforms"] },
+          { heading: "Medical accessories", items: ["Medical coats", "Stethoscopes", "Gloves", "Tunics"] },
+          { heading: "Construction", items: ["Hard-hats", "Construction jackets", "Safety visors / glasses", "Hammers, pick-axes, etc."] },
+          { heading: "Recreational gear", items: ["Hiking boots", "Heavy-duty jackets", "Sleeping bags", "Thermal gear"] },
+        ],
+      },
+    ],
+  },
+  {
+    n: "08",
+    label: "Conclusion · Recommendation",
+    title: "Recommendation, risks, and next steps",
+    kind: "qa",
+    qText:
+      "Wrap up: should Fire Proof diversify into bullet-proof vests for police departments? Give a clear yes/no with your reasoning.",
+    guidanceLabel: "What a strong recommendation covers",
+    guidanceLines: [
+      "Recommendation: a clear yes/no. If yes, tie it to what makes the market attractive (overlap, size, growth, fragmentation) and to the financials (~$240M Year-3 revenue, ~13% ROI just under target).",
+      "Risks if yes: cost overruns beyond the $100M investment; competitors fighting back and eroding margins; incumbents' strong contract relationships with police departments; changing government budgets.",
+      "Risks if no: few other explored alternatives; a competitor entering bullet-proof vests first; the company staying undiversified.",
+      "Next steps: explore the other markets from the brainstorm; weigh acquisition vs. building internally; dig into competitors' contract relationships.",
+    ],
+  },
+];
+
 export const CASE_CONTENT: Record<string, CasePage[]> = {
   [ACES_CASE_ID]: ACES_PAGES,
   [AMAIR_CASE_ID]: AMAIR_PAGES,
+  [FIRE_PROOF_CASE_ID]: FIRE_PROOF_PAGES,
 };
 
 export function getCasePages(caseId: string): CasePage[] | null {
