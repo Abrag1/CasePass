@@ -95,7 +95,7 @@ export function CalcBox({ note, lines }: { note?: string; lines: { q: string; a:
         return (
           <div key={i} style={{ display: "flex", flexDirection: stack ? "column" : "row", justifyContent: "space-between", gap: stack ? 3 : 14, padding: "7px 0", borderTop: "1px solid #f2f3f0", fontSize: 13.5, flexWrap: "wrap" }}>
             <span style={{ color: "#3a3f3b", minWidth: 0, overflowWrap: "break-word", fontWeight: stack ? 700 : 400 }}>{cl.q}</span>
-            <span style={{ fontWeight: 600, color: "#1f2421", textAlign: stack ? "left" : "right", overflowWrap: "break-word", whiteSpace: "pre-line", lineHeight: 1.6 }}>{cl.a}</span>
+            <span style={{ fontWeight: stack ? 400 : 600, color: "#1f2421", textAlign: stack ? "left" : "right", overflowWrap: "break-word", whiteSpace: "pre-line", lineHeight: 1.6 }}>{cl.a}</span>
           </div>
         );
       })}
