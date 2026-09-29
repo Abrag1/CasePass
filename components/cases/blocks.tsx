@@ -82,7 +82,7 @@ export function GuidanceBox({ label = "Interviewer guidance", lines }: { label?:
   );
 }
 
-export function CalcBox({ note, lines }: { note?: string; lines: { q: string; a: string }[] }) {
+export function CalcBox({ note, lines }: { note?: string; lines: { q: string; a: string; stack?: boolean }[] }) {
   return (
     <div style={{ background: "#fafbf9", border: "1px solid #e6e7e3", borderRadius: 10, padding: "16px 18px", marginBottom: 14 }}>
       <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#8a8f8a", fontWeight: 700, marginBottom: 10 }}>
@@ -91,7 +91,7 @@ export function CalcBox({ note, lines }: { note?: string; lines: { q: string; a:
       {note && <div style={{ fontSize: 12, color: "#8a8f8a", marginBottom: 8, fontStyle: "italic" }}>{note}</div>}
       {lines.map((cl, i) => {
         // Multi-step / long expressions read better stacked under their label.
-        const stack = cl.a.includes("\n") || cl.a.length > 44;
+        const stack = cl.stack ?? cl.a.includes("\n");
         return (
           <div key={i} style={{ display: "flex", flexDirection: stack ? "column" : "row", justifyContent: "space-between", gap: stack ? 3 : 14, padding: "7px 0", borderTop: "1px solid #f2f3f0", fontSize: 13.5, flexWrap: "wrap" }}>
             <span style={{ color: "#3a3f3b", minWidth: 0, overflowWrap: "break-word", fontWeight: stack ? 700 : 400 }}>{cl.q}</span>
@@ -137,7 +137,19 @@ export function AnswerGroup({
   return (
     <div style={{ background: "#e9f1ec", border: "1px solid #cfe3d7", borderRadius: 10, padding: "14px 18px", marginBottom: 14 }}>
       <div style={label}>Answer</div>
-      <div style={{ ...body, fontSize: 14 }}><Rich text={answer} /></div>
+      <div style={{ ...body, fontSize: 14, whiteSpace: "normal" }}>
+        {answer.split("\n").map((ln, i) => {
+          // "- " = top-level bullet; lines indented with two spaces = sub-bullets.
+          const sub = ln.startsWith("  ");
+          const top = ln.startsWith("- ");
+          return (
+            <div key={i} style={{ display: "flex", gap: 8, padding: sub ? "1px 0" : "3px 0", paddingLeft: sub ? 22 : 0, marginTop: top && i > 0 ? 6 : 0 }}>
+              {top && <span style={{ color: "#2d6a4f" }}>•</span>}
+              <span><Rich text={top ? ln.slice(2) : ln.trim()} /></span>
+            </div>
+          );
+        })}
+      </div>
       {insight && (
         <div style={divider}>
           <div style={label}>{insightLabel}</div>

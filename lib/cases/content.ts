@@ -15,6 +15,8 @@ export type PageKind = "ready" | "qa" | "cheat";
 export interface CalcLine {
   q: string;
   a: string;
+  // Force the stacked (label above expression) layout
+  stack?: boolean;
 }
 
 export interface LegendItem {
@@ -802,7 +804,7 @@ const FIRE_PROOF_PAGES: CasePage[] = [
       ] },
     ],
     answerText:
-      "Most attractive: **Bullet Proof Vests**. Why? 1. **High production overlap**, 2. **Second largest market size**, 3. **Double digit growth**, 4. **Fragmented market** for easier penetration.\nLeast attractive: **Police Badges**. Why? 1. **Low production overlap**, 2. **Smallest market**, 3. **Low growth**, 4. **Highly concentrated market**.",
+      "- Most attractive: **Bullet Proof Vests**. Why?\n  1. **High production overlap**\n  2. **Second largest market size**\n  3. **Double digit growth**\n  4. **Fragmented market** for easier penetration\n- Least attractive: **Police Badges**. Why?\n  1. **Low production overlap**\n  2. **Smallest market**\n  3. **Low growth**\n  4. **Highly concentrated market**",
     insightLabel: "After looking at Exhibit 1, candidates should be able to identify and call out the following",
     insightText:
       "The most attractive markets have **1. high production overlap, 2. large market sizes, 3. high growth, and 4. higher number of competitors (fragmented market)**.",
@@ -849,8 +851,8 @@ const FIRE_PROOF_PAGES: CasePage[] = [
       { q: "Year 1", a: "Revenue = 10% × $660M = $66M\nNet profit = (25% × $66M) = $13.2M + $3.3M = $16.5M" },
       { q: "Year 2", a: "Revenue = 20% × $726M = ($72.6M × 2) = $145.2M\nNet profit = (25% × $145.2M) = ($14.52M × 2) = $29.04M + $7.26M = $36.3M" },
       { q: "Year 3", a: "Revenue = 30% × $800M = $240M\nNet profit = ($240M ÷ 4) = $60M" },
-      { q: "Total net profit over 3 years", a: "$16.5M + $36.3M + $60M = $112.8M" },
-      { q: "ROI", a: "(~$113M − $100M) ÷ $100M = ~13%" },
+      { q: "Total net profit over 3 years", a: "$16.5M + $36.3M + $60M = $112.8M", stack: true },
+      { q: "ROI", a: "(~$113M − $100M) ÷ $100M = ~13%", stack: true },
     ],
     guidanceLabel: "Post-analysis question",
     guidanceLines: [
