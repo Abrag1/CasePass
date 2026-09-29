@@ -11,6 +11,18 @@ import type { CasePage, InfoSection } from "@/lib/cases/content";
 
 /* ---------------------------------- callouts --------------------------------- */
 
+// Minimal inline markup: **bold** segments become <strong>. Used so answers can
+// bold only their key points instead of the whole block.
+function Rich({ text }: { text: string }) {
+  return (
+    <>
+      {text.split("**").map((part, i) =>
+        i % 2 === 1 ? <strong key={i} style={{ fontWeight: 700 }}>{part}</strong> : <span key={i}>{part}</span>,
+      )}
+    </>
+  );
+}
+
 export function SayNextBox({ text, label = "Interviewer says" }: { text: string; label?: string }) {
   return (
     <div style={{ background: "#eef2f6", border: "1px solid #d7e0e8", borderRadius: 10, padding: "14px 16px", marginBottom: 14 }}>
@@ -56,12 +68,16 @@ export function GuidanceBox({ label = "Interviewer guidance", lines }: { label?:
       <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#8a8f8a", fontWeight: 600, marginBottom: 8, fontStyle: "italic" }}>
         {label}
       </div>
-      {lines.map((g, i) => (
-        <div key={i} style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b", padding: "4px 0", display: "flex", gap: 8 }}>
-          <span style={{ color: "#8a8f8a" }}>–</span>
-          <span>{g}</span>
-        </div>
-      ))}
+      {lines.map((g, i) => {
+        // Lines that start with two spaces are sub-bullets of the line above.
+        const sub = g.startsWith("  ");
+        return (
+          <div key={i} style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b", padding: "4px 0", paddingLeft: sub ? 20 : 0, display: "flex", gap: 8 }}>
+            <span style={{ color: "#8a8f8a" }}>{sub ? "•" : "–"}</span>
+            <span><Rich text={g.trim()} /></span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -73,21 +89,72 @@ export function CalcBox({ note, lines }: { note?: string; lines: { q: string; a:
         Calculation walkthrough
       </div>
       {note && <div style={{ fontSize: 12, color: "#8a8f8a", marginBottom: 8, fontStyle: "italic" }}>{note}</div>}
-      {lines.map((cl, i) => (
-        <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 14, padding: "6px 0", borderTop: "1px solid #f2f3f0", fontSize: 13.5, flexWrap: "wrap" }}>
-          <span style={{ color: "#3a3f3b", minWidth: 0, overflowWrap: "break-word" }}>{cl.q}</span>
-          <span style={{ fontWeight: 600, color: "#1f2421", textAlign: "right", overflowWrap: "break-word" }}>{cl.a}</span>
-        </div>
-      ))}
+      {lines.map((cl, i) => {
+        // Multi-step / long expressions read better stacked under their label.
+        const stack = cl.a.includes("\n") || cl.a.length > 44;
+        return (
+          <div key={i} style={{ display: "flex", flexDirection: stack ? "column" : "row", justifyContent: "space-between", gap: stack ? 3 : 14, padding: "7px 0", borderTop: "1px solid #f2f3f0", fontSize: 13.5, flexWrap: "wrap" }}>
+            <span style={{ color: "#3a3f3b", minWidth: 0, overflowWrap: "break-word", fontWeight: stack ? 700 : 400 }}>{cl.q}</span>
+            <span style={{ fontWeight: 600, color: "#1f2421", textAlign: stack ? "left" : "right", overflowWrap: "break-word", whiteSpace: "pre-line", lineHeight: 1.6 }}>{cl.a}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
 export function AnswerBox({ text }: { text: string }) {
+  // Answers with **markup** bold only their key points; plain answers stay bold.
+  const selective = text.includes("**");
   return (
     <div style={{ background: "#e9f1ec", border: "1px solid #cfe3d7", borderRadius: 10, padding: "14px 18px", marginBottom: 14 }}>
       <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#2d6a4f", fontWeight: 600, marginBottom: 5 }}>Answer</div>
-      <div style={{ fontSize: 14, fontWeight: 600, color: "#1c3a2c", lineHeight: 1.5 }}>{text}</div>
+      <div style={{ fontSize: 14, fontWeight: selective ? 400 : 600, color: "#1c3a2c", lineHeight: 1.5, whiteSpace: "pre-line" }}>
+        {selective ? <Rich text={text} /> : text}
+      </div>
+    </div>
+  );
+}
+
+// One visual structure: the answer, what the candidate should call out (in the
+// case's own wording), and the bonus call-outs — all inside the same green box.
+export function AnswerGroup({
+  answer,
+  insightLabel = "What a strong candidate spots",
+  insight,
+  bonusLabel = "Bonus call-outs",
+  bonusLines,
+}: {
+  answer: string;
+  insightLabel?: string;
+  insight?: string;
+  bonusLabel?: string;
+  bonusLines?: string[];
+}) {
+  const label: React.CSSProperties = { fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#2d6a4f", fontWeight: 600, marginBottom: 6 };
+  const body: React.CSSProperties = { fontSize: 13.5, lineHeight: 1.6, color: "#1c3a2c", whiteSpace: "pre-line" };
+  const divider: React.CSSProperties = { borderTop: "1px solid #cfe3d7", marginTop: 14, paddingTop: 12 };
+  return (
+    <div style={{ background: "#e9f1ec", border: "1px solid #cfe3d7", borderRadius: 10, padding: "14px 18px", marginBottom: 14 }}>
+      <div style={label}>Answer</div>
+      <div style={{ ...body, fontSize: 14 }}><Rich text={answer} /></div>
+      {insight && (
+        <div style={divider}>
+          <div style={label}>{insightLabel}</div>
+          <div style={body}><Rich text={insight} /></div>
+        </div>
+      )}
+      {bonusLines && bonusLines.length > 0 && (
+        <div style={divider}>
+          <div style={label}>{bonusLabel}</div>
+          {bonusLines.map((b, i) => (
+            <div key={i} style={{ ...body, display: "flex", gap: 8, padding: "3px 0" }}>
+              <span style={{ color: "#2d6a4f" }}>•</span>
+              <span><Rich text={b} /></span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -349,6 +416,80 @@ export function LineChart({ page, dark }: { page: CasePage; dark?: boolean }) {
   );
 }
 
+// Small pictograms for exhibit rows (24x24 viewBox, currentColor).
+const ICONS: Record<string, React.ReactNode> = {
+  shirt: (
+    <>
+      <path d="M8 3 3 6v5l3 1v9h12v-9l3-1V6l-5-3" />
+      <path d="M8 3l4 4 4-4" />
+      <path d="M12 7v10" />
+    </>
+  ),
+  cuffs: (
+    <>
+      <circle cx="8" cy="15" r="5" />
+      <circle cx="17" cy="8" r="4" />
+      <path d="M11.5 11.5 14 10.5" />
+    </>
+  ),
+  badge: (
+    <>
+      <path d="M12 2.5 19 5v6c0 5-3 8.5-7 10.5C8 19.5 5 16 5 11V5z" />
+      <path d="m12 8 1.2 2.5 2.8.4-2 2 .5 2.8L12 14.3 9.5 15.700l.5-2.800-2-2 2.800-.4z" fill="currentColor" stroke="none" />
+    </>
+  ),
+  vest: <path fill="currentColor" d="M7 3l3 3 2 2 2-2 3-3 3 3-1 3v12H5V9L4 6z" />,
+  holster: (
+    <>
+      <rect x="3" y="12" width="18" height="4" rx="1" />
+      <path d="M8 12V8l4-1h5v5" />
+      <path d="M6 16v4h4v-4" />
+    </>
+  ),
+  shield: <path fill="currentColor" d="M12 2.5 20 5.500v6c0 5.200-3.400 8.700-8 10.500-4.600-1.800-8-5.300-8-10.500v-6z" />,
+  camera: (
+    <>
+      <path fill="currentColor" d="M3 8l13-3 2 5-13 3z" />
+      <path d="M10 13l-1 5h3M2 17l2-3" />
+    </>
+  ),
+};
+
+function RowIcon({ name, dark }: { name: string; dark?: boolean }) {
+  return (
+    <svg
+      width={22}
+      height={22}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      style={{ flex: "0 0 22px", color: dark ? "#dbe3dd" : "#1f2421" }}
+    >
+      {ICONS[name]}
+    </svg>
+  );
+}
+
+// Harvey ball ("sundisc"): a circle filled clockwise from 12 o'clock by `fill` (0-1).
+function HarveyBall({ fill, dark, label }: { fill: number; dark?: boolean; label: string }) {
+  const c = dark ? "#dbe3dd" : "#1f2421";
+  const r = 10;
+  const a = fill * 2 * Math.PI;
+  const x = 12 + r * Math.sin(a);
+  const y = 12 - r * Math.cos(a);
+  const wedge = fill >= 1 ? undefined : `M12 12 L12 2 A${r} ${r} 0 ${fill > 0.5 ? 1 : 0} 1 ${x.toFixed(3)} ${y.toFixed(3)} Z`;
+  return (
+    <svg width={24} height={24} viewBox="0 0 24 24" role="img" aria-label={label} style={{ display: "block" }}>
+      <circle cx={12} cy={12} r={r} fill={fill >= 1 ? c : "none"} stroke={c} strokeWidth={1.4} />
+      {wedge && <path d={wedge} fill={c} />}
+    </svg>
+  );
+}
+
 export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
   if (!page.dataTableRows || !page.dataTableHeaders) return null;
   const head = dark ? "#8a958d" : "#8a8f8a";
@@ -365,11 +506,30 @@ export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
         {page.dataTableRows.map((row, i) => (
           <div key={i} style={{ display: "contents" }}>
             {row.cells.map((c, j) => (
-              <div key={j} style={{ padding: "7px 4px", borderTop: border, textAlign: c.align, fontWeight: c.w, color: dark ? "#dbe3dd" : c.fg }}>{c.v}</div>
+              <div
+                key={j}
+                style={{
+                  padding: "8px 4px",
+                  borderTop: border,
+                  textAlign: c.align,
+                  fontWeight: c.w,
+                  color: dark ? "#dbe3dd" : c.fg,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  justifyContent: c.align === "center" ? "center" : c.align === "right" ? "flex-end" : "flex-start",
+                }}
+              >
+                {c.icon && <RowIcon name={c.icon} dark={dark} />}
+                {c.harvey !== undefined ? <HarveyBall fill={c.harvey} dark={dark} label={c.v} /> : c.v}
+              </div>
             ))}
           </div>
         ))}
       </div>
+      {page.dataTableFootnote && (
+        <div style={{ fontSize: 11, color: head, textAlign: "right", maxWidth: dark ? undefined : 560, margin: "12px auto 0" }}>{page.dataTableFootnote}</div>
+      )}
     </ExhibitFrame>
   );
 }
@@ -457,8 +617,21 @@ export function PageBody({ page, sayLabel = "Interviewer says" }: { page: CasePa
       <SegmentTable page={page} />
       <DataTable page={page} />
       {page.calcLines && <CalcBox note={page.calcNote} lines={page.calcLines} />}
-      {page.answerText && <AnswerBox text={page.answerText} />}
-      {page.insightText && <InsightBox text={page.insightText} />}
+      {page.answerText && page.answerBonusLines ? (
+        <AnswerGroup
+          answer={page.answerText}
+          insightLabel={page.insightLabel}
+          insight={page.insightText}
+          bonusLabel={page.answerBonusLabel}
+          bonusLines={page.answerBonusLines}
+        />
+      ) : (
+        <>
+          {page.answerText && <AnswerBox text={page.answerText} />}
+          {page.insightText && <InsightBox text={page.insightText} />}
+        </>
+      )}
+      {page.nextStepText && <SayNextBox text={page.nextStepText} label="Next step" />}
       {page.guidanceLines && <GuidanceBox label={page.guidanceLabel} lines={page.guidanceLines} />}
     </>
   );
