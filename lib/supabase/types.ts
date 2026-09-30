@@ -62,6 +62,7 @@ export interface Database {
           email: string;
           avatar_color: string | null;
           is_admin: boolean;
+          is_demo: boolean;
           booking_rule: string | null;
           created_at: string;
         };

@@ -18,6 +18,7 @@ export function CaseFilterForm({
   tab,
   view,
   preppedOnly,
+  content,
   q,
   type,
   source,
@@ -31,6 +32,7 @@ export function CaseFilterForm({
   tab: string;
   view: string;
   preppedOnly: boolean;
+  content: string;
   q: string;
   type: string;
   source: string;
@@ -49,6 +51,7 @@ export function CaseFilterForm({
       <input type="hidden" name="tab" value={tab} />
       {view === "grid" && <input type="hidden" name="view" value="grid" />}
       {preppedOnly && <input type="hidden" name="prepped" value="1" />}
+      {content !== "all" && <input type="hidden" name="content" value={content} />}
       <div className="col-span-2 sm:col-span-3 lg:col-span-1">
         <FieldLabel>Search</FieldLabel>
         <Input name="q" defaultValue={q} placeholder="Case name, industry, or casebook — press Enter" />

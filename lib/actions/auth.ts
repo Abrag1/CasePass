@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkInvite, type InviteCheck } from "@/lib/queries/invites";
-import { loginSchema, signupSchema } from "@/lib/validation/auth";
+import { loginSchema, signupSchema, isOpenSignupEmail } from "@/lib/validation/auth";
 
 function inviteErrorMessage(status: Exclude<InviteCheck["status"], "ok">): string {
   switch (status) {
@@ -13,7 +13,7 @@ function inviteErrorMessage(status: Exclude<InviteCheck["status"], "ok">): strin
     case "expired":
       return "This invite link has expired. Ask for a new one.";
     default:
-      return "This signup link isn't valid. CasePass is invite-only.";
+      return "This signup link isn't valid. Sign up with your @cornell.edu email instead.";
   }
 }
 
@@ -53,15 +53,21 @@ export async function signup(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
 
-  // Invite gate: signup requires a valid, unused, unexpired link, and the email
-  // must match the one the invite was issued to (that's what makes it non-transferable).
+  // Access gate: either an open-domain email (e.g. @cornell.edu, no approval
+  // needed), or a valid, unused, unexpired invite link whose email matches
+  // (that's what makes an invite non-transferable).
   const token = String(formData.get("invite") ?? "");
-  const invite = await checkInvite(token);
-  if (invite.status !== "ok") {
-    return { error: inviteErrorMessage(invite.status) };
-  }
-  if (invite.email.toLowerCase() !== parsed.data.email.toLowerCase()) {
-    return { error: `This invite is for ${invite.email} — sign up with that email address.` };
+  const openDomain = isOpenSignupEmail(parsed.data.email);
+  if (token) {
+    const invite = await checkInvite(token);
+    if (invite.status !== "ok") {
+      return { error: inviteErrorMessage(invite.status) };
+    }
+    if (invite.email.toLowerCase() !== parsed.data.email.toLowerCase()) {
+      return { error: `This invite is for ${invite.email} — sign up with that email address.` };
+    }
+  } else if (!openDomain) {
+    return { error: "Please use your @cornell.edu email." };
   }
 
   const supabase = await createClient();
@@ -76,12 +82,14 @@ export async function signup(
 
   // Consume the invite so the link can't be reused. Conditional on used_at being
   // null guards against a double-submit racing two signups onto one link.
-  const admin = createAdminClient();
-  await admin
-    .from("invites")
-    .update({ used_at: new Date().toISOString(), used_by: data.user?.id ?? null })
-    .eq("token", token)
-    .is("used_at", null);
+  if (token) {
+    const admin = createAdminClient();
+    await admin
+      .from("invites")
+      .update({ used_at: new Date().toISOString(), used_by: data.user?.id ?? null })
+      .eq("token", token)
+      .is("used_at", null);
+  }
 
   if (!data.session) {
     // Email confirmation is required by the Supabase project's auth settings.

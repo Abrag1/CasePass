@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/dal";
 import { getSession } from "@/lib/queries/sessions";
-import { formatDateTime, getJoinWindow, relativeWhen } from "@/lib/utils";
+import { formatDateTime, getJoinWindow } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { IntervieweeNote } from "@/components/mocks/IntervieweeNote";
@@ -100,10 +100,6 @@ export default async function PreviewPage({ params }: { params: Promise<{ sessio
             <Link href={`/mocks/${session.id}/live`}>
               <Button className="w-full">Join mock</Button>
             </Link>
-          ) : win.tooEarly ? (
-            <div className="w-full text-center rounded-lg border border-(--color-border) bg-(--color-bg) py-3 text-[13px] text-(--color-muted)">
-              Join opens 15 minutes before the mock — {relativeWhen(session.scheduled_at)} · {dt.full} {dt.time}
-            </div>
           ) : (
             <div className="w-full text-center rounded-lg border border-(--color-border) bg-(--color-bg) py-3 text-[13px] text-(--color-muted)">
               This mock’s scheduled time has passed.

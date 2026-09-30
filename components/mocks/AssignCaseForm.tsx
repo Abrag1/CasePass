@@ -23,16 +23,20 @@ export function AssignCaseForm({
 }) {
   const [pickedId, setPickedId] = useState<string | null>(currentCaseId);
   const [query, setQuery] = useState("");
+  // Default to fully digitized cases -- those are the ones that can actually be run live.
+  const [content, setContent] = useState<"full" | "all">("full");
+  const fullCount = cases.filter((c) => c.extraction_status !== "basic").length;
   const [state, action, pending] = useActionState(assignCase, undefined);
   const picked = cases.find((c) => c.id === pickedId);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return cases;
-    return cases.filter((c) =>
+    const pool = content === "full" ? cases.filter((c) => c.extraction_status !== "basic") : cases;
+    if (!q) return pool;
+    return pool.filter((c) =>
       [c.name, c.case_type, c.source_book, c.industry, c.casebook_year].some((v) => v?.toLowerCase().includes(q))
     );
-  }, [cases, query]);
+  }, [cases, query, content]);
 
   const visible = filtered.slice(0, RESULTS_LIMIT);
 
@@ -77,10 +81,29 @@ export function AssignCaseForm({
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by case name, school, industry, or type…"
         />
+        <div className="flex bg-[#f1f2ef] rounded-lg p-[3px] w-fit mt-2.5">
+          {(
+            [
+              ["full", `Ready to run (${fullCount})`],
+              ["all", `All cases (${cases.length})`],
+            ] as const
+          ).map(([k, label]) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setContent(k)}
+              className={`rounded-md px-3 py-1 text-[12px] font-semibold cursor-pointer ${
+                content === k ? "bg-[#e9f1ec] text-(--color-green)" : "text-(--color-muted)"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <p className="text-[12px] text-(--color-muted) mt-1.5">
-          {filtered.length === cases.length
-            ? `${cases.length} cases`
-            : `${filtered.length} of ${cases.length} cases match "${query}"`}
+          {query.trim()
+            ? `${filtered.length} match "${query}"`
+            : `${filtered.length} cases`}
           {filtered.length > RESULTS_LIMIT && ` — showing first ${RESULTS_LIMIT}, narrow your search to see more`}
         </p>
       </div>
@@ -92,7 +115,7 @@ export function AssignCaseForm({
               <div className="flex items-center gap-2.5 flex-wrap mb-1">
                 <span className="font-semibold text-[15px]">{c.name}</span>
                 {c.is_seed && <Badge tone="warn">Example</Badge>}
-                {c.extraction_status === "basic" && <Badge tone="neutral">Outline</Badge>}
+                {c.extraction_status === "basic" ? <Badge tone="neutral">Outline</Badge> : <Badge tone="green">Full case</Badge>}
                 {currentCaseId === c.id && <Badge tone="green">Assigned</Badge>}
               </div>
               <div className="text-[12.5px] text-(--color-muted)">{caseMetaLine(c)}</div>

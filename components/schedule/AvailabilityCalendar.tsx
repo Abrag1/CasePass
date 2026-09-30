@@ -21,8 +21,8 @@ import {
 
 const DAY_COLS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]; // column order
 const CHIP_LABELS = ["S", "M", "T", "W", "T", "F", "S"]; // model weekday 0=Sun..6=Sat
-const START_MIN = 480; // 8:00 AM
-const END_MIN = 1200; // 8:00 PM
+const START_MIN = 360; // 6:00 AM
+const END_MIN = 1440; // midnight
 const ROWH = 44;
 const PX_PER_MIN = ROWH / 60;
 const GRIDH = ((END_MIN - START_MIN) / 60) * ROWH;

@@ -43,8 +43,8 @@ export default async function AssignCasePage({
               until you present live.
             </div>
           </div>
-          <Link href="/home">
-            <Button>Back to home</Button>
+          <Link href={`/mocks/${session.id}/live`}>
+            <Button>Go to live mock</Button>
           </Link>
         </div>
       )}

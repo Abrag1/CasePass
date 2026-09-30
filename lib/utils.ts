@@ -45,17 +45,18 @@ export interface SessionViewMeta {
   secondaryActionHref?: string;
 }
 
-// The "Join mock" button is time-gated: it opens shortly before the scheduled
-// time so the button always means "it's time", not "a case exists".
-export const JOIN_OPEN_BEFORE_MS = 15 * 60 * 1000; // 15 min before
+// "Join mock" is available any time once a case is assigned -- there is no early
+// gate, so people can open the room ahead of the scheduled time. It only closes a
+// while after the scheduled start. `notStarted` is just "the scheduled time hasn't
+// arrived yet" (used for wording and for offering "Change case").
 export const JOIN_CLOSE_AFTER_MS = 6 * 60 * 60 * 1000; // 6 hr after
 
 export function getJoinWindow(scheduledIso: string, now: number = Date.now()) {
   const start = new Date(scheduledIso).getTime();
   return {
     start,
-    open: now >= start - JOIN_OPEN_BEFORE_MS && now <= start + JOIN_CLOSE_AFTER_MS,
-    tooEarly: now < start - JOIN_OPEN_BEFORE_MS,
+    open: now <= start + JOIN_CLOSE_AFTER_MS,
+    notStarted: now < start,
     closed: now > start + JOIN_CLOSE_AFTER_MS,
   };
 }
@@ -106,21 +107,18 @@ export function getSessionViewMeta(
     if (!session.assigned_case_id) {
       return { statusLabel: "Needs a case", tone: "warn", actionLabel: "Choose the case", actionHref: `/mocks/${session.id}/assign` };
     }
-    if (win.tooEarly) {
-      // Only offered before the join window opens -- once the interviewer can
-      // actually join, swapping the case mid-flow risks orphaning live-session
-      // state (which page/step is on screen), so "Change case" stops here.
-      return {
-        statusLabel: relativeWhen(session.scheduled_at),
-        tone: "navy",
-        actionLabel: "Review case",
-        actionHref: `/cases/${session.assigned_case_id}`,
-        secondaryActionLabel: "Change case",
-        secondaryActionHref: `/mocks/${session.id}/assign`,
-      };
-    }
-    // window open or already started -> the interviewer drives, so they can always join
-    return { statusLabel: win.open ? "Join now" : "Ready", tone: "green", actionLabel: "Join mock", actionHref: `/mocks/${session.id}/live` };
+    // The interviewer can join any time. "Change case" is offered only until the
+    // scheduled start -- swapping mid-flow risks orphaning live-session state
+    // (which page/step is on screen).
+    return {
+      statusLabel: win.notStarted ? relativeWhen(session.scheduled_at) : win.open ? "Join now" : "Ready",
+      tone: win.notStarted ? "navy" : "green",
+      actionLabel: "Join mock",
+      actionHref: `/mocks/${session.id}/live`,
+      ...(win.notStarted
+        ? { secondaryActionLabel: "Change case", secondaryActionHref: `/mocks/${session.id}/assign` }
+        : {}),
+    };
   }
 
   // interviewee
@@ -128,10 +126,17 @@ export function getSessionViewMeta(
     return { statusLabel: "Awaiting case", tone: "warn", actionLabel: "Waiting for the case", actionHref: null };
   }
   if (win.open) {
-    return { statusLabel: "Join now", tone: "green", actionLabel: "Join mock", actionHref: `/mocks/${session.id}/live` };
+    return {
+      statusLabel: win.notStarted ? relativeWhen(session.scheduled_at) : "Join now",
+      tone: win.notStarted ? "navy" : "green",
+      actionLabel: "Join mock",
+      actionHref: `/mocks/${session.id}/live`,
+      secondaryActionLabel: "Review brief",
+      secondaryActionHref: `/mocks/${session.id}/preview`,
+    };
   }
   return {
-    statusLabel: win.tooEarly ? relativeWhen(session.scheduled_at) : "Case shared",
+    statusLabel: "Case shared",
     tone: "navy",
     actionLabel: "Review brief",
     actionHref: `/mocks/${session.id}/preview`,

@@ -26,6 +26,7 @@ interface SearchParams {
   difficulty?: string;
   prepped?: string;
   view?: string;
+  content?: string;
 }
 
 export default async function CasesPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -34,6 +35,8 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
   const tab = sp.tab === "given" || sp.tab === "taken" ? sp.tab : "browse";
   const view = sp.view === "grid" ? "grid" : "list";
   const preppedOnly = sp.prepped === "1";
+  // "full" = fully digitized (page-by-page content); "outline" = catalog entry only.
+  const content = sp.content === "full" || sp.content === "outline" ? sp.content : "all";
 
   const [allCases, preppedIds, history] = await Promise.all([
     listCases({ type: sp.type, source: sp.source, industry: sp.industry, difficulty: sp.difficulty, q: sp.q }),
@@ -41,7 +44,14 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
     getMyCaseHistory(profile.id),
   ]);
 
-  const cases = preppedOnly ? allCases.filter((c) => preppedIds.has(c.id)) : allCases;
+  const fullCount = allCases.filter((c) => c.extraction_status !== "basic").length;
+  const byContent =
+    content === "full"
+      ? allCases.filter((c) => c.extraction_status !== "basic")
+      : content === "outline"
+        ? allCases.filter((c) => c.extraction_status === "basic")
+        : allCases;
+  const cases = preppedOnly ? byContent.filter((c) => preppedIds.has(c.id)) : byContent;
 
   const tabLink = (t: string) => `/cases?tab=${t}`;
   const browseParams = new URLSearchParams();
@@ -49,6 +59,13 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
   const viewLink = (v: string) => {
     const p = new URLSearchParams(browseParams);
     p.set("view", v);
+    return `/cases?${p.toString()}`;
+  };
+  const contentLink = (v: "all" | "full" | "outline") => {
+    const p = new URLSearchParams(browseParams);
+    if (v === "all") p.delete("content");
+    else p.set("content", v);
+    if (view === "grid") p.set("view", "grid");
     return `/cases?${p.toString()}`;
   };
   const preppedParams = new URLSearchParams(browseParams);
@@ -93,6 +110,7 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
               tab="browse"
               view={view}
               preppedOnly={preppedOnly}
+              content={content}
               q={sp.q ?? ""}
               type={sp.type ?? "All"}
               source={sp.source ?? "All"}
@@ -104,6 +122,21 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
               difficulties={DIFFICULTIES}
             />
           </Card>
+
+          <div className="flex items-center gap-3 mb-3 flex-wrap">
+            <div className="flex bg-[#f1f2ef] rounded-lg p-[3px]">
+              <ViewLink href={contentLink("all")} active={content === "all"} label={`All (${allCases.length})`} />
+              <ViewLink href={contentLink("full")} active={content === "full"} label={`Full cases (${fullCount})`} />
+              <ViewLink
+                href={contentLink("outline")}
+                active={content === "outline"}
+                label={`Outline only (${allCases.length - fullCount})`}
+              />
+            </div>
+            <span className="text-[12px] text-(--color-muted)">
+              Full case = digitized page by page (prompt, exhibits, guidance, answers), ready to run live.
+            </span>
+          </div>
 
           <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
             <p className="text-[12.5px] text-(--color-muted)">
@@ -144,7 +177,7 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
                     <div className="flex items-center gap-2.5 flex-wrap mb-1">
                       <span className="font-semibold text-[15px]">{c.name}</span>
                       {c.is_seed && <Badge tone="warn">Example</Badge>}
-                      {c.extraction_status === "basic" && <Badge tone="neutral">Outline</Badge>}
+                      {c.extraction_status === "basic" ? <Badge tone="neutral">Outline</Badge> : <Badge tone="green">Full case</Badge>}
                     </div>
                     <div className="text-[12.5px] text-(--color-muted) mb-2">{caseMetaLine(c)}</div>
                     {c.synopsis ? (
@@ -183,7 +216,7 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
                   <Link href={`/cases/${c.id}`} className="flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {c.is_seed && <Badge tone="warn">Example</Badge>}
-                      {c.extraction_status === "basic" && <Badge tone="neutral">Outline</Badge>}
+                      {c.extraction_status === "basic" ? <Badge tone="neutral">Outline</Badge> : <Badge tone="green">Full case</Badge>}
                     </div>
                     <div className="font-semibold text-[15px] mt-2">{c.name}</div>
                     <div className="text-[12px] text-(--color-muted) mt-1 leading-snug">{caseMetaLine(c)}</div>
