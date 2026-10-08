@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMockSessionRealtime } from "@/lib/realtime/useMockSessionRealtime";
-import { setPresented, startLiveMock, savePrivateNotes, endMock, setSynopsisShared } from "@/lib/actions/sessions";
+import { setPresented, savePrivateNotes, endMock, setSynopsisShared } from "@/lib/actions/sessions";
+import { InterviewerPanel } from "@/components/interview/InterviewerPanel";
+import { PresenterScope } from "@/components/interview/Presenter";
+import { useInterviewState } from "@/components/interview/useInterviewState";
 import type { CasePage } from "@/lib/cases/content";
-import { pageIsPresentable } from "@/lib/cases/content";
-import { PageBody, PageExhibit } from "@/components/cases/blocks";
+import { PageExhibit } from "@/components/cases/blocks";
 import { Button } from "@/components/ui/Button";
-import { Textarea } from "@/components/ui/Field";
 import { VideoPanel } from "@/components/mocks/VideoPanel";
 
 interface Props {
@@ -23,17 +24,10 @@ interface Props {
   pages: CasePage[];
   synopsis: string;
   initialPresented: number | null;
-  initialTimerStartedAt: string | null;
   initialSynopsisShared: boolean;
   initialPrivateNotes: string;
   initialEndedAt: string | null;
   initialStatus: string;
-}
-
-function formatElapsed(sec: number) {
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 export function LiveMock({
@@ -47,7 +41,6 @@ export function LiveMock({
   pages,
   synopsis,
   initialPresented,
-  initialTimerStartedAt,
   initialSynopsisShared,
   initialPrivateNotes,
   initialEndedAt,
@@ -58,36 +51,25 @@ export function LiveMock({
   const firstName = partnerName.split(" ")[0];
 
   const [presented, setPresentedState] = useState<number | null>(initialPresented);
-  const [timerStartedAt, setTimerStartedAt] = useState<string | null>(initialTimerStartedAt);
   const [endedAt, setEndedAt] = useState<string | null>(initialEndedAt);
   const [status, setStatus] = useState(initialStatus);
-  const [elapsed, setElapsed] = useState(0);
-  const [notes, setNotes] = useState(initialPrivateNotes);
   const [synopsisShared, setSynopsisSharedState] = useState(initialSynopsisShared);
-  const [stepIdx, setStepIdx] = useState(0);
-  const [view, setView] = useState<"steps" | "all">("steps");
   // Both-screens split is derived so a stale/forced value can never put an
   // interviewee into split view (which would leak the interviewer panel).
   const [layoutPref, setLayoutPref] = useState<"your" | "both">("your");
   const [, startTransition] = useTransition();
-  const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Per-section notes + timers; saved to this interviewer's private session notes.
+  const interview = useInterviewState({
+    initial: initialPrivateNotes,
+    persist: (serialized) => savePrivateNotes(sessionId, serialized),
+  });
 
   useMockSessionRealtime(sessionId, (row) => {
     setPresentedState(row.presented);
-    setTimerStartedAt(row.timer_started_at);
     setEndedAt(row.ended_at);
     setStatus(row.status);
     setSynopsisSharedState(row.synopsis_shared_live);
   });
-
-  useEffect(() => {
-    if (!timerStartedAt) return;
-    const start = new Date(timerStartedAt).getTime();
-    const id = setInterval(() => {
-      setElapsed(Math.max(0, Math.floor((Date.now() - start) / 1000)));
-    }, 1000);
-    return () => clearInterval(id);
-  }, [timerStartedAt]);
 
   const isSide = isInterviewer && layoutPref === "both";
   const leftShow = isSide || isInterviewer;
@@ -96,8 +78,16 @@ export function LiveMock({
   function present(i: number) {
     const next = presented === i ? null : i;
     setPresentedState(next);
-    setStepIdx(i);
     startTransition(() => setPresented(sessionId, next));
+  }
+
+  function endAndGiveFeedback() {
+    startTransition(async () => {
+      interview.stopAll();
+      await interview.flush();
+      await endMock(sessionId);
+      router.push(`/mocks/${sessionId}/feedback`);
+    });
   }
 
   function toggleSynopsis() {
@@ -106,15 +96,8 @@ export function LiveMock({
     startTransition(() => setSynopsisShared(sessionId, next));
   }
 
-  function onNotesChange(value: string) {
-    setNotes(value);
-    if (notesTimer.current) clearTimeout(notesTimer.current);
-    notesTimer.current = setTimeout(() => {
-      startTransition(() => savePrivateNotes(sessionId, value));
-    }, 600);
-  }
-
   return (
+    <PresenterScope>
     <section className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
         <div>
@@ -124,18 +107,6 @@ export function LiveMock({
           </div>
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center gap-2 bg-white border border-(--color-border) rounded-lg px-3 py-1.5">
-            <span className="font-serif text-[20px] font-semibold tabular-nums">{formatElapsed(elapsed)}</span>
-            {isInterviewer && !timerStartedAt && (
-              <button
-                className="border-none bg-[#e9f1ec] text-(--color-green) rounded-md px-2.5 py-1 text-[12px] font-semibold cursor-pointer"
-                onClick={() => startTransition(() => startLiveMock(sessionId))}
-              >
-                Start
-              </button>
-            )}
-          </div>
-
           {/* Layout toggle + End mock render for the interviewer ONLY. An interviewee
               must never be able to force "Both screens" (it would expose the private
               interviewer panel). */}
@@ -159,14 +130,7 @@ export function LiveMock({
                   Both screens
                 </button>
               </div>
-              <Button
-                onClick={() =>
-                  startTransition(async () => {
-                    await endMock(sessionId);
-                    router.push(`/mocks/${sessionId}/feedback`);
-                  })
-                }
-              >
+              <Button onClick={endAndGiveFeedback}>
                 End mock & give feedback →
               </Button>
             </>
@@ -176,8 +140,9 @@ export function LiveMock({
 
       {isInterviewer && !isSide && (
         <div className="bg-[#f3f6f4] border border-[#e1ebe5] rounded-[9px] px-3.5 py-2.5 mb-4 text-[12.5px] text-[#3a5a4a]">
-          You’re on the interviewer side. Use the Present buttons to push the prompt or an exhibit onto {firstName}’s
-          screen; switch to “Both screens” to preview exactly what {firstName} sees.
+          You’re on the interviewer side. “Send to {firstName}” puts the prompt or an exhibit on {firstName}’s Live Mock
+          screen; “Present” on any block (answer, structure, exhibit…) takes it fullscreen — ideal for sharing your screen
+          on Zoom during feedback. Switch to “Both screens” to preview what {firstName} sees.
         </div>
       )}
 
@@ -214,17 +179,16 @@ export function LiveMock({
           <div style={{ minWidth: 0 }}>
             <InterviewerPanel
               pages={pages}
-              firstName={firstName}
-              presented={presented}
-              onPresent={present}
-              stepIdx={stepIdx}
-              onStep={setStepIdx}
-              view={view}
-              onView={setView}
-              synopsisShared={synopsisShared}
-              onToggleSynopsis={toggleSynopsis}
-              notes={notes}
-              onNotesChange={onNotesChange}
+              api={interview}
+              onEnd={endAndGiveFeedback}
+              persistLabel="to your account"
+              live={{
+                firstName,
+                presented,
+                onSend: present,
+                synopsisShared,
+                onToggleSynopsis: toggleSynopsis,
+              }}
             />
           </div>
         )}
@@ -243,164 +207,7 @@ export function LiveMock({
         )}
       </div>
     </section>
-  );
-}
-
-function PresentButton({ onScreen, firstName, onClick }: { onScreen: boolean; firstName: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="border-none rounded-md px-3 py-1.5 text-[11.5px] font-semibold cursor-pointer whitespace-nowrap"
-      style={onScreen ? { background: "#2d6a4f", color: "#fff" } : { background: "#e9f1ec", color: "#2d6a4f" }}
-    >
-      {onScreen ? "On screen ✓" : `Present to ${firstName}`}
-    </button>
-  );
-}
-
-function InterviewerPanel({
-  pages,
-  firstName,
-  presented,
-  onPresent,
-  stepIdx,
-  onStep,
-  view,
-  onView,
-  synopsisShared,
-  onToggleSynopsis,
-  notes,
-  onNotesChange,
-}: {
-  pages: CasePage[];
-  firstName: string;
-  presented: number | null;
-  onPresent: (i: number) => void;
-  stepIdx: number;
-  onStep: (i: number) => void;
-  view: "steps" | "all";
-  onView: (v: "steps" | "all") => void;
-  synopsisShared: boolean;
-  onToggleSynopsis: () => void;
-  notes: string;
-  onNotesChange: (v: string) => void;
-}) {
-  const cur = pages[stepIdx];
-
-  return (
-    <div className="bg-white border border-(--color-border) rounded-xl overflow-hidden" style={{ minWidth: 0 }}>
-      {/* Header + view mode toggle */}
-      <div className="flex items-center justify-between px-4 py-3 bg-[#f3f6f4] border-b border-(--color-border)">
-        <span className="font-semibold text-[13px] text-(--color-green) flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-(--color-green)" />
-          Interviewer view
-        </span>
-        <div className="flex bg-white border border-[#dfe6e1] rounded-[7px] p-0.5">
-          <button
-            onClick={() => onView("steps")}
-            className={`border-none rounded-[5px] px-2.5 py-1 text-[11.5px] font-semibold cursor-pointer ${
-              view === "steps" ? "bg-white text-(--color-fg)" : "bg-transparent text-(--color-muted)"
-            }`}
-            style={view === "steps" ? { background: "#eef2f0" } : undefined}
-          >
-            Step-by-step
-          </button>
-          <button
-            onClick={() => onView("all")}
-            className={`border-none rounded-[5px] px-2.5 py-1 text-[11.5px] font-semibold cursor-pointer ${
-              view === "all" ? "text-(--color-fg)" : "bg-transparent text-(--color-muted)"
-            }`}
-            style={view === "all" ? { background: "#eef2f0" } : undefined}
-          >
-            All sections
-          </button>
-        </div>
-      </div>
-
-      {/* Chapter pills */}
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-[#f2f3f0] overflow-x-auto">
-        {pages.map((p, i) => (
-          <button
-            key={p.n}
-            onClick={() => {
-              onStep(i);
-              onView("steps");
-            }}
-            title={p.title}
-            className="border-none shrink-0 rounded-2xl px-3 py-1.5 text-[11.5px] font-semibold cursor-pointer whitespace-nowrap"
-            style={i === stepIdx ? { background: "#2d6a4f", color: "#fff" } : { background: "#f1f2ef", color: "#5b615c" }}
-          >
-            {p.n} · {p.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Case synopsis share control */}
-      <div className="flex items-center justify-between gap-2.5 px-[18px] py-3.5 border-b border-[#f2f3f0]">
-        <div className="text-[12.5px] text-[#5b615c]">Case synopsis on {firstName}’s screen</div>
-        <button
-          onClick={onToggleSynopsis}
-          className="border-none rounded-md px-3 py-1.5 text-[12px] font-semibold cursor-pointer"
-          style={synopsisShared ? { background: "#2d6a4f", color: "#fff" } : { background: "#e9f1ec", color: "#2d6a4f" }}
-        >
-          {synopsisShared ? "Shared ✓" : `Share with ${firstName}`}
-        </button>
-      </div>
-
-      {view === "all" ? (
-        <div className="py-1.5 max-h-[640px] overflow-y-auto">
-          {pages.map((p, i) => (
-            <div key={p.n} className="px-5 py-[18px] border-b border-[#f2f3f0]">
-              <div className="flex items-center justify-between gap-2.5 mb-2.5">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-[11px] font-bold text-(--color-muted)">{p.n}</span>
-                  <span className="font-serif text-[15.5px] font-semibold text-(--color-fg)">{p.title}</span>
-                </div>
-                {pageIsPresentable(p) && <PresentButton onScreen={presented === i} firstName={firstName} onClick={() => onPresent(i)} />}
-              </div>
-              <PageBody page={p} sayLabel="Say next" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="p-[18px]">
-          <div className="flex items-center justify-between gap-2.5 mb-3.5">
-            <div className="flex items-center gap-2.5">
-              <button
-                onClick={() => onStep(Math.max(0, stepIdx - 1))}
-                className="border border-[#d7d9d4] bg-white rounded-[7px] w-7 h-7 cursor-pointer text-[#5b615c] text-[13px]"
-              >
-                ‹
-              </button>
-              <div className="text-[11px] uppercase tracking-wide text-(--color-muted) font-semibold">
-                Step {stepIdx + 1} of {pages.length}
-              </div>
-              <button
-                onClick={() => onStep(Math.min(pages.length - 1, stepIdx + 1))}
-                className="border border-[#d7d9d4] bg-white rounded-[7px] w-7 h-7 cursor-pointer text-[#5b615c] text-[13px]"
-              >
-                ›
-              </button>
-            </div>
-            {cur && pageIsPresentable(cur) && (
-              <PresentButton onScreen={presented === stepIdx} firstName={firstName} onClick={() => onPresent(stepIdx)} />
-            )}
-          </div>
-          {cur && (
-            <>
-              <div className="font-serif text-[17px] font-semibold text-(--color-fg) mb-3.5">{cur.title}</div>
-              <PageBody page={cur} sayLabel="Say next" />
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Private notes — always at the bottom, never shown to the candidate. */}
-      <div className="px-[18px] pb-[18px]">
-        <div className="text-[11px] uppercase tracking-wide font-semibold text-(--color-muted) mb-1.5 mt-1.5">Private notes</div>
-        <Textarea rows={3} value={notes} onChange={(e) => onNotesChange(e.target.value)} placeholder="Jot observations as the case runs…" />
-      </div>
-    </div>
+    </PresenterScope>
   );
 }
 

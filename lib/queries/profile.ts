@@ -1,3 +1,4 @@
+import type { SectionFeedbackPayload } from "@/lib/interview/model";
 import { createClient } from "@/lib/supabase/server";
 
 export async function getProfileById(userId: string) {
@@ -39,6 +40,7 @@ export interface HistoryItem {
   wentWell: string | null;
   improve: string | null;
   practiceNext: string | null;
+  sectionFeedback: SectionFeedbackPayload | null;
 }
 
 export type PartnerProfileResult = Partial<Omit<SkillProfileResult, "user_id">> & {
@@ -72,12 +74,12 @@ export async function getMyCaseHistory(userId: string): Promise<{ given: History
   const [{ data: givenFeedback }, { data: takenFeedback }] = await Promise.all([
     supabase
       .from("feedback")
-      .select("id, mock_session_id, recap_text, skill_ratings, went_well, improve, practice_next, created_at")
+      .select("id, mock_session_id, recap_text, skill_ratings, went_well, improve, practice_next, section_feedback, created_at")
       .eq("author_id", userId)
       .order("created_at", { ascending: false }),
     supabase
       .from("feedback")
-      .select("id, mock_session_id, recap_text, skill_ratings, went_well, improve, practice_next, created_at")
+      .select("id, mock_session_id, recap_text, skill_ratings, went_well, improve, practice_next, section_feedback, created_at")
       .eq("subject_id", userId)
       .order("created_at", { ascending: false }),
   ]);
@@ -122,6 +124,7 @@ export async function getMyCaseHistory(userId: string): Promise<{ given: History
       wentWell: f.went_well,
       improve: f.improve,
       practiceNext: f.practice_next,
+      sectionFeedback: (f.section_feedback as SectionFeedbackPayload | null) ?? null,
     };
   }
 

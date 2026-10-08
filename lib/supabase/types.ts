@@ -227,6 +227,8 @@ export interface Database {
           went_well: string | null;
           improve: string | null;
           practice_next: string | null;
+          // { sections: [{ key, label, title, seconds, notes }], general } — see lib/interview/model.ts
+          section_feedback: Json | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["feedback"]["Row"]> & {

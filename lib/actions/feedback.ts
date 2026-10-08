@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/dal";
-import { SKILL_FIELDS } from "@/lib/validation/feedback";
+import { SKILL_FIELDS, sectionFeedbackSchema } from "@/lib/validation/feedback";
 
 export type FeedbackActionState = { error?: string } | undefined;
 
@@ -33,6 +33,17 @@ export async function submitFeedback(
     if (typeof v === "string" && v) skillRatings[key] = v;
   }
 
+  let sectionFeedback = null;
+  const rawSections = formData.get("sectionFeedback");
+  if (typeof rawSections === "string" && rawSections) {
+    try {
+      const parsed = sectionFeedbackSchema.safeParse(JSON.parse(rawSections));
+      if (parsed.success) sectionFeedback = parsed.data;
+    } catch {
+      // malformed client JSON: submit the rest of the feedback without section notes
+    }
+  }
+
   const { error } = await supabase.from("feedback").insert({
     mock_session_id: sessionId,
     author_id: user.id,
@@ -42,6 +53,8 @@ export async function submitFeedback(
     went_well: (formData.get("wentWell") as string) || null,
     improve: (formData.get("improve") as string) || null,
     practice_next: (formData.get("practiceNext") as string) || null,
+    // Only sent when present, so feedback without section notes never depends on migration 0013.
+    ...(sectionFeedback ? { section_feedback: sectionFeedback } : {}),
   });
 
   if (error) {

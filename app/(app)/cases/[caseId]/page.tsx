@@ -5,6 +5,7 @@ import { getCasePages } from "@/lib/cases/content";
 import { Card, Badge } from "@/components/ui/Card";
 import { ExhibitCard } from "@/components/ui/Exhibit";
 import { PageBody } from "@/components/cases/blocks";
+import { PresenterScope } from "@/components/interview/Presenter";
 
 export default async function CaseDocPage({ params }: { params: Promise<{ caseId: string }> }) {
   const { caseId } = await params;
@@ -14,12 +15,21 @@ export default async function CaseDocPage({ params }: { params: Promise<{ caseId
   const pages = getCasePages(caseId);
 
   return (
+    <PresenterScope>
     <section className="p-7 max-w-3xl mx-auto">
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <Link href="/cases" className="text-[13px] text-(--color-muted) hover:text-(--color-fg)">
           ← Back to case library
         </Link>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center flex-wrap">
+          {pages && (
+            <Link
+              href={`/cases/${caseId}/run`}
+              className="text-[13px] font-semibold text-white bg-(--color-green) hover:bg-(--color-green-dark) rounded-lg px-3.5 py-2"
+            >
+              Run this case in person →
+            </Link>
+          )}
           {c.is_seed && <Badge tone="warn">Full casebook · preview build</Badge>}
           {c.extraction_status === "basic" && <Badge tone="neutral">Outline only — full write-up not yet authored</Badge>}
         </div>
@@ -49,6 +59,13 @@ export default async function CaseDocPage({ params }: { params: Promise<{ caseId
 
         <CaseMetaPanel c={c} />
 
+        {pages && (
+          <div className="px-8 py-3 border-b border-(--color-border-soft) bg-[#f3f6f4] text-[12.5px] text-[#3a5a4a]">
+            Interviewing? Use <b>Present</b> on any block to show only that block fullscreen — the prompt, an exhibit, the
+            structure or the answer — then press <b>Esc</b> to come back here. Your interviewee doesn’t need an account.
+          </div>
+        )}
+
         {pages ? (
           pages.map((p) => (
             <div key={p.n} className="px-8 py-6 border-b border-(--color-border-soft) last:border-b-0">
@@ -60,7 +77,7 @@ export default async function CaseDocPage({ params }: { params: Promise<{ caseId
                 </div>
                 <Badge tone="green">Ready</Badge>
               </div>
-              <PageBody page={p} />
+              <PageBody page={p} presentable />
             </div>
           ))
         ) : c.extraction_status === "basic" ? (
@@ -70,6 +87,7 @@ export default async function CaseDocPage({ params }: { params: Promise<{ caseId
         )}
       </Card>
     </section>
+    </PresenterScope>
   );
 }
 

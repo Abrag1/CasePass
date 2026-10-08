@@ -6,6 +6,7 @@ import { getFeedbackForSession } from "@/lib/queries/feedback";
 import { SKILL_FIELDS } from "@/lib/validation/feedback";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { SectionSummaryPanel } from "@/components/interview/SectionSummary";
 
 export default async function FeedbackSummaryPage({ params }: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await params;
@@ -43,6 +44,13 @@ export default async function FeedbackSummaryPage({ params }: { params: Promise<
         </div>
         <div className="font-serif text-[18px] font-semibold">{session.assigned_case?.name}</div>
       </Card>
+
+      {feedback.section_feedback && (
+        <div className="mb-5">
+          <div className="font-semibold text-[15px] mb-2.5">Feedback by section</div>
+          <SectionSummaryPanel caseName={session.assigned_case?.name ?? "Mock"} payload={feedback.section_feedback} />
+        </div>
+      )}
 
       <Card className="p-5 mb-5">
         <div className="font-semibold text-[15px] mb-3">Skill ratings from this mock</div>

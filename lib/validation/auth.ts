@@ -18,3 +18,12 @@ export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email"),
   password: z.string().min(1, "Enter your password"),
 });
+
+// Where to send someone after they log in / sign up. Only same-site paths are
+// honored, so a crafted ?next=https://evil.example can't turn login into an open redirect.
+export function safeNext(raw: unknown, fallback = "/home"): string {
+  if (typeof raw !== "string") return fallback;
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) return fallback;
+  if (/^\/(login|signup)(\/|\?|$)/.test(raw)) return fallback;
+  return raw;
+}

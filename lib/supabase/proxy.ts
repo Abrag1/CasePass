@@ -36,7 +36,11 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
+    // Remember where they were headed (a shared booking/mock link, say) so login
+    // drops them back there instead of on the home page.
+    const dest = request.nextUrl.pathname + request.nextUrl.search;
     url.pathname = "/login";
+    url.search = dest && dest !== "/" ? `?next=${encodeURIComponent(dest)}` : "";
     return NextResponse.redirect(url);
   }
 

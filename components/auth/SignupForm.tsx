@@ -8,15 +8,16 @@ import { Input, Label, FormError } from "@/components/ui/Field";
 // Two modes. With an invite, the email is fixed to the address the invite was issued
 // to (read-only, and the server re-checks it). Without one, it's open signup for
 // @cornell.edu addresses -- the server enforces the domain.
-export function SignupForm({ inviteToken, email }: { inviteToken?: string; email?: string }) {
+export function SignupForm({ inviteToken, email, next }: { inviteToken?: string; email?: string; next?: string }) {
   const [state, action, pending] = useActionState(signup, undefined);
 
   return (
     <form action={action} className="flex flex-col gap-4">
       {inviteToken && <input type="hidden" name="invite" value={inviteToken} />}
+      {next && <input type="hidden" name="next" value={next} />}
       <div>
         <Label>Full name</Label>
-        <Input name="fullName" required placeholder="Emily Carter" />
+        <Input name="fullName" required autoFocus autoComplete="name" placeholder="Emily Carter" />
       </div>
       <div>
         <Label>{inviteToken ? "Email" : "Cornell email"}</Label>
@@ -26,6 +27,7 @@ export function SignupForm({ inviteToken, email }: { inviteToken?: string; email
           defaultValue={email}
           readOnly={!!inviteToken}
           required
+          autoComplete="email"
           placeholder="emily.carter@example.com"
         />
         <p className="text-[12px] text-(--color-muted) mt-1">
@@ -34,7 +36,7 @@ export function SignupForm({ inviteToken, email }: { inviteToken?: string; email
       </div>
       <div>
         <Label>Password</Label>
-        <Input name="password" type="password" required minLength={8} placeholder="At least 8 characters" />
+        <Input name="password" type="password" required minLength={8} autoComplete="new-password" placeholder="At least 8 characters" />
       </div>
       <FormError message={state?.error} />
       <Button type="submit" disabled={pending} className="w-full mt-1">

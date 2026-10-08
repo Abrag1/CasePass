@@ -2,9 +2,11 @@ import Link from "next/link";
 import { Logo, Wordmark } from "@/components/ui/Logo";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { checkInvite } from "@/lib/queries/invites";
+import { safeNext } from "@/lib/validation/auth";
 
-export default async function SignupPage({ searchParams }: { searchParams: Promise<{ invite?: string }> }) {
-  const { invite } = await searchParams;
+export default async function SignupPage({ searchParams }: { searchParams: Promise<{ invite?: string; next?: string }> }) {
+  const { invite, next: rawNext } = await searchParams;
+  const next = safeNext(rawNext, "");
   const check = await checkInvite(invite);
 
   // A bad invite link gets an explanation above the form; the open @cornell.edu
@@ -29,14 +31,14 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
           </p>
         )}
         {check.status === "ok" ? (
-          <SignupForm inviteToken={check.token} email={check.email} />
+          <SignupForm inviteToken={check.token} email={check.email} next={next} />
         ) : (
-          <SignupForm />
+          <SignupForm next={next} />
         )}
 
         <p className="text-sm text-(--color-muted) text-center mt-6">
           Already have an account?{" "}
-          <Link href="/login" className="text-(--color-green) font-semibold">
+          <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="text-(--color-green) font-semibold">
             Log in
           </Link>
         </p>

@@ -56,7 +56,6 @@ export default async function LiveMockPage({ params }: { params: Promise<{ sessi
       pages={pages}
       synopsis={session.synopsis_shared_to_interviewee ?? caseDetail.synopsis ?? ""}
       initialPresented={session.presented}
-      initialTimerStartedAt={session.timer_started_at}
       initialSynopsisShared={session.synopsis_shared_live}
       initialPrivateNotes={privateNotes}
       initialEndedAt={session.ended_at}

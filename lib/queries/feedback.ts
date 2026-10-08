@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { SkillRatings } from "@/lib/supabase/types";
+import type { SectionFeedbackPayload } from "@/lib/interview/model";
 
 export interface FeedbackRow {
   id: string;
@@ -11,6 +12,7 @@ export interface FeedbackRow {
   went_well: string | null;
   improve: string | null;
   practice_next: string | null;
+  section_feedback: SectionFeedbackPayload | null;
   created_at: string;
 }
 

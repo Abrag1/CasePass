@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkInvite, type InviteCheck } from "@/lib/queries/invites";
-import { loginSchema, signupSchema, isOpenSignupEmail } from "@/lib/validation/auth";
+import { loginSchema, signupSchema, isOpenSignupEmail, safeNext } from "@/lib/validation/auth";
 
 function inviteErrorMessage(status: Exclude<InviteCheck["status"], "ok">): string {
   switch (status) {
@@ -37,7 +37,7 @@ export async function login(
     return { error: error.message };
   }
 
-  redirect("/home");
+  redirect(safeNext(formData.get("next")));
 }
 
 export async function signup(
@@ -93,10 +93,11 @@ export async function signup(
 
   if (!data.session) {
     // Email confirmation is required by the Supabase project's auth settings.
-    redirect("/login?confirm=1");
+    const next = safeNext(formData.get("next"), "");
+    redirect(next ? `/login?confirm=1&next=${encodeURIComponent(next)}` : "/login?confirm=1");
   }
 
-  redirect("/home");
+  redirect(safeNext(formData.get("next")));
 }
 
 export async function logout() {

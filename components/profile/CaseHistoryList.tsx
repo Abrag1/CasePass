@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { SKILL_FIELDS } from "@/lib/validation/feedback";
 import { Card } from "@/components/ui/Card";
+import { SectionBreakdown } from "@/components/interview/SectionSummary";
+import type { SectionFeedbackPayload } from "@/lib/interview/model";
 
 export interface HistoryItem {
   feedbackId: string;
@@ -14,6 +16,8 @@ export interface HistoryItem {
   wentWell: string | null;
   improve: string | null;
   practiceNext: string | null;
+  /** Per-section notes + timings (absent for older feedback and for the partner view). */
+  sectionFeedback?: SectionFeedbackPayload | null;
 }
 
 export function CaseHistoryList({
@@ -55,6 +59,14 @@ export function CaseHistoryList({
             {expanded && (
               <div className="border-t border-(--color-border-soft) p-4 flex flex-col gap-3.5">
                 {item.recapText && <Field label="Recap" value={item.recapText} />}
+                {item.sectionFeedback && (
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wide font-semibold text-(--color-muted) mb-1.5">
+                      Feedback by section
+                    </div>
+                    <SectionBreakdown payload={item.sectionFeedback} />
+                  </div>
+                )}
                 <div>
                   <div className="text-[11px] uppercase tracking-wide font-semibold text-(--color-muted) mb-1.5">
                     Skill ratings

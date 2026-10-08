@@ -1,6 +1,6 @@
 // Pure presentational renderers for the page-object case model (lib/cases/content.ts).
-// No hooks or state -> usable from both the server-rendered case doc and the
-// client-rendered Live Mock. Exhibit renderers take a `dark` prop so the same
+// No hooks or state of its own -> usable from both the server-rendered case doc and
+// the client-rendered Live Mock (the optional Present wrapper is a client component). Exhibit renderers take a `dark` prop so the same
 // chart renders on the interviewer's light panel and the candidate's dark screen.
 //
 // The callout boxes are the only four styles case content ever uses (per the
@@ -8,6 +8,7 @@
 // Answer (green). Keep their label casing/weight consistent.
 
 import type { CasePage, InfoSection } from "@/lib/cases/content";
+import { Presentable, type ShareControl } from "@/components/interview/Presenter";
 
 /* ---------------------------------- callouts --------------------------------- */
 
@@ -595,56 +596,128 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
   );
 }
 
+function PresentWrap({
+  presentable,
+  label,
+  title,
+  share,
+  children,
+}: {
+  presentable: boolean;
+  label: string;
+  title: string;
+  share?: ShareControl;
+  children: React.ReactNode;
+}) {
+  return presentable ? (
+    <Presentable label={label} title={title} share={share}>
+      {children}
+    </Presentable>
+  ) : (
+    <>{children}</>
+  );
+}
+
 // A complete interviewer-facing page: the prompt (ready), or the ordered Q&A
 // blocks (say-next, guidance, exhibits, calc, answer, insight, guidance), or the
 // cheat sheet. `sayLabel` distinguishes "Interviewer says" (doc) from
 // "Say next" (Live Mock). NEVER render this for an interviewee.
-export function PageBody({ page, sayLabel = "Interviewer says" }: { page: CasePage; sayLabel?: string }) {
+//
+// With `presentable`, each block that is worth showing across the table (prompt,
+// question, structure/guidance, exhibits, calculation, answer, …) gets a Present
+// button (see components/interview/Presenter.tsx). Needs a <PresenterScope> above.
+export function PageBody({
+  page,
+  sayLabel = "Interviewer says",
+  presentable = false,
+  share,
+}: {
+  page: CasePage;
+  sayLabel?: string;
+  presentable?: boolean;
+  /** Live Mock: adds "Share with <name>" to the prompt and exhibit blocks. */
+  share?: ShareControl;
+}) {
   if (page.kind === "ready") {
     return (
       <>
-        <div style={{ fontSize: 14.5, lineHeight: 1.65, color: "#2a2f2b", background: "#fafbf9", borderRadius: 10, padding: 18, whiteSpace: "pre-wrap" }}>
-          {page.body}
-        </div>
+        <PresentWrap presentable={presentable} title={page.title} label="Prompt" share={share}>
+          <div style={{ fontSize: 14.5, lineHeight: 1.65, color: "#2a2f2b", background: "#fafbf9", borderRadius: 10, padding: 18, whiteSpace: "pre-wrap" }}>
+            {page.body}
+          </div>
+        </PresentWrap>
         {page.note && <div style={{ fontSize: 12, color: "#8a8f8a", marginTop: 10 }}>{page.note}</div>}
       </>
     );
   }
 
   if (page.kind === "cheat") {
-    return <CheatSheet rows={page.cheatRows ?? []} takeaway={page.cheatTakeaway} />;
+    return (
+      <PresentWrap presentable={presentable} title={page.title} label="Key numbers">
+        <CheatSheet rows={page.cheatRows ?? []} takeaway={page.cheatTakeaway} />
+      </PresentWrap>
+    );
   }
+
+  const hasExhibit = !!(page.chart1 || page.chart2 || page.barChartGroups || page.lineChartPointsStr || page.dataTableRows || page.segmentTable);
 
   return (
     <>
-      {page.qText && <SayNextBox text={page.qText} label={sayLabel} />}
-      {page.guidancePreLines && (
-        <GuidancePreBox label={page.guidancePreLabel} note={page.guidancePreNote} intro={page.guidancePreIntro} lines={page.guidancePreLines} />
+      {page.qText && (
+        <PresentWrap presentable={presentable} title={page.title} label="Question">
+          <SayNextBox text={page.qText} label={sayLabel} />
+        </PresentWrap>
       )}
-      <StackedBar page={page} />
-      <GroupedBars page={page} />
-      <CostTable page={page} />
-      {page.infoSections && <InfoSectionsBox label={page.infoBoxLabel} sections={page.infoSections} />}
-      <LineChart page={page} />
-      <SegmentTable page={page} />
-      <DataTable page={page} />
-      {page.calcLines && <CalcBox note={page.calcNote} lines={page.calcLines} />}
+      {page.guidancePreLines && (
+        <PresentWrap presentable={presentable} title={page.title} label={page.guidancePreLabel ?? "Guidance"}>
+          <GuidancePreBox label={page.guidancePreLabel} note={page.guidancePreNote} intro={page.guidancePreIntro} lines={page.guidancePreLines} />
+        </PresentWrap>
+      )}
+      {page.infoSections && (
+        <PresentWrap presentable={presentable} title={page.title} label={page.infoBoxLabel ?? "Reference"}>
+          <InfoSectionsBox label={page.infoBoxLabel} sections={page.infoSections} />
+        </PresentWrap>
+      )}
+      {hasExhibit && (
+        <PresentWrap presentable={presentable} title={page.title} label="Exhibit" share={share}>
+          <PageExhibit page={page} />
+        </PresentWrap>
+      )}
+      {page.calcLines && (
+        <PresentWrap presentable={presentable} title={page.title} label="Calculation walkthrough">
+          <CalcBox note={page.calcNote} lines={page.calcLines} />
+        </PresentWrap>
+      )}
       {page.answerText && page.answerBonusLines ? (
-        <AnswerGroup
-          answer={page.answerText}
-          insightLabel={page.insightLabel}
-          insight={page.insightText}
-          bonusLabel={page.answerBonusLabel}
-          bonusLines={page.answerBonusLines}
-        />
+        <PresentWrap presentable={presentable} title={page.title} label="Answer">
+          <AnswerGroup
+            answer={page.answerText}
+            insightLabel={page.insightLabel}
+            insight={page.insightText}
+            bonusLabel={page.answerBonusLabel}
+            bonusLines={page.answerBonusLines}
+          />
+        </PresentWrap>
       ) : (
         <>
-          {page.answerText && <AnswerBox text={page.answerText} />}
-          {page.insightText && <InsightBox text={page.insightText} />}
+          {page.answerText && (
+            <PresentWrap presentable={presentable} title={page.title} label="Answer">
+              <AnswerBox text={page.answerText} />
+            </PresentWrap>
+          )}
+          {page.insightText && (
+            <PresentWrap presentable={presentable} title={page.title} label="What a strong candidate spots">
+              <InsightBox text={page.insightText} />
+            </PresentWrap>
+          )}
         </>
       )}
       {page.nextStepText && <SayNextBox text={page.nextStepText} label="Next step" />}
-      {page.guidanceLines && <GuidanceBox label={page.guidanceLabel} lines={page.guidanceLines} />}
+      {page.guidanceLines && (
+        <PresentWrap presentable={presentable} title={page.title} label={page.guidanceLabel ?? "Guidance"}>
+          <GuidanceBox label={page.guidanceLabel} lines={page.guidanceLines} />
+        </PresentWrap>
+      )}
     </>
   );
 }

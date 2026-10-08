@@ -304,14 +304,18 @@ export async function endMock(sessionId: string) {
   await supabase.from("mock_sessions").update({ ended_at: new Date().toISOString() }).eq("id", sessionId);
 }
 
-export async function savePrivateNotes(sessionId: string, notes: string) {
+// `notes` is the JSON blob from lib/interview/model.ts (per-section notes + timers);
+// legacy rows hold plain text and are still read back as the "overall" note.
+// Returns whether the write landed so the UI can show a real "Saved" indicator.
+export async function savePrivateNotes(sessionId: string, notes: string): Promise<boolean> {
   const user = await requireUser();
   const supabase = await createClient();
 
-  await supabase
+  const { error } = await supabase
     .from("session_private_notes")
     .upsert(
       { mock_session_id: sessionId, author_id: user.id, notes, updated_at: new Date().toISOString() },
       { onConflict: "mock_session_id,author_id" }
     );
+  return !error;
 }

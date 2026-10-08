@@ -3,6 +3,7 @@ import type { FeedbackRow } from "@/lib/queries/feedback";
 import { SKILL_FIELDS } from "@/lib/validation/feedback";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { SectionSummaryPanel } from "@/components/interview/SectionSummary";
 
 export function FeedbackReadOnly({ feedback, caseName }: { feedback: FeedbackRow; caseName: string }) {
   return (
@@ -17,6 +18,13 @@ export function FeedbackReadOnly({ feedback, caseName }: { feedback: FeedbackRow
           <div className="font-semibold text-[14px] mb-1.5">Recap</div>
           <p className="text-[14px] text-[#2a2f2b] leading-relaxed">{feedback.recap_text}</p>
         </Card>
+      )}
+
+      {feedback.section_feedback && (
+        <div>
+          <div className="font-semibold text-[14px] mb-2.5">Feedback by section</div>
+          <SectionSummaryPanel caseName={caseName} payload={feedback.section_feedback} />
+        </div>
       )}
 
       <Card className="p-5">

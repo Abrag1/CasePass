@@ -7,6 +7,7 @@ import { login } from "@/lib/actions/auth";
 import { Logo, Wordmark } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, FormError } from "@/components/ui/Field";
+import { safeNext } from "@/lib/validation/auth";
 
 export default function LoginPage() {
   return (
@@ -20,6 +21,8 @@ function LoginForm() {
   const [state, action, pending] = useActionState(login, undefined);
   const params = useSearchParams();
   const justSignedUp = params.get("confirm") === "1";
+  const next = safeNext(params.get("next"), "");
+  const nextQuery = next ? `?next=${encodeURIComponent(next)}` : "";
 
   return (
     <main className="flex-1 flex items-center justify-center px-4 py-16">
@@ -36,13 +39,14 @@ function LoginForm() {
         )}
 
         <form action={action} className="flex flex-col gap-4">
+          {next && <input type="hidden" name="next" value={next} />}
           <div>
             <Label>Email</Label>
-            <Input name="email" type="email" required placeholder="you@example.com" />
+            <Input name="email" type="email" required autoFocus autoComplete="email" placeholder="you@example.com" />
           </div>
           <div>
             <Label>Password</Label>
-            <Input name="password" type="password" required placeholder="••••••••" />
+            <Input name="password" type="password" required autoComplete="current-password" placeholder="••••••••" />
           </div>
           <FormError message={state?.error} />
           <Button type="submit" disabled={pending} className="w-full mt-1">
@@ -52,7 +56,7 @@ function LoginForm() {
 
         <p className="text-sm text-(--color-muted) text-center mt-6">
           New to CasePass?{" "}
-          <Link href="/signup" className="text-(--color-green) font-semibold">
+          <Link href={`/signup${nextQuery}`} className="text-(--color-green) font-semibold">
             Create an account
           </Link>
         </p>

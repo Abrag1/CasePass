@@ -150,6 +150,11 @@ export interface CasePage {
   body?: string;
   note?: string;
 
+  // Set false on interviewer-only reference pages that happen to carry a table, so
+  // they can be presented on the interviewer's own screen but never pushed to the
+  // interviewee's Live Mock screen.
+  shareable?: boolean;
+
   // "Interviewer says" / "Say next" callout
   qText?: string;
 
@@ -230,6 +235,7 @@ export function pageHasExhibit(p: CasePage): boolean {
 
 // A page can be pushed onto the candidate screen if it's the prompt or carries an exhibit.
 export function pageIsPresentable(p: CasePage): boolean {
+  if (p.shareable === false) return false;
   return p.kind === "ready" || pageHasExhibit(p);
 }
 
@@ -498,6 +504,7 @@ const AMAIR_PAGES: CasePage[] = [
   },
   {
     n: "03b",
+    shareable: false,
     label: "Case information",
     title: "Exhibit-by-exhibit takeaways",
     kind: "qa",
