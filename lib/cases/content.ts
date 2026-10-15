@@ -90,6 +90,29 @@ export interface DataTableRow {
   cells: DataTableCell[];
 }
 
+// Pie chart (slice angles are computed from `value`)
+export interface PieSlice {
+  label: string;
+  value: number;
+  color: string;
+}
+
+// Bar chart with a Y axis and no value labels (bars are read off the axis)
+export interface AxisBarGroup {
+  label: string;
+  values: number[]; // one per series
+}
+
+// Small-multiple line chart: one entry per panel
+export interface MiniLineChart {
+  title: string;
+  color: string;
+  xLabels: string[];
+  values: number[];
+  yMax: number;
+  yStep: number;
+}
+
 // Aces Exhibit 3 — market share by segment
 export interface SegmentRow {
   name: string;
@@ -202,6 +225,16 @@ export interface CasePage {
   lineChartPointsStr?: string;
   lineChartGridY?: LineChartGrid[];
   lineChartPoints?: LineChartPoint[];
+  pieTitle?: string;
+  pieSlices?: PieSlice[];
+  axisBarTitle?: string;
+  axisBarSeries?: LegendItem[];
+  axisBarGroups?: AxisBarGroup[];
+  axisBarYMax?: number;
+  axisBarYStep?: number;
+  axisBarYLabel?: string;
+  miniLinesTitle?: string;
+  miniLines?: MiniLineChart[];
   dataTableTitle?: string;
   dataTableFootnote?: string;
   dataTableCols?: string;
@@ -222,12 +255,18 @@ export const AMAIR_CASE_ID = "22222222-2222-2222-2222-222222222222";
 // is the existing catalog row's UUID in the cases table.
 export const FIRE_PROOF_CASE_ID = "72dea52c-0cf9-42eb-afb5-5d7cc5ff9c93";
 
+// Duck Island Beer Co. (Duke Fuqua DMCC 2018-19, p.133): the existing catalog row's UUID.
+export const DUCK_ISLAND_CASE_ID = "767cbae2-9bc8-4eb9-a66c-8e339892140f";
+
 export function pageHasExhibit(p: CasePage): boolean {
   return !!(
     p.chart1 ||
     p.chart2 ||
     p.barChartGroups ||
     p.lineChartPointsStr ||
+    p.pieSlices ||
+    p.axisBarGroups ||
+    p.miniLines ||
     p.dataTableRows ||
     p.segmentTable
   );
@@ -913,10 +952,207 @@ const FIRE_PROOF_PAGES: CasePage[] = [
   },
 ];
 
+const DUCK_ISLAND_PAGES: CasePage[] = [
+  {
+    n: "01",
+    label: "Candidate prompt",
+    title: "Prompt #1",
+    kind: "ready",
+    body: "Your client is a craft beer company called Duck Island Beer Company out of Austin, TX. They are an international craft beer company beloved by craft drinkers around the world. They are looking to start selling beer in the United Kingdom. They want to know which style of beer to sell and if it would be profitable.",
+    note: "**Behavioral Questions** — **Question 1:** Describe a time when you were challenged? How did you handle the situation? **Question 2:** What is the most creative thing you have ever done?",
+  },
+  {
+    n: "02",
+    label: "Prompt 1 · Background",
+    title: "Background information if asked",
+    kind: "qa",
+    guidancePreLabel: "Background Information if asked",
+    guidancePreLines: [
+      "Market Share - See **Exhibit 1**",
+      "Profit/Revenue - ==$43B== in Revenue, ==$10B== in Profit",
+      "Portfolio of beers - Over ==50 brands== split between lagers, ales, IPAs, and stouts.",
+      "Current Strategy - Seeking **rapid expansion** and revenue in any way possible",
+      "UK shows **potential** as a craft market",
+      "Duck Island currently operates everywhere in the world **except the UK, Africa and Australia**",
+    ],
+    guidanceLabel: "Guidance",
+    guidanceLines: [
+      "Candidate should do a **profitability analysis** and determine if this is fits their strategy and also if it will be profitable.",
+    ],
+  },
+  {
+    n: "03",
+    label: "Prompt 1 · Guidance",
+    title: "Interviewer guidance",
+    kind: "qa",
+    guidanceLabel: "Interviewer Guidance",
+    guidanceLines: [
+      "This case is meant to be **driven by interviewee**, allow him/her to drive the case after each prompt and respond with **“ands”** if depth of explanation does not make path forward clear.",
+      "Most candidates will recognize that this is a **profitability case**. But a good candidate will see **aspects of market entry** and tailor their problem solving accordingly. Additionally, he or she will focus on the **qualitative aspects** of the beer industry.",
+      "Interviewee should develop a **MECE framework**, some example buckets are: **External:** market factors, customer demand, regulatory concerns; **Revenue:** pricing strategy, volume, service offerings; **Costs:** ID variable and fixed cost, benchmarking competitors; **Market:** Competition, market share, barriers to entry; **Entry:** acquisition, JV, build from ground up",
+      "Drive the interviewee to think about **trends in the beer market in the US** and if those will apply abroad. You can **coach** the interviewee to use real life examples of what they know about the craft industry.",
+      "Exhibits should be **handed out as the interviewee asks** for certain aspects. They should realize that the client has a **large market share (and power)**, that there is **potential in the UK for craft** and specifically for the style of beer known as **India Pale Ale (IPA)**.",
+    ],
+  },
+  {
+    n: "04",
+    label: "Exhibit 1",
+    title: "Global Market Share",
+    kind: "qa",
+    guidancePreLabel: "Exhibit #1 Guidance",
+    guidancePreLines: ["To be handed **whenever asked about market share**"],
+    pieTitle: "Exhibit 1 · Global Market Share",
+    pieSlices: [
+      { label: "Duck Island", value: 39, color: "#2d6a4f" },
+      { label: "Smith Cools", value: 12, color: "#8b9dc3" },
+      { label: "Hammerstein", value: 7, color: "#2f4a8a" },
+      { label: "Star Beer", value: 7, color: "#c9a227" },
+      { label: "~100 Companies", value: 35, color: "#b8bdb9" },
+    ],
+    answerText:
+      "- Biggest insight is that the client has the **largest piece of the pie** and few competitors\n- The market is an **oligopoly** between a few players with a lot of the power",
+  },
+  {
+    n: "05",
+    label: "Exhibit 2",
+    title: "Beer Market in UK",
+    kind: "qa",
+    guidancePreLabel: "Exhibit #2 Guidance",
+    guidancePreLines: [
+      "Exhibit shows **total amount of brands by style** in the marketplace and **how many competitors** own those brands",
+    ],
+    axisBarTitle: "Exhibit 2 · Beer Market in UK",
+    axisBarYLabel: "Total Numbers",
+    axisBarYMax: 35,
+    axisBarYStep: 5,
+    axisBarSeries: [
+      { name: "Brands", color: "#b8bdb9" },
+      { name: "Competitors", color: "#c9a227" },
+    ],
+    axisBarGroups: [
+      { label: "Lager", values: [20, 8] },
+      { label: "Ale", values: [25, 10] },
+      { label: "India Pale Ale", values: [4, 2] },
+      { label: "Stout", values: [30, 10] },
+    ],
+    answerText: "- The IPA category has the **least amount of brands and competition**",
+  },
+  {
+    n: "06",
+    label: "Exhibit 3",
+    title: "Beer Sales in millions of USD in the UK",
+    kind: "qa",
+    guidancePreLabel: "Exhibit #3 Guidance",
+    guidancePreLines: ["Exhibit shows **recent trends in sales** by style of beer"],
+    miniLinesTitle: "Exhibit 3 · Beer Sales in millions of USD in the UK",
+    miniLines: [
+      { title: "Ales", color: "#c9a227", xLabels: ["2013", "2014", "2015", "2016"], values: [5, 7, 8, 8], yMax: 10, yStep: 2 },
+      { title: "IPAs", color: "#c9a227", xLabels: ["2013", "2014", "2015", "2016"], values: [0.5, 2, 3, 3.5], yMax: 4, yStep: 0.5 },
+      { title: "Lagers", color: "#c9a227", xLabels: ["2013", "2014", "2015", "2016"], values: [9, 10, 10.8, 11], yMax: 12, yStep: 2 },
+      { title: "Stouts", color: "#c9a227", xLabels: ["2013", "2014", "2015", "2016"], values: [8.2, 9.4, 10.2, 9.2], yMax: 12, yStep: 2 },
+    ],
+    answerText:
+      "- The IPA category has shown the **biggest increase in sales**\n- A good candidate will connect this with the **lack of competition** in a style of beer that is increasing in popularity\n- This should lead the candidate to want to specifically choose the style of **India Pale Ale (IPA)** as the style to analyze for potential export\n- At this point, the interviewee should explore **entering the UK craft market with an IPA** as the product.",
+  },
+  {
+    n: "07",
+    label: "Prompt 2",
+    title: "Factors in going abroad",
+    kind: "qa",
+    qText: "What factors would influence this decision to go abroad?",
+    infoBoxLabel: "Interviewer Guidance",
+    infoSections: [
+      {
+        paragraphs: [
+          "Interviewee should be allowed to take **a few minutes** and brain-storm in a **MECE** fashion. Some of the factors could be as following",
+        ],
+        groups: [
+          { heading: "Internal", items: ["Cash on hand for CapEx", "Knowledge of the UK market & Marketing strategy"] },
+          {
+            heading: "External",
+            items: [
+              "Competition",
+              "Barriers to entry",
+              "Distribution channels",
+              "Tariffs",
+              "Regulatory concerns",
+              "Converting a traditional beer culture into a more craft-oriented culture",
+              "Shipping costs if brewed in the US",
+              "Costs if brewed locally in the UK",
+              "US price points vs. UK price points",
+              "Added costs to expand the supply chain (more hops, bottles, packaging)",
+            ],
+          },
+          { heading: "Other", items: ["Legal drinking age in UK", "Brexit", "USD to Euro conversions and volatility"] },
+        ],
+      },
+    ],
+  },
+  {
+    n: "08",
+    label: "Prompt 3",
+    title: "Two methods of entry",
+    kind: "qa",
+    qText:
+      "Our internal strategy team has decided that:\n- The market is **favorable for entry**\n- We want to launch our flagship beer the “**Duck Island IPA**”\n- We want you to provide your analysis on one of **two methods of entry**\n  1. **Brew in the US** and export to the UK\n  2. **Brew locally in the UK** and brand it as a US Beer\n- **Which one do you recommend and why?**",
+    guidancePreLabel: "Interviewer Guidance",
+    guidancePreNote:
+      "**Share** the following data estimated by the internal strategy team **verbally** with the caser. **Coach** him/her to come up with **profitability** and **recommendation**",
+    guidancePreLines: [
+      "**General Data** — Estimated sales in 1st year = ==2,000 Barrels==",
+      "**General Data** — Price = ==$10 per 6 Pack==",
+      "**General Data** — ==165== 12 oz. Bottles in a Barrel",
+      "**Imported from US** — Cost of brewing = ==$0.50 per Bottle==",
+      "**Imported from US** — Cost of shipping = ==$0.50 per Bottle==",
+      "**Imported from US** — Tariffs for a 6 pack of bottles = ==$1 per 6 Pack==",
+      "**Brewed in UK** — Cost of Brewing = ==$0.50 per Bottle==",
+      "**Brewed in UK** — Cost of shipping = ==$0.50 per Bottle==",
+      "**Brewed in UK** — ==No Tariffs==",
+      "**Brewed in UK** — CapEx for new brewery operations = ==$110,000==",
+    ],
+    calcNote: "The profitability should come out as ==$330,000== for both scenarios calculated as follows:",
+    calcLines: [
+      { q: "Total number of bottles", a: "2000 Barrels x (165 x 2) Bottles/Barrels = ==660,000==", stack: true },
+      { q: "Revenues", a: "$10/six pack × 660,000/6 = ==$1.1M==", stack: true },
+      {
+        q: "Cost of importing from the US",
+        a: "(Cost of brewing/bottle + Cost of shipping per bottle + Tariff per bottle) × Number of bottles\n= (0.5 + 0.5 + (1/6)) × 660,000 = ==$770,000==",
+        stack: true,
+      },
+      {
+        q: "Total cost of brewing in UK",
+        a: "(Cost of brewing/bottle + Cost of shipping per bottle) × Number of bottles + CapEx\n= (0.5 + 0.5) × 660,000 + 110,000 = ==$770,000==",
+        stack: true,
+      },
+      { q: "Total profits in both cases", a: "Revenues − Total costs\n= $1.1M − $0.77M = $0.33M = ==$330,000==", stack: true },
+    ],
+    answerText:
+      "- The candidate can choose to **brew in the US** and see the potential growth as it being marketed as an “imported US beer”\n- The candidate can also choose to **brew in the UK** and recognize that after the first year CapEx, they can have higher profit with lower costs",
+  },
+  {
+    n: "09",
+    label: "Recommendation",
+    title: "Recommendation",
+    kind: "qa",
+    qText:
+      "Jason Stamm, CEO of Duck Island, is expected to walk in the room in about 5 minutes and wants to hear our thoughts about the direction his company should take in the future. **What do you recommend?**",
+    guidanceLabel: "Interviewer Guidance",
+    guidanceLines: [
+      "A good candidate will **take a moment to structure** his or her thoughts. These thoughts might include:",
+      "  **Leading with recommendation first** in launch or do not launch.",
+      "  **High level explanation** of the basis of this decision",
+      "  **A clear decision** as to why go towards one recommendation over another (both options have the same profit of ==$330,000==)",
+      "  **Risks**",
+      "  **Next Steps**",
+    ],
+  },
+];
+
 export const CASE_CONTENT: Record<string, CasePage[]> = {
   [ACES_CASE_ID]: ACES_PAGES,
   [AMAIR_CASE_ID]: AMAIR_PAGES,
   [FIRE_PROOF_CASE_ID]: FIRE_PROOF_PAGES,
+  [DUCK_ISLAND_CASE_ID]: DUCK_ISLAND_PAGES,
 };
 
 export function getCasePages(caseId: string): CasePage[] | null {
@@ -953,6 +1189,16 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       lineChartPointsStr: p.lineChartPointsStr,
       lineChartGridY: p.lineChartGridY,
       lineChartPoints: p.lineChartPoints,
+      pieTitle: p.pieTitle,
+      pieSlices: p.pieSlices,
+      axisBarTitle: p.axisBarTitle,
+      axisBarSeries: p.axisBarSeries,
+      axisBarGroups: p.axisBarGroups,
+      axisBarYMax: p.axisBarYMax,
+      axisBarYStep: p.axisBarYStep,
+      axisBarYLabel: p.axisBarYLabel,
+      miniLinesTitle: p.miniLinesTitle,
+      miniLines: p.miniLines,
       dataTableTitle: p.dataTableTitle,
       dataTableFootnote: p.dataTableFootnote,
       dataTableCols: p.dataTableCols,

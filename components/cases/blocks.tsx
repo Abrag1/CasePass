@@ -7,19 +7,30 @@
 // handoff design system): Say-next (blue), Guidance (dashed), Calc (gray),
 // Answer (green). Keep their label casing/weight consistent.
 
-import type { CasePage, InfoSection } from "@/lib/cases/content";
+import { pageHasExhibit, type CasePage, type InfoSection } from "@/lib/cases/content";
 import { Presentable, type ShareControl } from "@/components/interview/Presenter";
 
 /* ---------------------------------- callouts --------------------------------- */
 
-// Minimal inline markup: **bold** segments become <strong>. Used so answers can
-// bold only their key points instead of the whole block.
+// Minimal inline markup so key points stand out instead of whole blocks being bold:
+//   **bold**       -> <strong>   (key terms, instructions)
+//   ==highlight==  -> soft marker (key figures and results)
 function Rich({ text }: { text: string }) {
   return (
     <>
-      {text.split("**").map((part, i) =>
-        i % 2 === 1 ? <strong key={i} style={{ fontWeight: 700 }}>{part}</strong> : <span key={i}>{part}</span>,
-      )}
+      {text.split(/(\*\*.+?\*\*|==.+?==)/g).map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+          return <strong key={i} style={{ fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+        }
+        if (part.startsWith("==") && part.endsWith("==") && part.length > 4) {
+          return (
+            <mark key={i} style={{ background: "#fbefc2", color: "inherit", fontWeight: 600, borderRadius: 3, padding: "0 3px" }}>
+              {part.slice(2, -2)}
+            </mark>
+          );
+        }
+        return <span key={i}>{part}</span>;
+      })}
     </>
   );
 }
@@ -30,7 +41,7 @@ export function SayNextBox({ text, label = "Interviewer says" }: { text: string;
       <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#3d5a72", fontWeight: 700, marginBottom: 6 }}>
         {label}
       </div>
-      <div style={{ fontSize: 14, lineHeight: 1.55, color: "#223140" }}>{text}</div>
+      <div style={{ fontSize: 14, lineHeight: 1.55, color: "#223140", whiteSpace: "pre-wrap" }}><Rich text={text} /></div>
     </div>
   );
 }
@@ -51,12 +62,12 @@ export function GuidancePreBox({
       <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#8a8f8a", fontWeight: 600, marginBottom: 8, fontStyle: "italic" }}>
         {label}
       </div>
-      {note && <div style={{ fontSize: 12.5, lineHeight: 1.5, color: "#8a8f8a", fontStyle: "italic", marginBottom: 8 }}>{note}</div>}
-      {intro && <div style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b", marginBottom: 8 }}>{intro}</div>}
+      {note && <div style={{ fontSize: 12.5, lineHeight: 1.5, color: "#8a8f8a", fontStyle: "italic", marginBottom: 8 }}><Rich text={note} /></div>}
+      {intro && <div style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b", marginBottom: 8 }}><Rich text={intro} /></div>}
       {lines?.map((g, i) => (
         <div key={i} style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b", padding: "4px 0", display: "flex", gap: 8 }}>
           <span style={{ color: "#8a8f8a" }}>•</span>
-          <span>{g}</span>
+          <span><Rich text={g} /></span>
         </div>
       ))}
     </div>
@@ -89,14 +100,14 @@ export function CalcBox({ note, lines }: { note?: string; lines: { q: string; a:
       <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#8a8f8a", fontWeight: 700, marginBottom: 10 }}>
         Calculation walkthrough
       </div>
-      {note && <div style={{ fontSize: 12, color: "#8a8f8a", marginBottom: 8, fontStyle: "italic" }}>{note}</div>}
+      {note && <div style={{ fontSize: 12, color: "#8a8f8a", marginBottom: 8, fontStyle: "italic" }}><Rich text={note} /></div>}
       {lines.map((cl, i) => {
         // Multi-step / long expressions read better stacked under their label.
         const stack = cl.stack ?? cl.a.includes("\n");
         return (
           <div key={i} style={{ display: "flex", flexDirection: stack ? "column" : "row", justifyContent: "space-between", gap: stack ? 3 : 14, padding: "7px 0", borderTop: "1px solid #f2f3f0", fontSize: 13.5, flexWrap: "wrap" }}>
             <span style={{ color: "#3a3f3b", minWidth: 0, overflowWrap: "break-word", fontWeight: stack ? 700 : 400 }}>{cl.q}</span>
-            <span style={{ fontWeight: stack ? 400 : 600, color: "#1f2421", textAlign: stack ? "left" : "right", overflowWrap: "break-word", whiteSpace: "pre-line", lineHeight: 1.6 }}>{cl.a}</span>
+            <span style={{ fontWeight: stack ? 400 : 600, color: "#1f2421", textAlign: stack ? "left" : "right", overflowWrap: "break-word", whiteSpace: "pre-line", lineHeight: 1.6 }}><Rich text={cl.a} /></span>
           </div>
         );
       })}
@@ -200,7 +211,7 @@ export function InfoSectionsBox({ label, sections }: { label?: string; sections:
             </div>
           )}
           {sec.paragraphs?.map((pg, j) => (
-            <div key={j} style={{ fontSize: 13.5, lineHeight: 1.6, color: "#3a3f3b", marginBottom: 8 }}>{pg}</div>
+            <div key={j} style={{ fontSize: 13.5, lineHeight: 1.6, color: "#3a3f3b", marginBottom: 8 }}><Rich text={pg} /></div>
           ))}
           {sec.iconLines?.map((il, j) => (
             <div key={j} style={{ fontSize: 13, lineHeight: 1.55, color: "#3a3f3b", padding: "5px 0", display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -214,7 +225,7 @@ export function InfoSectionsBox({ label, sections }: { label?: string; sections:
               {grp.items.map((it, k) => (
                 <div key={k} style={{ fontSize: 13, lineHeight: 1.55, color: "#3a3f3b", padding: "3px 0 3px 16px", display: "flex", gap: 8 }}>
                   <span style={{ color: "#8a8f8a" }}>–</span>
-                  <span>{it}</span>
+                  <span><Rich text={it} /></span>
                 </div>
               ))}
             </div>
@@ -222,7 +233,7 @@ export function InfoSectionsBox({ label, sections }: { label?: string; sections:
           {sec.lines?.map((ln, j) => (
             <div key={j} style={{ fontSize: 13, lineHeight: 1.55, color: "#3a3f3b", padding: "3px 0", display: "flex", gap: 8 }}>
               <span style={{ color: "#8a8f8a" }}>•</span>
-              <span>{ln}</span>
+              <span><Rich text={ln} /></span>
             </div>
           ))}
           {sec.steps?.map((st, j) => (
@@ -429,6 +440,183 @@ export function LineChart({ page, dark }: { page: CasePage; dark?: boolean }) {
   );
 }
 
+/* ---------------- data-driven charts (geometry computed from values) ---------------- */
+
+function chartInk(dark?: boolean) {
+  return {
+    text: dark ? "#dbe3dd" : "#3a3f3b",
+    axis: dark ? "#8a958d" : "#6b716c",
+    grid: dark ? "#333a35" : "#e6e7e3",
+    sliceStroke: dark ? "#262c28" : "#ffffff",
+  };
+}
+
+function fmtTick(v: number): string {
+  return Number(v.toFixed(2)).toString();
+}
+
+export function PieChart({ page, dark }: { page: CasePage; dark?: boolean }) {
+  if (!page.pieSlices) return null;
+  const ink = chartInk(dark);
+  const total = page.pieSlices.reduce((s, x) => s + x.value, 0);
+  const cx = 280;
+  const cy = 190;
+  const r = 130;
+  // Start at 12 o'clock and run clockwise.
+  const starts = page.pieSlices.map(
+    (_, i) => -Math.PI / 2 + (page.pieSlices!.slice(0, i).reduce((sum, x) => sum + x.value, 0) / total) * Math.PI * 2
+  );
+  const slices = page.pieSlices.map((sl, i) => {
+    const sweep = (sl.value / total) * Math.PI * 2;
+    const a0 = starts[i];
+    const a1 = a0 + sweep;
+    const mid = (a0 + a1) / 2;
+    const pt = (rad: number, a: number) => [cx + rad * Math.cos(a), cy + rad * Math.sin(a)];
+    const [x0, y0] = pt(r, a0);
+    const [x1, y1] = pt(r, a1);
+    const [px, py] = pt(r * 0.8, mid);
+    const [lx, ly] = pt(r + 14, mid);
+    const path =
+      page.pieSlices!.length === 1
+        ? `M ${cx - r} ${cy} a ${r} ${r} 0 1 0 ${2 * r} 0 a ${r} ${r} 0 1 0 ${-2 * r} 0`
+        : `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${sweep > Math.PI ? 1 : 0} 1 ${x1} ${y1} Z`;
+    return { ...sl, path, px, py, lx, ly, right: Math.cos(mid) >= 0 };
+  });
+  return (
+    <ExhibitFrame dark={dark} title={page.pieTitle}>
+      <svg viewBox="0 0 560 380" style={{ width: "100%", maxWidth: 560, display: "block", margin: "0 auto" }}>
+        {slices.map((s, i) => (
+          <path key={i} d={s.path} fill={s.color} stroke={ink.sliceStroke} strokeWidth={1.5} />
+        ))}
+        {slices.map((s, i) => (
+          <text key={`p${i}`} x={s.px} y={s.py} textAnchor="middle" dominantBaseline="middle" fontSize={s.value < 9 ? 14 : 17} fontWeight={700} fill="#fff">
+            {Math.round((s.value / total) * 100)}%
+          </text>
+        ))}
+        {slices.map((s, i) => (
+          <text key={`l${i}`} x={s.lx} y={s.ly} textAnchor={s.right ? "start" : "end"} dominantBaseline="middle" fontSize={16} fill={ink.text}>
+            {s.label}
+          </text>
+        ))}
+      </svg>
+    </ExhibitFrame>
+  );
+}
+
+export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
+  if (!page.axisBarGroups || !page.axisBarSeries) return null;
+  const ink = chartInk(dark);
+  const yMax = page.axisBarYMax ?? 10;
+  const yStep = page.axisBarYStep ?? 5;
+  const left = 54;
+  const right = 500;
+  const top = 16;
+  const bottom = 250;
+  const plotW = right - left;
+  const y = (v: number) => bottom - (v / yMax) * (bottom - top);
+  const ticks: number[] = [];
+  for (let v = 0; v <= yMax + 1e-9; v += yStep) ticks.push(v);
+  const n = page.axisBarGroups.length;
+  const m = page.axisBarSeries.length;
+  const band = plotW / n;
+  const barW = Math.min(34, (band * 0.7) / m);
+  const gap = 8;
+  const clusterW = m * barW + (m - 1) * gap;
+  return (
+    <ExhibitFrame dark={dark} title={page.axisBarTitle}>
+      <svg viewBox="0 0 520 330" style={{ width: "100%", maxWidth: 560, display: "block", margin: "0 auto" }}>
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
+            <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
+              {fmtTick(t)}
+            </text>
+          </g>
+        ))}
+        {page.axisBarYLabel && (
+          <text transform={`translate(12 ${(top + bottom) / 2}) rotate(-90)`} textAnchor="middle" fontSize={13} fontWeight={700} fill={ink.text}>
+            {page.axisBarYLabel}
+          </text>
+        )}
+        {page.axisBarGroups.map((g, gi) => {
+          const x0 = left + band * gi + (band - clusterW) / 2;
+          return (
+            <g key={gi}>
+              {g.values.map((v, si) => (
+                <rect key={si} x={x0 + si * (barW + gap)} y={y(v)} width={barW} height={bottom - y(v)} fill={page.axisBarSeries![si].color} />
+              ))}
+              <text x={left + band * gi + band / 2} y={bottom + 20} textAnchor="middle" fontSize={14} fill={ink.axis}>
+                {g.label}
+              </text>
+            </g>
+          );
+        })}
+        {(() => {
+          const itemW = 110;
+          const startX = 260 - (m * itemW) / 2;
+          return page.axisBarSeries.map((s, i) => (
+            <g key={i} transform={`translate(${startX + i * itemW} 308)`}>
+              <rect width={10} height={10} y={-5} fill={s.color} />
+              <text x={16} dominantBaseline="middle" fontSize={14} fill={ink.axis}>
+                {s.name}
+              </text>
+            </g>
+          ));
+        })()}
+      </svg>
+    </ExhibitFrame>
+  );
+}
+
+export function MiniLines({ page, dark }: { page: CasePage; dark?: boolean }) {
+  if (!page.miniLines) return null;
+  const ink = chartInk(dark);
+  const left = 40;
+  const right = 288;
+  const top = 34;
+  const bottom = 162;
+  return (
+    <ExhibitFrame dark={dark} title={page.miniLinesTitle}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 8 }}>
+        {page.miniLines.map((c, ci) => {
+          const y = (v: number) => bottom - (v / c.yMax) * (bottom - top);
+          const band = (right - left) / c.values.length;
+          const x = (i: number) => left + band * (i + 0.5);
+          const ticks: number[] = [];
+          for (let v = 0; v <= c.yMax + 1e-9; v += c.yStep) ticks.push(v);
+          return (
+            <svg key={ci} viewBox="0 0 300 232" style={{ width: "100%", display: "block" }}>
+              <text x={(left + right) / 2} y={16} textAnchor="middle" fontSize={17} fill={ink.text}>
+                {c.title}
+              </text>
+              {ticks.map((t) => (
+                <g key={t}>
+                  <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
+                  <text x={left - 6} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={12} fill={ink.axis}>
+                    {fmtTick(t)}
+                  </text>
+                </g>
+              ))}
+              <polyline points={c.values.map((v, i) => `${x(i)},${y(v)}`).join(" ")} fill="none" stroke={c.color} strokeWidth={2.5} strokeLinejoin="round" />
+              {c.xLabels.map((l, i) => (
+                <text key={i} x={x(i)} y={bottom + 18} textAnchor="middle" fontSize={13} fill={ink.axis}>
+                  {l}
+                </text>
+              ))}
+              <g transform={`translate(${(left + right) / 2 - 30} 212)`}>
+                <line x1={0} x2={18} stroke={c.color} strokeWidth={2.5} />
+                <text x={24} dominantBaseline="middle" fontSize={13} fill={ink.axis}>
+                  {c.title}
+                </text>
+              </g>
+            </svg>
+          );
+        })}
+      </div>
+    </ExhibitFrame>
+  );
+}
+
 // Small pictograms for exhibit rows (24x24 viewBox, currentColor).
 const ICONS: Record<string, React.ReactNode> = {
   shirt: (
@@ -590,6 +778,9 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <GroupedBars page={page} dark={dark} />
       <CostTable page={page} dark={dark} />
       <LineChart page={page} dark={dark} />
+      <PieChart page={page} dark={dark} />
+      <AxisBars page={page} dark={dark} />
+      <MiniLines page={page} dark={dark} />
       <SegmentTable page={page} dark={dark} />
       <DataTable page={page} dark={dark} />
     </>
@@ -642,11 +833,11 @@ export function PageBody({
     return (
       <>
         <PresentWrap presentable={presentable} title={page.title} label="Prompt" share={share}>
-          <div style={{ fontSize: 14.5, lineHeight: 1.65, color: "#2a2f2b", background: "#fafbf9", borderRadius: 10, padding: 18, whiteSpace: "pre-wrap" }}>
+          <div style={{ fontSize: 14.5, lineHeight: 1.65, color: "#2a2f2b", background: "#fafbf9", borderRadius: 10, padding: 18, paddingTop: presentable ? 44 : 18, whiteSpace: "pre-wrap" }}>
             {page.body}
           </div>
         </PresentWrap>
-        {page.note && <div style={{ fontSize: 12, color: "#8a8f8a", marginTop: 10 }}>{page.note}</div>}
+        {page.note && <div style={{ fontSize: 12, color: "#8a8f8a", marginTop: 10 }}><Rich text={page.note} /></div>}
       </>
     );
   }
@@ -659,12 +850,12 @@ export function PageBody({
     );
   }
 
-  const hasExhibit = !!(page.chart1 || page.chart2 || page.barChartGroups || page.lineChartPointsStr || page.dataTableRows || page.segmentTable);
+  const hasExhibit = pageHasExhibit(page);
 
   return (
     <>
       {page.qText && (
-        <PresentWrap presentable={presentable} title={page.title} label="Question">
+        <PresentWrap presentable={presentable} title={page.title} label="Prompt">
           <SayNextBox text={page.qText} label={sayLabel} />
         </PresentWrap>
       )}

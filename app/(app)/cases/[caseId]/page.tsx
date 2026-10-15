@@ -62,7 +62,7 @@ export default async function CaseDocPage({ params }: { params: Promise<{ caseId
         {pages && (
           <div className="px-8 py-3 border-b border-(--color-border-soft) bg-[#f3f6f4] text-[12.5px] text-[#3a5a4a]">
             Interviewing? Use <b>Present</b> on any block to show only that block fullscreen — the prompt, an exhibit, the
-            structure or the answer — then press <b>Esc</b> to come back here. Your interviewee doesn’t need an account.
+            structure or the answer — then press <b>Esc</b> to come back here.
           </div>
         )}
 
