@@ -113,6 +113,16 @@ export interface MiniLineChart {
   yStep: number;
 }
 
+// Labelled fact block shown beside an illustration (e.g. "Variable A: Hotel Stories")
+export interface FactPanelRow {
+  label?: string;
+  value: string;
+}
+export interface FactPanel {
+  heading: string;
+  rows: FactPanelRow[];
+}
+
 // Aces Exhibit 3 — market share by segment
 export interface SegmentRow {
   name: string;
@@ -194,6 +204,9 @@ export interface CasePage {
   // Calculation walkthrough
   calcNote?: string;
   calcLines?: CalcLine[];
+  // Table-style walkthrough: first column labels each row; `totalLast` styles the
+  // final row as a total.
+  calcTable?: { headers: string[]; rows: string[][]; totalLast?: boolean };
 
   // Answer + "what a strong candidate spots" insight. Text supports **bold**
   // markup; when it contains it the answer renders in regular weight so only the
@@ -235,6 +248,10 @@ export interface CasePage {
   axisBarYLabel?: string;
   miniLinesTitle?: string;
   miniLines?: MiniLineChart[];
+  illustrationTitle?: string;
+  illustrationSrc?: string;
+  illustrationAlt?: string;
+  factPanels?: FactPanel[];
   dataTableTitle?: string;
   dataTableFootnote?: string;
   dataTableCols?: string;
@@ -258,6 +275,9 @@ export const FIRE_PROOF_CASE_ID = "72dea52c-0cf9-42eb-afb5-5d7cc5ff9c93";
 // Duck Island Beer Co. (Duke Fuqua DMCC 2018-19, p.133): the existing catalog row's UUID.
 export const DUCK_ISLAND_CASE_ID = "767cbae2-9bc8-4eb9-a66c-8e339892140f";
 
+// Whale Hotel (UVA Darden 2020-21 casebook, p.171). New catalog row, id fixed in migration 0015.
+export const WHALE_HOTEL_CASE_ID = "f9b56e3b-a2bc-4555-92b9-89594746de9c";
+
 export function pageHasExhibit(p: CasePage): boolean {
   return !!(
     p.chart1 ||
@@ -267,6 +287,7 @@ export function pageHasExhibit(p: CasePage): boolean {
     p.pieSlices ||
     p.axisBarGroups ||
     p.miniLines ||
+    p.illustrationSrc ||
     p.dataTableRows ||
     p.segmentTable
   );
@@ -1148,11 +1169,210 @@ const DUCK_ISLAND_PAGES: CasePage[] = [
   },
 ];
 
+const WHALE_HOTEL_PAGES: CasePage[] = [
+  {
+    n: "01",
+    label: "Candidate prompt",
+    title: "Case prompt",
+    kind: "ready",
+    body: "Our client is a real estate company that owns and operates luxury hotels around the world. They've previously owned 3 resorts in Dubai and are considering building a fourth, targeted specifically at high net worth individuals - called whales.",
+    note: "**Behavioral Interview Question** — As a consulting professional, you will often have to resolve conflict within teams. Tell me about a time you successfully resolved conflict in a team setting.",
+  },
+  {
+    n: "02",
+    label: "Clarifying information",
+    title: "Clarifying information",
+    kind: "qa",
+    guidancePreLabel: "Clarifying Information",
+    guidancePreNote: "Note: Provide this **only if corresponding questions are asked**.",
+    guidancePreLines: [
+      "What's the payback period? **5 years**",
+      "How long is the construction period? **2 years**",
+      "What is the tourism industry in Dubai like? **Very ritzy and highly seasonal (25% increase in the summer)**",
+      "Does the company currently own hotels in Dubai? **No - ignore cannibilization**",
+      "Are there any similar resorts in Dubai? **Yes, the King's Palace, the Belzor, and the Egyptian**",
+    ],
+  },
+  {
+    n: "03",
+    label: "Prompt 1",
+    title: "Whales per night",
+    kind: "qa",
+    qText:
+      "After looking at Exhibit 1, calculate the total number of whales at expected at each hotel each night.",
+    guidancePreLabel: "Prompt 1",
+    guidancePreLines: [
+      "**Hand the candidate Exhibit 1**",
+      "**Prompt the candidate to do Peak and Off-Peak separately**",
+    ],
+    dataTableTitle: "Exhibit 1",
+    dataTableFootnote: "Note: Peak season runs from June - August",
+    dataTableCols: "1.25fr 0.8fr 1fr 1fr 1.15fr 1fr 1fr 1fr",
+    dataTableHeaders: [
+      { v: "Resort", align: "left" },
+      { v: "# of Rooms", align: "center" },
+      { v: "Off-Peak Utilization", align: "center" },
+      { v: "Off-Peak Whales %", align: "center" },
+      { v: "Rate", align: "center" },
+      { v: "Pool Quality", align: "center" },
+      { v: "Peak* Utilization", align: "center" },
+      { v: "Peak* Whales %", align: "center" },
+    ],
+    dataTableRows: [
+      { cells: [
+        { v: "King's Palace", align: "left", w: 600, fg: "#3a3f3b" },
+        { v: "5000", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "80%", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "25%", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "$2000/night", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "Poor", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "80%", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "25%", align: "center", w: 400, fg: "#3a3f3b" },
+      ] },
+      { cells: [
+        { v: "Egyptian", align: "left", w: 600, fg: "#3a3f3b" },
+        { v: "4000", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "75%", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "25%", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "$2000/night", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "Good", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "95%", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "37.5%", align: "center", w: 400, fg: "#3a3f3b" },
+      ] },
+      { cells: [
+        { v: "Belzor", align: "left", w: 600, fg: "#3a3f3b" },
+        { v: "8000", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "75%", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "33.3%", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "$2500/night", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "Excellent", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "100%", align: "center", w: 400, fg: "#3a3f3b" },
+        { v: "50%", align: "center", w: 400, fg: "#3a3f3b" },
+      ] },
+    ],
+    calcNote: "Exhibit Guidance — Whales Per Night",
+    calcTable: {
+      headers: ["Resort", "Whales per night, Off-Peak", "Whales per night, Peak"],
+      rows: [
+        ["King's Palace", "5000 × 80% × 25% = ==1000==", "5000 × 80% × 25% = ==1000=="],
+        ["Egyptian", "4000 × 75% × 25% = ==750==", "4000 × 95% × 37.5% = ==1425=="],
+        ["Belzor", "8000 × 75% × 33.3% = ==2000==", "8000 × 100% × 50% = ==4000=="],
+        ["Total", "1000 + 750 + 2000 = ==3750==", "1000 + 1425 + 4000 = ==6425=="],
+      ],
+      totalLast: true,
+    },
+    answerText:
+      "**Interviewee should identify that:**\n- **Correlation** between whale % and **swimming pool quality**\n- Impact of **seasonality** on overall demand (great candidates will notice that **Belzor is at 100% utilization**, meaning that there could be additional demand (for a hotel with an excellent pool) that is not being met",
+    guidanceLabel: "Interviewer Guidance",
+    guidanceLines: [
+      "**Steer** the interviewee towards the conclusion that the hotel **must have an excellent quality pool**",
+      "**Ask** the interviewee what a reasonable rate to charge a whale for a new hotel would be - any rate is acceptable as long as it is **supported logically**",
+    ],
+  },
+  {
+    n: "04",
+    label: "Prompt 2",
+    title: "Expected demand",
+    kind: "qa",
+    qText:
+      "Market research indicates that a hotel with an excellent quality pool charging $2,500 a night would capture 100% of the whales who stat at the King's Palace and the Egyptian as well as an additional 250 whales per night during the off-season and 1575 during the peak season. What is the expected demand for the potential new hotel?",
+    calcNote: "Exhibit Guidance",
+    calcLines: [
+      { q: "Nightly Whale Demand, Off-Peak", a: "1000 (King's Palace) + 750 (Egyptian) + 250 (new) = ==2000==", stack: true },
+      { q: "Nightly Whale Demand, Peak", a: "1000 (King's Palace) + 1425 (Egyptian) + 1575 (new) = ==4000==", stack: true },
+    ],
+  },
+  {
+    n: "05",
+    label: "Prompt 3",
+    title: "How many stories?",
+    kind: "qa",
+    qText: "How many stories will the new hotel require?",
+    guidancePreLabel: "Prompt 3",
+    guidancePreLines: ["**Hand the Candidate Exhibit 2**"],
+    illustrationTitle: "Exhibit 2",
+    illustrationSrc: "/cases/whale-hotel-exhibit-2.jpg",
+    illustrationAlt: "Illustration of a hotel with a pool: marker A points to the hotel building and marker B to the pool",
+    factPanels: [
+      {
+        heading: "Variable A: Hotel Stories",
+        rows: [{ value: "1500 rooms per story" }, { value: "$1 billion construction cost per story" }],
+      },
+      {
+        heading: "Variable B: Pool Options",
+        rows: [
+          { label: "Excellent", value: "$500 million" },
+          { label: "Good", value: "$100 million" },
+          { label: "Poor", value: "$50 million" },
+        ],
+      },
+    ],
+    answerText:
+      "- Interviewee should recognize that, in order to meet demand of **4000 rooms per night** in peak season, the hotel must be **at least 3 stories tall**",
+  },
+  {
+    n: "06",
+    label: "Prompt 4",
+    title: "Investment and revenue",
+    kind: "qa",
+    qText:
+      "Annual operating expenses are $250M per 1500 rooms. Land acquisition is $2B. What is the total initial investment and would you recommend moving forward with the hotel.",
+    calcNote: "Exhibit Guidance",
+    calcLines: [
+      { q: "Initial investment", a: "Land - $2B\nRooms - $3B - (3 stories)\nPool - $.5B - (excellent quality)\nTotal - ==$5.5B==", stack: true },
+      {
+        q: "Annual revenue",
+        a: "$2,500/night × 30 nights = $75K per whale monthly\n4000 whales × $75K per whale = $300M (peak, monthly) × 3 Month Peak Season = $900M Peak\n2000 whales × $75k per whale = $150M (off-peak, monthly) × 9 Months = $1.35B Off-Peak\nTotal Annual Revenue = ==$2.25B== Annually",
+        stack: true,
+      },
+    ],
+  },
+  {
+    n: "07",
+    label: "Prompt 4 (continued)",
+    title: "Profit and payback",
+    kind: "qa",
+    qText:
+      "Annual operating expenses are $250M per 1500 rooms. Land acquisition is $2B. What is the total initial investment and would you recommend moving forward with the hotel.",
+    calcNote: "Exhibit Guidance",
+    calcLines: [
+      {
+        q: "Annual profit",
+        a: "Annual Revenue - $2.25B\nAnnual Opex - $750M ($250M per 1500 rooms × 3)\nAnnual Operating Profit - ==$1.5B==",
+        stack: true,
+      },
+      {
+        q: "Payback period",
+        a: "2 years of construction\n3 years of revenue (3 × $1.5B) = $4.5B\nAfter 5-years, $5.5B cost - $4.5B revenue",
+        stack: true,
+      },
+    ],
+    answerText:
+      "**A good candidate will realize that:**\n- We **don't break even in 5-years**\n- We will turn a profit, **8 months into year 5**\n- We haven't considered **additional revenue sources** or a potential **exit opportunity**\n- If time allows - consider asking them **how to raise additional revenue**",
+  },
+  {
+    n: "08",
+    label: "Prompt 5",
+    title: "Recommendation",
+    kind: "qa",
+    qText: "The real estate company's CEO is on his way in - what do you recommend?",
+    guidanceLabel: "Exhibit Guidance",
+    guidanceLines: [
+      "A candidate can recommend either **moving forward with the deal** or **foregoing the opportunity**,",
+      "If they recommend moving forward, they should include that they are **evaluating additional revenue streams** that will bring the company closer to a **5-year payback period**",
+      "A candidate might choose to **turn-down the hotel** because of:",
+      "  Issues with the **payback period**",
+      "  **Competitive response** from the King's Palace, Egyptian, or Belzor",
+    ],
+  },
+];
+
 export const CASE_CONTENT: Record<string, CasePage[]> = {
   [ACES_CASE_ID]: ACES_PAGES,
   [AMAIR_CASE_ID]: AMAIR_PAGES,
   [FIRE_PROOF_CASE_ID]: FIRE_PROOF_PAGES,
   [DUCK_ISLAND_CASE_ID]: DUCK_ISLAND_PAGES,
+  [WHALE_HOTEL_CASE_ID]: WHALE_HOTEL_PAGES,
 };
 
 export function getCasePages(caseId: string): CasePage[] | null {
@@ -1199,6 +1419,10 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       axisBarYLabel: p.axisBarYLabel,
       miniLinesTitle: p.miniLinesTitle,
       miniLines: p.miniLines,
+      illustrationTitle: p.illustrationTitle,
+      illustrationSrc: p.illustrationSrc,
+      illustrationAlt: p.illustrationAlt,
+      factPanels: p.factPanels,
       dataTableTitle: p.dataTableTitle,
       dataTableFootnote: p.dataTableFootnote,
       dataTableCols: p.dataTableCols,

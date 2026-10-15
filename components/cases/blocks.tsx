@@ -115,6 +115,45 @@ export function CalcBox({ note, lines }: { note?: string; lines: { q: string; a:
   );
 }
 
+// Walkthrough laid out as a table (one row per item, one column per scenario) so a
+// total row can sit directly under the rows it sums. Cells accept **bold** / ==highlight==.
+export function CalcTableBox({ note, table }: { note?: string; table: { headers: string[]; rows: string[][]; totalLast?: boolean } }) {
+  const cols = `minmax(110px, 0.9fr) ${table.headers.slice(1).map(() => "minmax(170px, 1.4fr)").join(" ")}`;
+  return (
+    <div style={{ background: "#fafbf9", border: "1px solid #e6e7e3", borderRadius: 10, padding: "16px 18px", marginBottom: 14, overflowX: "auto" }}>
+      <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#8a8f8a", fontWeight: 700, marginBottom: 10 }}>
+        Calculation walkthrough
+      </div>
+      {note && <div style={{ fontSize: 12, color: "#8a8f8a", marginBottom: 10, fontStyle: "italic" }}><Rich text={note} /></div>}
+      <div style={{ display: "grid", gridTemplateColumns: cols, fontSize: 13.5, minWidth: 460 }}>
+        {table.headers.map((h, i) => (
+          <div key={i} style={{ padding: "6px 8px", fontSize: 11, letterSpacing: ".04em", textTransform: "uppercase", fontWeight: 700, color: "#8a8f8a", borderBottom: "1px solid #e6e7e3" }}>
+            {h}
+          </div>
+        ))}
+        {table.rows.map((row, ri) => {
+          const total = !!table.totalLast && ri === table.rows.length - 1;
+          return row.map((cell, ci) => (
+            <div
+              key={`${ri}-${ci}`}
+              style={{
+                padding: "10px 8px",
+                borderTop: total ? "2px solid #d7d9d4" : "1px solid #f2f3f0",
+                background: total ? "#f2f4f0" : undefined,
+                fontWeight: ci === 0 || total ? 700 : 400,
+                color: "#1f2421",
+                lineHeight: 1.55,
+              }}
+            >
+              <Rich text={cell} />
+            </div>
+          ));
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function AnswerBox({ text }: { text: string }) {
   // Answers with **markup** bold only their key points; plain answers stay bold.
   const selective = text.includes("**");
@@ -617,6 +656,38 @@ export function MiniLines({ page, dark }: { page: CasePage; dark?: boolean }) {
   );
 }
 
+export function Illustration({ page, dark }: { page: CasePage; dark?: boolean }) {
+  if (!page.illustrationSrc) return null;
+  const head = dark ? "#eef2ef" : "#1f2421";
+  const body = dark ? "#dbe3dd" : "#3a3f3b";
+  const muted = dark ? "#8a958d" : "#6b716c";
+  return (
+    <ExhibitFrame dark={dark} title={page.illustrationTitle}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={page.illustrationSrc}
+        alt={page.illustrationAlt ?? ""}
+        style={{ width: "100%", maxWidth: 640, display: "block", margin: "0 auto", borderRadius: 8 }}
+      />
+      {page.factPanels && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 24, maxWidth: 640, margin: "18px auto 0" }}>
+          {page.factPanels.map((fp, i) => (
+            <div key={i}>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: head, textDecoration: "underline", marginBottom: 10 }}>{fp.heading}</div>
+              {fp.rows.map((r, j) => (
+                <div key={j} style={{ display: "flex", gap: 14, fontSize: 13.5, lineHeight: 1.5, padding: "3px 0", color: body }}>
+                  {r.label && <span style={{ minWidth: 70, color: muted }}>{r.label}</span>}
+                  <span style={{ fontWeight: 600 }}>{r.value}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </ExhibitFrame>
+  );
+}
+
 // Small pictograms for exhibit rows (24x24 viewBox, currentColor).
 const ICONS: Record<string, React.ReactNode> = {
   shirt: (
@@ -695,12 +766,14 @@ export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
   if (!page.dataTableRows || !page.dataTableHeaders) return null;
   const head = dark ? "#8a958d" : "#8a8f8a";
   const border = dark ? "1px solid #333a35" : "1px solid #f2f3f0";
+  // Wide tables (many columns) get more room so cells don't wrap awkwardly.
+  const maxW = dark ? undefined : page.dataTableHeaders.length > 6 ? 820 : 560;
   return (
     <ExhibitFrame dark={dark}>
       {page.dataTableTitle && (
         <div style={{ fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 14, textAlign: "center" }}>{page.dataTableTitle}</div>
       )}
-      <div style={{ display: "grid", gridTemplateColumns: page.dataTableCols, gap: 0, fontSize: 12.5, minWidth: 280, maxWidth: dark ? undefined : 560, margin: "0 auto" }}>
+      <div style={{ display: "grid", gridTemplateColumns: page.dataTableCols, gap: 0, fontSize: 12.5, minWidth: 280, maxWidth: maxW, margin: "0 auto" }}>
         {page.dataTableHeaders.map((h, i) => (
           <div key={i} style={{ fontWeight: 600, color: head, padding: "5px 4px", textAlign: h.align }}>{h.v}</div>
         ))}
@@ -729,7 +802,7 @@ export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
         ))}
       </div>
       {page.dataTableFootnote && (
-        <div style={{ fontSize: 11, color: head, textAlign: "right", maxWidth: dark ? undefined : 560, margin: "12px auto 0" }}>{page.dataTableFootnote}</div>
+        <div style={{ fontSize: 11, color: head, textAlign: "right", maxWidth: maxW, margin: "12px auto 0" }}>{page.dataTableFootnote}</div>
       )}
     </ExhibitFrame>
   );
@@ -781,6 +854,7 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <PieChart page={page} dark={dark} />
       <AxisBars page={page} dark={dark} />
       <MiniLines page={page} dark={dark} />
+      <Illustration page={page} dark={dark} />
       <SegmentTable page={page} dark={dark} />
       <DataTable page={page} dark={dark} />
     </>
@@ -877,6 +951,11 @@ export function PageBody({
       {page.calcLines && (
         <PresentWrap presentable={presentable} title={page.title} label="Calculation walkthrough">
           <CalcBox note={page.calcNote} lines={page.calcLines} />
+        </PresentWrap>
+      )}
+      {page.calcTable && (
+        <PresentWrap presentable={presentable} title={page.title} label="Calculation walkthrough">
+          <CalcTableBox note={page.calcNote} table={page.calcTable} />
         </PresentWrap>
       )}
       {page.answerText && page.answerBonusLines ? (
