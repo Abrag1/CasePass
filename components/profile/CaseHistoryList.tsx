@@ -26,7 +26,8 @@ export function CaseHistoryList({
   emptyText,
 }: {
   items: HistoryItem[];
-  partnerLabel: (name: string) => string;
+  /** Text with a `{name}` placeholder, e.g. "With {name} as interviewer". A string (not a function) so server pages can pass it. */
+  partnerLabel: string;
   emptyText: string;
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export function CaseHistoryList({
               <div>
                 <div className="font-semibold text-[14.5px]">{item.caseName}</div>
                 <div className="text-[12.5px] text-(--color-muted) mt-0.5">
-                  {partnerLabel(item.partnerName)} ·{" "}
+                  {partnerLabel.replace("{name}", item.partnerName)} ·{" "}
                   {new Date(item.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                 </div>
               </div>

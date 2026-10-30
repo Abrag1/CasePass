@@ -158,8 +158,30 @@ function SessionGroup({
                     {s.assigned_case?.name ?? FORMAT_LABELS[s.format]}
                   </div>
                   <div className="text-[13px] text-(--color-muted) mt-0.5">
-                    {role === "interviewer" ? "Interviewing" : "With"} {partner.full_name} · {dt.full} · {dt.time}
+                    {role === "interviewer" ? "Interviewing" : "With"}{" "}
+                    {role === "interviewer" ? (
+                      <Link
+                        href={`/profile/${partner.id}`}
+                        className="text-(--color-fg) font-medium underline decoration-dotted underline-offset-2 hover:text-(--color-green)"
+                        title={`See ${partner.full_name}'s case tracker`}
+                      >
+                        {partner.full_name}
+                      </Link>
+                    ) : (
+                      partner.full_name
+                    )}{" "}
+                    · {dt.full} · {dt.time}
                   </div>
+                  {role === "interviewer" && (
+                    <div className="mt-1">
+                      <Link
+                        href={`/profile/${partner.id}`}
+                        className="text-[12.5px] font-semibold text-(--color-green) hover:underline"
+                      >
+                        View {partner.full_name.split(" ")[0]}&apos;s case tracker →
+                      </Link>
+                    </div>
+                  )}
                   {(s.status === "confirmed" || s.status === "case_selected") && (
                     <div className="mt-1.5">
                       <AddToCalendar

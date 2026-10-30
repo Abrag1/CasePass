@@ -27,16 +27,23 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
   return (
     <section className="p-7 max-w-3xl mx-auto">
       <h2 className="font-serif text-[23px] font-semibold mb-1">
-        {isSelf ? "My profile" : `${target.full_name} — case history`}
+        {isSelf ? "My profile" : `${target.full_name} — case tracker`}
       </h2>
       <p className="text-[13px] text-(--color-muted) mb-6">
-        {isSelf ? "Your case history & feedback" : "What they've practiced so far"}
+        {isSelf ? "Your case history & feedback" : "Cases they've done and the feedback they received"}
       </p>
 
       {!isSelf && !data && (
         <Card className="p-6 text-sm text-(--color-muted)">
           You haven&apos;t run a mock as {target.full_name}&apos;s interviewer yet, so there&apos;s nothing to show
           here.
+        </Card>
+      )}
+
+      {!isSelf && data && data.total_cases === undefined && !data.skill_averages && !takenHistory && (
+        <Card className="p-6 text-sm text-(--color-muted)">
+          {target.full_name} hasn&apos;t shared their case tracker. They can change this under Settings → Privacy
+          controls.
         </Card>
       )}
 
@@ -92,7 +99,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
 
       <div className="mb-5">
         <div className="text-[11px] uppercase tracking-wide font-semibold text-(--color-muted) mb-2.5">
-          Case history
+          {isSelf ? "Case history" : "Case tracker"}
         </div>
         {isSelf && history ? (
           <GivenTakenTabs given={history.given} taken={history.taken} />
@@ -110,7 +117,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userId
                 improve: h.improve,
                 practiceNext: h.practice_next,
               }))}
-              partnerLabel={(name) => `With ${name} as interviewer`}
+              partnerLabel="With {name} as interviewer"
               emptyText={`${target.full_name} hasn't taken a mock yet.`}
             />
           )

@@ -16,13 +16,13 @@ export function GivenTakenTabs({ given, taken }: { given: HistoryItem[]; taken: 
       {tab === "taken" ? (
         <CaseHistoryList
           items={taken}
-          partnerLabel={(name) => `With ${name} as interviewer`}
+          partnerLabel="With {name} as interviewer"
           emptyText="You haven't taken a mock yet."
         />
       ) : (
         <CaseHistoryList
           items={given}
-          partnerLabel={(name) => `Interviewed ${name}`}
+          partnerLabel="Interviewed {name}"
           emptyText="You haven't given a mock yet."
         />
       )}
