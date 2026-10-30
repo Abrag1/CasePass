@@ -96,6 +96,67 @@ export async function getMyPreppedCaseIds(userId: string): Promise<Set<string>> 
   return new Set((data ?? []).map((r) => r.case_id));
 }
 
+/** People this user has a mock with (either role), for recognising names in a search sentence. */
+export async function getMyPartners(userId: string): Promise<{ id: string; name: string }[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("mock_sessions")
+    .select(
+      "interviewer_id, interviewee_id, " +
+        "interviewer:profiles!mock_sessions_interviewer_id_fkey(id, full_name), " +
+        "interviewee:profiles!mock_sessions_interviewee_id_fkey(id, full_name)",
+    )
+    .or(`interviewer_id.eq.${userId},interviewee_id.eq.${userId}`);
+  type P = { id: string; full_name: string };
+  const one = (v: P | P[] | null | undefined): P | undefined => (Array.isArray(v) ? v[0] : (v ?? undefined));
+  const out = new Map<string, string>();
+  for (const row of (data ?? []) as unknown as { interviewer: P | P[] | null; interviewee: P | P[] | null }[]) {
+    for (const p of [one(row.interviewer), one(row.interviewee)]) {
+      if (p && p.id !== userId && p.full_name) out.set(p.id, p.full_name);
+    }
+  }
+  return [...out].map(([id, name]) => ({ id, name }));
+}
+
+/** The interviewee of this user's soonest upcoming mock where they are the interviewer. */
+export async function getNextInterviewee(userId: string): Promise<{ id: string; name: string } | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("mock_sessions")
+    .select("scheduled_at, interviewee:profiles!mock_sessions_interviewee_id_fkey(id, full_name)")
+    .eq("interviewer_id", userId)
+    .neq("status", "declined")
+    .gt("scheduled_at", new Date().toISOString())
+    .order("scheduled_at")
+    .limit(1);
+  const row = (data ?? [])[0] as unknown as { interviewee: { id: string; full_name: string } | { id: string; full_name: string }[] | null } | undefined;
+  const p = Array.isArray(row?.interviewee) ? row?.interviewee[0] : row?.interviewee;
+  return p?.full_name ? { id: p.id, name: p.full_name } : null;
+}
+
+/**
+ * Cases this user has run or taken in a mock (any role), most recent date per case.
+ * "Done" means the mock is booked and its time has passed, or it was completed.
+ */
+export async function getMyCaseExposure(userId: string): Promise<Map<string, string>> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("mock_sessions")
+    .select("assigned_case_id, scheduled_at, status")
+    .or(`interviewer_id.eq.${userId},interviewee_id.eq.${userId}`)
+    .not("assigned_case_id", "is", null)
+    .neq("status", "declined");
+  const now = Date.now();
+  const last = new Map<string, string>();
+  for (const s of data ?? []) {
+    if (!s.assigned_case_id || !s.scheduled_at) continue;
+    if (s.status !== "completed" && new Date(s.scheduled_at).getTime() > now) continue;
+    const prev = last.get(s.assigned_case_id);
+    if (!prev || s.scheduled_at > prev) last.set(s.assigned_case_id, s.scheduled_at);
+  }
+  return last;
+}
+
 export async function getCase(caseId: string): Promise<CaseDetail | null> {
   const supabase = await createClient();
   const { data: caseRow } = await supabase.from("cases_public").select("*").eq("id", caseId).maybeSingle();
