@@ -5,6 +5,7 @@ import {
   formatDurationLong,
   parseState,
   sectionSeconds,
+  sectionSplit,
   sectionsFromPages,
   serializeState,
   summaryToText,
@@ -81,5 +82,21 @@ describe("feedback payload", () => {
       expect(secs.length).toBe(pages.filter((p) => p.kind !== "cheat").length);
       expect(new Set(secs.map((s) => s.key)).size).toBe(secs.length); // keys unique -> notes never collide
     }
+  });
+});
+
+describe("thinking vs delivering split", () => {
+  it("splits a section's total at the marked second and keeps counting delivery live", () => {
+    const s = { notes: "", seconds: 100, runningSince: 1_000, splitAt: 40 };
+    expect(sectionSplit(s, 11_000)).toEqual({ think: 40, deliver: 70 }); // 110 total
+  });
+  it("is null when never marked, and survives a save/load round trip", () => {
+    expect(sectionSplit({ notes: "", seconds: 50, runningSince: null }, 0)).toBeNull();
+    const state = parseState(null);
+    state.sections["01"] = { notes: "", seconds: 90, runningSince: null, splitAt: 52 };
+    const back = parseState(serializeState(state));
+    expect(back.sections["01"].splitAt).toBe(52);
+    const p = buildFeedbackPayload(back, [{ key: "01", label: "Structure", title: "t" }], 0);
+    expect(p.sections[0]).toMatchObject({ seconds: 90, thinkSeconds: 52, deliverSeconds: 38 });
   });
 });

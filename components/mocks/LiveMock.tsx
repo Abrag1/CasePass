@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMockSessionRealtime } from "@/lib/realtime/useMockSessionRealtime";
+import { useMockPresence, useMockSessionRealtime } from "@/lib/realtime/useMockSessionRealtime";
 import { setPresented, savePrivateNotes, endMock, setSynopsisShared } from "@/lib/actions/sessions";
 import { InterviewerPanel } from "@/components/interview/InterviewerPanel";
 import { PresenterScope } from "@/components/interview/Presenter";
@@ -64,21 +64,45 @@ export function LiveMock({
     persist: (serialized) => savePrivateNotes(sessionId, serialized),
   });
 
-  useMockSessionRealtime(sessionId, (row) => {
-    setPresentedState(row.presented);
-    setEndedAt(row.ended_at);
-    setStatus(row.status);
-    setSynopsisSharedState(row.synopsis_shared_live);
-  });
+  const [shareError, setShareError] = useState(false);
+
+  // The interviewee only receives, so they also poll as a safety net; the
+  // interviewer is the writer and must not be overwritten by a stale read.
+  const connection = useMockSessionRealtime(
+    sessionId,
+    (row) => {
+      setPresentedState(row.presented);
+      setEndedAt(row.ended_at);
+      setStatus(row.status);
+      setSynopsisSharedState(row.synopsis_shared_live);
+    },
+    { poll: !isInterviewer },
+  );
+
+  // Interviewee reports what's on their screen; interviewer reads it to confirm a share landed.
+  const { partnerOnline, partnerSeen } = useMockPresence(sessionId, role, isInterviewer ? null : presented);
 
   const isSide = isInterviewer && layoutPref === "both";
   const leftShow = isSide || isInterviewer;
   const rightShow = isSide || !isInterviewer;
 
   function present(i: number) {
+    const prev = presented;
     const next = presented === i ? null : i;
     setPresentedState(next);
-    startTransition(() => setPresented(sessionId, next));
+    setShareError(false);
+    startTransition(async () => {
+      let ok = false;
+      try {
+        ok = await setPresented(sessionId, next);
+      } catch {
+        ok = false;
+      }
+      if (!ok) {
+        setPresentedState(prev); // don't pretend it was shared
+        setShareError(true);
+      }
+    });
   }
 
   function endAndGiveFeedback() {
@@ -137,6 +161,24 @@ export function LiveMock({
           )}
         </div>
       </div>
+
+      {isInterviewer && (
+        <ShareStatus
+          firstName={firstName}
+          online={partnerOnline}
+          seen={partnerSeen}
+          presented={presented}
+          presentedTitle={presented != null ? pages[presented]?.title : undefined}
+          seenTitle={partnerSeen != null ? pages[partnerSeen]?.title : undefined}
+          error={shareError}
+        />
+      )}
+
+      {!isInterviewer && connection === "reconnecting" && (
+        <div className="bg-[#fff6e0] border border-[#f0d9a0] rounded-[9px] px-3.5 py-2.5 mb-4 text-[12.5px] text-[#7a5a10]">
+          Connection hiccup — reconnecting. Your screen keeps checking for updates automatically; no need to refresh.
+        </div>
+      )}
 
       {isInterviewer && !isSide && (
         <div className="bg-[#f3f6f4] border border-[#e1ebe5] rounded-[9px] px-3.5 py-2.5 mb-4 text-[12.5px] text-[#3a5a4a]">
@@ -208,6 +250,62 @@ export function LiveMock({
       </div>
     </section>
     </PresenterScope>
+  );
+}
+
+// Interviewer-only: is the other person actually on the Live Mock page, and does
+// their screen match what was shared? Turns a silent failed share into a visible one.
+function ShareStatus({
+  firstName,
+  online,
+  seen,
+  presented,
+  presentedTitle,
+  seenTitle,
+  error,
+}: {
+  firstName: string;
+  online: boolean;
+  seen: number | null;
+  presented: number | null;
+  presentedTitle?: string;
+  seenTitle?: string;
+  error: boolean;
+}) {
+  let tone: "ok" | "warn" | "bad";
+  let text: string;
+  if (error) {
+    tone = "bad";
+    text = `Couldn’t share that — it wasn’t sent to ${firstName}. Check your connection and click Share again.`;
+  } else if (!online) {
+    tone = "warn";
+    text = `${firstName} isn’t on the Live Mock page yet. Ask them to open this session’s Live Mock page. Anything you share will appear as soon as they join.`;
+  } else if (seen === presented) {
+    tone = "ok";
+    text =
+      presented == null
+        ? `${firstName} is connected · nothing on their screen yet`
+        : `${firstName} is connected · sees “${seenTitle ?? presentedTitle}” ✓`;
+  } else {
+    tone = "warn";
+    text = `${firstName} is connected, but their screen hasn’t updated yet${
+      presentedTitle ? ` (should show “${presentedTitle}”)` : ""
+    } — it re-syncs every few seconds. If it stays stuck, ask them to refresh the page.`;
+  }
+  const styles = {
+    ok: { bg: "#e9f1ec", border: "#cfe3d7", fg: "#1f3a2b", dot: "#2d6a4f" },
+    warn: { bg: "#fff6e0", border: "#f0d9a0", fg: "#7a5a10", dot: "#d99a1a" },
+    bad: { bg: "#fdecea", border: "#f2c4be", fg: "#8a2418", dot: "#c0392b" },
+  }[tone];
+  return (
+    <div
+      role="status"
+      className="rounded-[9px] px-3.5 py-2.5 mb-4 text-[12.5px] flex items-start gap-2"
+      style={{ background: styles.bg, border: `1px solid ${styles.border}`, color: styles.fg }}
+    >
+      <span className="w-2 h-2 rounded-full shrink-0 mt-[5px]" style={{ background: styles.dot }} />
+      <span>{text}</span>
+    </div>
   );
 }
 

@@ -254,7 +254,7 @@ export async function startLiveMock(sessionId: string) {
   revalidatePath(`/mocks/${sessionId}/live`);
 }
 
-export async function setPresented(sessionId: string, presented: number | null) {
+export async function setPresented(sessionId: string, presented: number | null): Promise<boolean> {
   const user = await requireUser();
   const supabase = await createClient();
 
@@ -264,12 +264,13 @@ export async function setPresented(sessionId: string, presented: number | null) 
     .eq("id", sessionId)
     .maybeSingle();
 
-  if (!session || session.interviewer_id !== user.id) return;
+  if (!session || session.interviewer_id !== user.id) return false;
 
-  await supabase
+  const { error } = await supabase
     .from("mock_sessions")
     .update({ presented, presented_updated_at: new Date().toISOString() })
     .eq("id", sessionId);
+  return !error;
 }
 
 // Interviewer-controlled toggle for whether the case synopsis chip is visible on

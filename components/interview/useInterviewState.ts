@@ -192,10 +192,41 @@ export function useInterviewState({ initial, persist, readLocal }: Options) {
   const resetTimer = useCallback(
     (key: string) =>
       commit(
-        (s) => ({ ...s, sections: { ...s.sections, [key]: { ...(s.sections[key] ?? emptySection()), seconds: 0, runningSince: null } } }),
+        (s) => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { splitAt, ...cur } = s.sections[key] ?? emptySection();
+          return { ...s, sections: { ...s.sections, [key]: { ...cur, seconds: 0, runningSince: null } } };
+        },
         [key],
         true,
       ),
+    [commit],
+  );
+
+  /**
+   * Mark the moment the candidate stops thinking and starts presenting. Everything
+   * before is "thinking", everything after "delivering". Calling it again clears
+   * the mark (to undo a mis-tap). Only meaningful while the section is timing.
+   */
+  const markDelivery = useCallback(
+    (key: string) => {
+      const at = Date.now();
+      setNow(at);
+      commit(
+        (s) => {
+          const cur = s.sections[key];
+          if (!cur) return s;
+          if (cur.splitAt !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { splitAt, ...rest } = cur;
+            return { ...s, sections: { ...s.sections, [key]: rest } };
+          }
+          return { ...s, sections: { ...s.sections, [key]: { ...cur, splitAt: sectionSeconds(cur, at) } } };
+        },
+        [key],
+        true,
+      );
+    },
     [commit],
   );
 
@@ -253,6 +284,7 @@ export function useInterviewState({ initial, persist, readLocal }: Options) {
     startTimer,
     stopTimer,
     resetTimer,
+    markDelivery,
     advance,
     stopAll,
     reset,

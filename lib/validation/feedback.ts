@@ -22,6 +22,8 @@ export const sectionFeedbackSchema = z.object({
         label: z.string().max(120),
         title: z.string().max(200),
         seconds: z.number().int().min(0).max(24 * 3600),
+        thinkSeconds: z.number().int().min(0).max(24 * 3600).optional(),
+        deliverSeconds: z.number().int().min(0).max(24 * 3600).optional(),
         notes: z.string().max(8000),
       }),
     )

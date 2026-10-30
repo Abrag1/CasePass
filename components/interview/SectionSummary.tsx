@@ -31,7 +31,17 @@ export function SectionBreakdown({ payload, large = false }: { payload: SectionF
                   {s.label}
                 </div>
                 <div className="flex-1 h-2 rounded-full bg-[#eef0ec] overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${Math.max(4, (s.seconds / maxSec) * 100)}%`, background: "#2d6a4f" }} />
+                  <div
+                    className="h-full rounded-full flex overflow-hidden"
+                    style={{ width: `${Math.max(4, (s.seconds / maxSec) * 100)}%`, background: "#2d6a4f" }}
+                  >
+                    {s.thinkSeconds !== undefined && s.seconds > 0 && (
+                      <div
+                        title={`Thinking ${formatDurationLong(s.thinkSeconds)}`}
+                        style={{ width: `${(s.thinkSeconds / s.seconds) * 100}%`, background: "#9bb8e6" }}
+                      />
+                    )}
+                  </div>
                 </div>
                 <div className="w-[64px] text-right tabular-nums text-[#3a3f3b]">{formatDurationLong(s.seconds)}</div>
               </div>
@@ -56,8 +66,20 @@ export function SectionBreakdown({ payload, large = false }: { payload: SectionF
               </div>
             </div>
             {s.seconds > 0 && (
-              <span className="text-[12px] font-semibold rounded-full bg-[#e9f1ec] text-(--color-green) px-2.5 py-1 whitespace-nowrap">
-                ⏱ {formatDurationLong(s.seconds)}
+              <span className="flex items-center gap-1.5 flex-wrap">
+                {s.thinkSeconds !== undefined && s.deliverSeconds !== undefined && (
+                  <>
+                    <span className="text-[12px] font-semibold rounded-full bg-[#e8eef9] text-[#15294d] px-2.5 py-1 whitespace-nowrap">
+                      🧠 Thinking {formatDurationLong(s.thinkSeconds)}
+                    </span>
+                    <span className="text-[12px] font-semibold rounded-full bg-[#e9f1ec] text-(--color-green) px-2.5 py-1 whitespace-nowrap">
+                      🗣 Delivering {formatDurationLong(s.deliverSeconds)}
+                    </span>
+                  </>
+                )}
+                <span className="text-[12px] font-semibold rounded-full bg-[#e9f1ec] text-(--color-green) px-2.5 py-1 whitespace-nowrap">
+                  ⏱ {formatDurationLong(s.seconds)}
+                </span>
               </span>
             )}
           </div>

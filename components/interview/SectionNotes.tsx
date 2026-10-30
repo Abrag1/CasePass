@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { InterviewApi } from "@/components/interview/useInterviewState";
-import { formatDuration, type SectionInfo } from "@/lib/interview/model";
+import { formatDuration, sectionSplit, type SectionInfo } from "@/lib/interview/model";
 import {
   CATEGORY_LABELS,
   DEFAULT_TEMPLATES,
@@ -39,8 +39,9 @@ export function SectionTimer({
   const running = api.runningKey === section.key;
   const big = size === "md";
   const idle = api.clock === "idle";
+  const split = sectionSplit(api.state.sections[section.key], api.now);
   return (
-    <div className="inline-flex items-center gap-1.5">
+    <div className="inline-flex items-center gap-1.5 flex-wrap">
       <span
         className={`font-serif font-semibold tabular-nums ${big ? "text-[18px]" : "text-[14px]"}`}
         style={{ color: running ? "#2d6a4f" : "#1f2421" }}
@@ -78,6 +79,45 @@ export function SectionTimer({
         >
           Reset
         </button>
+      )}
+      {display === "controls" && !split && (running || secs > 0) && (
+        <button
+          type="button"
+          onClick={() => api.markDelivery(section.key)}
+          className="border-none rounded-md px-2.5 py-1 text-[12px] font-semibold cursor-pointer"
+          style={{ background: "#e8eef9", color: "#15294d" }}
+          title="Tap when the candidate finishes thinking and starts presenting. Time before = thinking, after = delivering. (shortcut: S)"
+        >
+          🗣 Candidate starts presenting <span style={{ opacity: 0.6, fontWeight: 500 }}>(S)</span>
+        </button>
+      )}
+      {split && (
+        <span className="inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-[12px]" style={{ background: "#e8eef9", color: "#15294d" }}>
+          <span>
+            <span style={{ opacity: 0.7 }}>Thinking</span>{" "}
+            <b className="tabular-nums">{formatDuration(split.think)}</b>
+          </span>
+          <span aria-hidden="true" style={{ opacity: 0.4 }}>
+            →
+          </span>
+          <span>
+            <span style={{ opacity: 0.7 }}>Delivering</span>{" "}
+            <b className="tabular-nums" style={{ color: running ? "#2d6a4f" : undefined }}>
+              {formatDuration(split.deliver)}
+            </b>
+          </span>
+          {display === "controls" && (
+            <button
+              type="button"
+              onClick={() => api.markDelivery(section.key)}
+              className="border-none bg-transparent text-[11px] cursor-pointer underline"
+              style={{ color: "#15294d", opacity: 0.7 }}
+              title="Clear the thinking/delivering mark"
+            >
+              undo
+            </button>
+          )}
+        </span>
       )}
     </div>
   );

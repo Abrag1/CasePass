@@ -89,6 +89,8 @@ export function InterviewerPanel({
       else if ((e.key === "t" || e.key === "T") && curSec) {
         if (api.runningKey === curSec.key) api.stopTimer(curSec.key);
         else api.startTimer(curSec.key);
+      } else if ((e.key === "s" || e.key === "S") && curSec && (api.runningKey === curSec.key || api.secondsFor(curSec.key) > 0)) {
+        api.markDelivery(curSec.key);
       }
     };
     window.addEventListener("keydown", onKey);

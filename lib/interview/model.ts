@@ -15,6 +15,12 @@ export interface SectionState {
   seconds: number;
   /** Epoch ms when the timer was last started; null when stopped. */
   runningSince: number | null;
+  /**
+   * Seconds into this section when the candidate stopped thinking and started
+   * presenting (marked by the interviewer). Before this point is "thinking" time,
+   * after it "delivering" time. Absent when the section wasn't split.
+   */
+  splitAt?: number;
 }
 
 // idle: never started · running/paused: interview underway · ended: finished.
@@ -42,6 +48,9 @@ export interface SectionFeedback {
   label: string;
   title: string;
   seconds: number;
+  /** Present only when the interviewer marked where thinking ended and delivery began. */
+  thinkSeconds?: number;
+  deliverSeconds?: number;
   notes: string;
 }
 export interface SectionFeedbackPayload {
@@ -74,6 +83,7 @@ export function parseState(raw: string | null | undefined): InterviewState {
           notes: typeof s?.notes === "string" ? s.notes : "",
           seconds: Number.isFinite(s?.seconds) ? Math.max(0, Math.floor(s!.seconds as number)) : 0,
           runningSince: typeof s?.runningSince === "number" ? s.runningSince : null,
+          ...(Number.isFinite(s?.splitAt) ? { splitAt: Math.max(0, Math.floor(s!.splitAt as number)) } : {}),
         };
       }
       const anyRunning = Object.values(sections).some((x) => x.runningSince);
@@ -103,6 +113,21 @@ export function sectionSeconds(s: SectionState | undefined, now: number): number
   return s.seconds + live;
 }
 
+/**
+ * Thinking vs delivering time for a section, or null if the interviewer never
+ * marked the hand-off. Delivering is whatever is left of the section's total, so
+ * it keeps counting live while the timer runs.
+ */
+export function sectionSplit(
+  s: SectionState | undefined,
+  now: number,
+): { think: number; deliver: number } | null {
+  if (!s || s.splitAt === undefined) return null;
+  const total = sectionSeconds(s, now);
+  const think = Math.min(s.splitAt, total);
+  return { think, deliver: total - think };
+}
+
 export function formatDuration(totalSec: number): string {
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
@@ -125,11 +150,15 @@ export function buildFeedbackPayload(
   now: number = Date.now(),
 ): SectionFeedbackPayload {
   return {
-    sections: sections.map((sec) => ({
-      ...sec,
-      seconds: sectionSeconds(state.sections[sec.key], now),
-      notes: (state.sections[sec.key]?.notes ?? "").trim(),
-    })),
+    sections: sections.map((sec) => {
+      const split = sectionSplit(state.sections[sec.key], now);
+      return {
+        ...sec,
+        seconds: sectionSeconds(state.sections[sec.key], now),
+        ...(split ? { thinkSeconds: split.think, deliverSeconds: split.deliver } : {}),
+        notes: (state.sections[sec.key]?.notes ?? "").trim(),
+      };
+    }),
     general: state.general.trim(),
   };
 }
@@ -142,7 +171,11 @@ export function summaryToText(caseName: string, payload: SectionFeedbackPayload)
   const lines: string[] = [`Feedback — ${caseName}`, ""];
   for (const s of payload.sections) {
     if (!s.notes && s.seconds <= 0) continue;
-    lines.push(`${s.label} · ${s.title}${s.seconds > 0 ? ` (${formatDurationLong(s.seconds)})` : ""}`);
+    const split =
+      s.thinkSeconds !== undefined && s.deliverSeconds !== undefined
+        ? `; ${formatDurationLong(s.thinkSeconds)} thinking, ${formatDurationLong(s.deliverSeconds)} delivering`
+        : "";
+    lines.push(`${s.label} · ${s.title}${s.seconds > 0 ? ` (${formatDurationLong(s.seconds)}${split})` : ""}`);
     lines.push(s.notes || "(no notes)");
     lines.push("");
   }
