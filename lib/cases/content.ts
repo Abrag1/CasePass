@@ -122,6 +122,21 @@ export interface MiniLineChart {
   yStep: number;
 }
 
+// Multi-series line chart: several lines (solid or dashed) on shared categories.
+// Omit multiLineYStep to draw no Y axis values (some casebook charts have none).
+export interface MultiLineSeries {
+  name: string;
+  color: string;
+  dashed?: boolean;
+  values: number[];
+}
+
+// Tree / issue-tree diagram: a root node with any depth of children, drawn left to right.
+export interface TreeNode {
+  label: string;
+  children?: TreeNode[];
+}
+
 // Labelled fact block shown beside an illustration (e.g. "Variable A: Hotel Stories")
 export interface FactPanelRow {
   label?: string;
@@ -270,6 +285,15 @@ export interface CasePage {
   scatterGrid?: boolean;
   miniLinesTitle?: string;
   miniLines?: MiniLineChart[];
+  multiLineTitle?: string;
+  multiLineSeries?: MultiLineSeries[];
+  multiLineXLabels?: string[];
+  multiLineXTitle?: string;
+  multiLineYTitle?: string;
+  multiLineYMax?: number;
+  multiLineYStep?: number;
+  treeTitle?: string;
+  treeRoot?: TreeNode;
   illustrationTitle?: string;
   illustrationSrc?: string;
   illustrationAlt?: string;
@@ -310,6 +334,8 @@ export function pageHasExhibit(p: CasePage): boolean {
     p.axisBarGroups ||
     p.scatterPoints ||
     p.miniLines ||
+    p.multiLineSeries ||
+    p.treeRoot ||
     p.illustrationSrc ||
     p.dataTableRows ||
     p.segmentTable
@@ -1460,6 +1486,15 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       scatterGrid: p.scatterGrid,
       miniLinesTitle: p.miniLinesTitle,
       miniLines: p.miniLines,
+      multiLineTitle: p.multiLineTitle,
+      multiLineSeries: p.multiLineSeries,
+      multiLineXLabels: p.multiLineXLabels,
+      multiLineXTitle: p.multiLineXTitle,
+      multiLineYTitle: p.multiLineYTitle,
+      multiLineYMax: p.multiLineYMax,
+      multiLineYStep: p.multiLineYStep,
+      treeTitle: p.treeTitle,
+      treeRoot: p.treeRoot,
       illustrationTitle: p.illustrationTitle,
       illustrationSrc: p.illustrationSrc,
       illustrationAlt: p.illustrationAlt,

@@ -7,7 +7,7 @@
 // handoff design system): Say-next (blue), Guidance (dashed), Calc (gray),
 // Answer (green). Keep their label casing/weight consistent.
 
-import { pageHasExhibit, type CasePage, type InfoSection } from "@/lib/cases/content";
+import { pageHasExhibit, type CasePage, type InfoSection, type TreeNode } from "@/lib/cases/content";
 import { Presentable, type ShareControl } from "@/components/interview/Presenter";
 
 /* ---------------------------------- callouts --------------------------------- */
@@ -755,6 +755,140 @@ export function MiniLines({ page, dark }: { page: CasePage; dark?: boolean }) {
   );
 }
 
+// Several lines on shared categories; a series can be dashed. Without multiLineYStep no Y
+// ticks or gridlines are drawn (for charts that print no axis values).
+export function MultiLines({ page, dark }: { page: CasePage; dark?: boolean }) {
+  const series = page.multiLineSeries;
+  if (!series) return null;
+  const ink = chartInk(dark);
+  const xLabels = page.multiLineXLabels ?? [];
+  const n = Math.max(...series.map((s) => s.values.length), xLabels.length);
+  const yMax = page.multiLineYMax ?? Math.max(...series.flatMap((s) => s.values));
+  const yStep = page.multiLineYStep;
+  const left = 70;
+  const right = 600;
+  const top = 24;
+  const bottom = 270;
+  const y = (v: number) => bottom - (v / yMax) * (bottom - top);
+  const band = (right - left) / n;
+  const x = (i: number) => left + band * (i + 0.5);
+  const ticks: number[] = [];
+  if (yStep) for (let v = 0; v <= yMax + 1e-9; v += yStep) ticks.push(v);
+  return (
+    <ExhibitFrame dark={dark} title={page.multiLineTitle}>
+      <svg viewBox="0 0 640 360" style={{ width: "100%", maxWidth: 640, display: "block", margin: "0 auto" }}>
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
+            <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={12} fill={ink.axis}>
+              {fmtTick(t)}
+            </text>
+          </g>
+        ))}
+        <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1.2} />
+        <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={ink.axis} strokeWidth={1.2} />
+        {page.multiLineYTitle && (
+          <text x={18} y={(top + bottom) / 2} textAnchor="middle" fontSize={13} fill={ink.text} transform={`rotate(-90 18 ${(top + bottom) / 2})`}>
+            {page.multiLineYTitle}
+          </text>
+        )}
+        {xLabels.map((l, i) => (
+          <text key={i} x={x(i)} y={bottom + 18} textAnchor="middle" fontSize={12} fill={ink.axis}>
+            {l}
+          </text>
+        ))}
+        {page.multiLineXTitle && (
+          <text x={(left + right) / 2} y={bottom + 42} textAnchor="middle" fontSize={13} fill={ink.text}>
+            {page.multiLineXTitle}
+          </text>
+        )}
+        {series.map((s, si) => (
+          <polyline
+            key={si}
+            points={s.values.map((v, i) => `${x(i)},${y(v)}`).join(" ")}
+            fill="none"
+            stroke={s.color}
+            strokeWidth={2.5}
+            strokeLinejoin="round"
+            strokeDasharray={s.dashed ? "7 5" : undefined}
+          />
+        ))}
+        {series.map((s, si) => (
+          <g key={si} transform={`translate(${left + si * (right - left) / series.length} 336)`}>
+            <line x1={0} x2={26} stroke={s.color} strokeWidth={2.5} strokeDasharray={s.dashed ? "7 5" : undefined} />
+            <text x={32} dominantBaseline="middle" fontSize={12} fill={ink.axis}>
+              {s.name}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </ExhibitFrame>
+  );
+}
+
+function TreeBranch({ node, ink }: { node: TreeNode; ink: ReturnType<typeof chartInk> }) {
+  const kids = node.children ?? [];
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <div
+        style={{
+          border: `1px solid ${ink.axis}`,
+          borderRadius: 6,
+          padding: "6px 10px",
+          fontSize: 13,
+          color: ink.text,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {node.label}
+      </div>
+      {kids.length > 0 && (
+        <>
+          <div style={{ width: 18, borderTop: `1px solid ${ink.axis}` }} />
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {kids.map((k, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "4px 0",
+                  borderLeft: kids.length > 1 && i > 0 && i < kids.length - 1 ? `1px solid ${ink.axis}` : undefined,
+                  position: "relative",
+                }}
+              >
+                {kids.length > 1 && (i === 0 || i === kids.length - 1) && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: i === 0 ? "50%" : 0,
+                      height: "50%",
+                      borderLeft: `1px solid ${ink.axis}`,
+                    }}
+                  />
+                )}
+                <div style={{ width: 18, borderTop: `1px solid ${ink.axis}` }} />
+                <TreeBranch node={k} ink={ink} />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Tree diagram of any depth, left to right (issue trees, framework diagrams).
+export function TreeDiagram({ page, dark }: { page: CasePage; dark?: boolean }) {
+  if (!page.treeRoot) return null;
+  return (
+    <ExhibitFrame dark={dark} title={page.treeTitle}>
+      <TreeBranch node={page.treeRoot} ink={chartInk(dark)} />
+    </ExhibitFrame>
+  );
+}
+
 export function Illustration({ page, dark }: { page: CasePage; dark?: boolean }) {
   if (!page.illustrationSrc) return null;
   const head = dark ? "#eef2ef" : "#1f2421";
@@ -954,6 +1088,8 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <AxisBars page={page} dark={dark} />
       <ScatterChart page={page} dark={dark} />
       <MiniLines page={page} dark={dark} />
+      <MultiLines page={page} dark={dark} />
+      <TreeDiagram page={page} dark={dark} />
       <Illustration page={page} dark={dark} />
       <SegmentTable page={page} dark={dark} />
       <DataTable page={page} dark={dark} />

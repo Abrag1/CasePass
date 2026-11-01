@@ -56,7 +56,7 @@ const SECTION_OK_WITHOUT_ACTIVITY = /framework|clarifying|recommendation|risks|n
 pages.forEach((p) => {
   if (/^(interviewer\s+)?guidance\b|^interviewer guidance|^reference\b/i.test(p.label) || /^interviewer guidance$/i.test(p.title))
     errors.push(`page ${p.n}: "${p.label}" is a guidance-only section; fold it into the phase it serves (prompt, framework or its question)`);
-  const hasExhibit = p.chart1 || p.chart2 || p.barChartGroups || p.lineChartPointsStr || p.pieSlices || p.axisBarGroups || p.miniLines || p.illustrationSrc || p.dataTableRows || p.segmentTable;
+  const hasExhibit = p.chart1 || p.chart2 || p.barChartGroups || p.lineChartPointsStr || p.pieSlices || p.axisBarGroups || p.miniLines || p.multiLineSeries || p.treeRoot || p.illustrationSrc || p.dataTableRows || p.segmentTable;
   const hasActivity = p.body || p.qText || p.calcLines || p.calcTable || p.answerText || hasExhibit;
   if (!hasActivity && p.kind === "qa" && !SECTION_OK_WITHOUT_ACTIVITY.test(p.label))
     warnings.push(`page ${p.n}: section "${p.label}" has no question, exhibit, calculation or answer; is it guidance that belongs in another section?`);
@@ -149,6 +149,8 @@ try {
 } catch (e) {
   fatal(`pdftotext failed: ${e.message}`);
 }
+// Some casebook fonts extract a minus sign between single letters (R-r) as "K" (RKr); restore it.
+sourceText = sourceText.replace(/([A-Za-z])K([A-Za-z])/g, "$1-$2");
 const srcTokens = tokens(sourceText);
 const srcGrams = new Set(grams(srcTokens));
 const outAllTokens = [...prose, ...calcText].flatMap((x) => tokens(x.text));
