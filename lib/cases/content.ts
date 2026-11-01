@@ -10,6 +10,8 @@
 // note, cheat) must never reach the interviewee's browser. Use
 // `redactPagesForCandidate()` before sending pages to an interviewee.
 
+import { AUTHORED_CASES } from "./authored";
+
 export type PageKind = "ready" | "qa" | "cheat";
 
 export interface CalcLine {
@@ -101,6 +103,13 @@ export interface PieSlice {
 export interface AxisBarGroup {
   label: string;
   values: number[]; // one per series
+}
+
+// Scatter plot: unconnected points on numeric X and Y axes
+export interface ScatterPoint {
+  x: number;
+  y: number;
+  label?: string;
 }
 
 // Small-multiple line chart: one entry per panel
@@ -246,6 +255,19 @@ export interface CasePage {
   axisBarYMax?: number;
   axisBarYStep?: number;
   axisBarYLabel?: string;
+  // Scatter plot (points only, no connecting line). Axes run from Min (default 0) to Max in
+  // `Step` increments; `scatterYLabel` may contain "\n" to break the axis title over two lines.
+  scatterTitle?: string;
+  scatterPoints?: ScatterPoint[];
+  scatterXMin?: number;
+  scatterXMax?: number;
+  scatterXStep?: number;
+  scatterXLabel?: string;
+  scatterYMin?: number;
+  scatterYMax?: number;
+  scatterYStep?: number;
+  scatterYLabel?: string;
+  scatterGrid?: boolean;
   miniLinesTitle?: string;
   miniLines?: MiniLineChart[];
   illustrationTitle?: string;
@@ -286,6 +308,7 @@ export function pageHasExhibit(p: CasePage): boolean {
     p.lineChartPointsStr ||
     p.pieSlices ||
     p.axisBarGroups ||
+    p.scatterPoints ||
     p.miniLines ||
     p.illustrationSrc ||
     p.dataTableRows ||
@@ -1368,6 +1391,8 @@ const WHALE_HOTEL_PAGES: CasePage[] = [
 ];
 
 export const CASE_CONTENT: Record<string, CasePage[]> = {
+  // Cases written by the conversion agents, one file each (lib/cases/authored/)
+  ...AUTHORED_CASES,
   [ACES_CASE_ID]: ACES_PAGES,
   [AMAIR_CASE_ID]: AMAIR_PAGES,
   [FIRE_PROOF_CASE_ID]: FIRE_PROOF_PAGES,
@@ -1417,6 +1442,17 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       axisBarYMax: p.axisBarYMax,
       axisBarYStep: p.axisBarYStep,
       axisBarYLabel: p.axisBarYLabel,
+      scatterTitle: p.scatterTitle,
+      scatterPoints: p.scatterPoints,
+      scatterXMin: p.scatterXMin,
+      scatterXMax: p.scatterXMax,
+      scatterXStep: p.scatterXStep,
+      scatterXLabel: p.scatterXLabel,
+      scatterYMin: p.scatterYMin,
+      scatterYMax: p.scatterYMax,
+      scatterYStep: p.scatterYStep,
+      scatterYLabel: p.scatterYLabel,
+      scatterGrid: p.scatterGrid,
       miniLinesTitle: p.miniLinesTitle,
       miniLines: p.miniLines,
       illustrationTitle: p.illustrationTitle,

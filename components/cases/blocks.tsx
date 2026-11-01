@@ -155,13 +155,24 @@ export function CalcTableBox({ note, table }: { note?: string; table: { headers:
 }
 
 export function AnswerBox({ text }: { text: string }) {
-  // Answers with **markup** bold only their key points; plain answers stay bold.
-  const selective = text.includes("**");
+  // Answers with **bold** / ==highlight== markup stay regular weight so only the marked key
+  // points stand out; plain answers stay bold.
+  const selective = text.includes("**") || text.includes("==");
   return (
     <div style={{ background: "#e9f1ec", border: "1px solid #cfe3d7", borderRadius: 10, padding: "14px 18px", marginBottom: 14 }}>
       <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#2d6a4f", fontWeight: 600, marginBottom: 5 }}>Answer</div>
-      <div style={{ fontSize: 14, fontWeight: selective ? 400 : 600, color: "#1c3a2c", lineHeight: 1.5, whiteSpace: "pre-line" }}>
-        {selective ? <Rich text={text} /> : text}
+      <div style={{ fontSize: 14, fontWeight: selective ? 400 : 600, color: "#1c3a2c", lineHeight: 1.5 }}>
+        {text.split("\n").map((ln, i) => {
+          // "- " = top-level bullet; lines indented with two spaces = sub-bullets.
+          const sub = ln.startsWith("  ");
+          const top = ln.startsWith("- ");
+          return (
+            <div key={i} style={{ display: "flex", gap: 8, padding: sub ? "1px 0" : "3px 0", paddingLeft: sub ? 22 : 0 }}>
+              {top && <span style={{ color: "#2d6a4f" }}>•</span>}
+              <span><Rich text={top ? ln.slice(2) : ln.trim()} /></span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -261,20 +272,28 @@ export function InfoSectionsBox({ label, sections }: { label?: string; sections:
           {sec.groups?.map((grp, j) => (
             <div key={j} style={{ margin: "10px 0 4px" }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#1f2421", marginBottom: 6 }}>{grp.heading}</div>
-              {grp.items.map((it, k) => (
-                <div key={k} style={{ fontSize: 13, lineHeight: 1.55, color: "#3a3f3b", padding: "3px 0 3px 16px", display: "flex", gap: 8 }}>
-                  <span style={{ color: "#8a8f8a" }}>–</span>
-                  <span><Rich text={it} /></span>
-                </div>
-              ))}
+              {grp.items.map((it, k) => {
+                // Items that start with two spaces are sub-bullets of the item above.
+                const sub = it.startsWith("  ");
+                return (
+                  <div key={k} style={{ fontSize: 13, lineHeight: 1.55, color: "#3a3f3b", padding: "3px 0 3px 16px", paddingLeft: sub ? 36 : 16, display: "flex", gap: 8 }}>
+                    <span style={{ color: "#8a8f8a" }}>{sub ? "•" : "–"}</span>
+                    <span><Rich text={it.trim()} /></span>
+                  </div>
+                );
+              })}
             </div>
           ))}
-          {sec.lines?.map((ln, j) => (
-            <div key={j} style={{ fontSize: 13, lineHeight: 1.55, color: "#3a3f3b", padding: "3px 0", display: "flex", gap: 8 }}>
-              <span style={{ color: "#8a8f8a" }}>•</span>
-              <span><Rich text={ln} /></span>
-            </div>
-          ))}
+          {sec.lines?.map((ln, j) => {
+            // Lines that start with two spaces are sub-bullets of the line above.
+            const sub = ln.startsWith("  ");
+            return (
+              <div key={j} style={{ fontSize: 13, lineHeight: 1.55, color: "#3a3f3b", padding: "3px 0", paddingLeft: sub ? 20 : 0, display: "flex", gap: 8 }}>
+                <span style={{ color: "#8a8f8a" }}>{sub ? "–" : "•"}</span>
+                <span><Rich text={ln.trim()} /></span>
+              </div>
+            );
+          })}
           {sec.steps?.map((st, j) => (
             <div key={j} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "6px 0" }}>
               <span style={{ width: 20, height: 20, flex: "0 0 20px", borderRadius: "50%", background: "#eef0ec", color: "#5b615c", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
@@ -607,6 +626,86 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   );
 }
 
+// Scatter plot: points only (no connecting line), L-shaped axes with tick marks, optional
+// two-line Y title, replicating the usual spreadsheet-style scatter exhibit.
+export function ScatterChart({ page, dark }: { page: CasePage; dark?: boolean }) {
+  if (!page.scatterPoints) return null;
+  const ink = chartInk(dark);
+  const xMin = page.scatterXMin ?? 0;
+  const xMax = page.scatterXMax ?? 100;
+  const xStep = page.scatterXStep ?? 10;
+  const yMin = page.scatterYMin ?? 0;
+  const yMax = page.scatterYMax ?? 100;
+  const yStep = page.scatterYStep ?? 10;
+  const left = 150;
+  const right = 600;
+  const top = 56;
+  const bottom = 300;
+  const x = (v: number) => left + ((v - xMin) / (xMax - xMin)) * (right - left);
+  const y = (v: number) => bottom - ((v - yMin) / (yMax - yMin)) * (bottom - top);
+  const xTicks: number[] = [];
+  for (let v = xMin; v <= xMax + 1e-9; v += xStep) xTicks.push(v);
+  const yTicks: number[] = [];
+  for (let v = yMin; v <= yMax + 1e-9; v += yStep) yTicks.push(v);
+  const fmt = (v: number) => Number(v.toFixed(2)).toLocaleString("en-US");
+  const yLines = page.scatterYLabel?.split("\n");
+  return (
+    <ExhibitFrame dark={dark}>
+      <svg viewBox="0 0 640 380" style={{ width: "100%", maxWidth: 640, display: "block", margin: "0 auto" }}>
+        {page.scatterTitle && (
+          <text x={(left + right) / 2} y={22} textAnchor="middle" fontSize={15} fontWeight={700} fill={ink.text}>
+            {page.scatterTitle}
+          </text>
+        )}
+        {page.scatterGrid &&
+          yTicks.map((t) => <line key={`g${t}`} x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />)}
+        <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1.2} />
+        <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={ink.axis} strokeWidth={1.2} />
+        {yTicks.map((t) => (
+          <g key={`y${t}`}>
+            <line x1={left - 5} x2={left} y1={y(t)} y2={y(t)} stroke={ink.axis} strokeWidth={1.2} />
+            <text x={left - 9} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.text}>
+              {fmt(t)}
+            </text>
+          </g>
+        ))}
+        {xTicks.map((t) => (
+          <g key={`x${t}`}>
+            <line x1={x(t)} x2={x(t)} y1={bottom} y2={bottom + 5} stroke={ink.axis} strokeWidth={1.2} />
+            <text x={x(t)} y={bottom + 22} textAnchor="middle" fontSize={13} fill={ink.text}>
+              {fmt(t)}
+            </text>
+          </g>
+        ))}
+        {yLines && (
+          <text x={64} y={(top + bottom) / 2 - ((yLines.length - 1) * 8)} textAnchor="middle" fontSize={14} fill={ink.text}>
+            {yLines.map((ln, i) => (
+              <tspan key={i} x={64} dy={i === 0 ? 0 : 17}>
+                {ln}
+              </tspan>
+            ))}
+          </text>
+        )}
+        {page.scatterXLabel && (
+          <text x={(left + right) / 2} y={bottom + 62} textAnchor="middle" fontSize={14} fill={ink.text}>
+            {page.scatterXLabel}
+          </text>
+        )}
+        {page.scatterPoints.map((p, i) => (
+          <g key={i}>
+            <circle cx={x(p.x)} cy={y(p.y)} r={4.5} fill={dark ? "#eef2ef" : "#111"} />
+            {p.label && (
+              <text x={x(p.x) + 9} y={y(p.y) - 8} fontSize={12} fill={ink.text}>
+                {p.label}
+              </text>
+            )}
+          </g>
+        ))}
+      </svg>
+    </ExhibitFrame>
+  );
+}
+
 export function MiniLines({ page, dark }: { page: CasePage; dark?: boolean }) {
   if (!page.miniLines) return null;
   const ink = chartInk(dark);
@@ -853,6 +952,7 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <LineChart page={page} dark={dark} />
       <PieChart page={page} dark={dark} />
       <AxisBars page={page} dark={dark} />
+      <ScatterChart page={page} dark={dark} />
       <MiniLines page={page} dark={dark} />
       <Illustration page={page} dark={dark} />
       <SegmentTable page={page} dark={dark} />
@@ -911,7 +1011,9 @@ export function PageBody({
             {page.body}
           </div>
         </PresentWrap>
-        {page.note && <div style={{ fontSize: 12, color: "#8a8f8a", marginTop: 10 }}><Rich text={page.note} /></div>}
+        {page.note && <div style={{ fontSize: 12, color: "#8a8f8a", marginTop: 10, marginBottom: 14 }}><Rich text={page.note} /></div>}
+        {/* Interviewer guidance that belongs with the prompt (never sent to the candidate). */}
+        <InterviewerBlocks page={page} presentable={presentable} share={share} />
       </>
     );
   }
@@ -924,8 +1026,6 @@ export function PageBody({
     );
   }
 
-  const hasExhibit = pageHasExhibit(page);
-
   return (
     <>
       {page.qText && (
@@ -933,6 +1033,27 @@ export function PageBody({
           <SayNextBox text={page.qText} label={sayLabel} />
         </PresentWrap>
       )}
+      <InterviewerBlocks page={page} presentable={presentable} share={share} />
+    </>
+  );
+}
+
+// Everything on a section below the prompt/say-next box: guidance, reference lists,
+// exhibit, calculation, answer, next step. Shared by the prompt page ("ready") and Q&A
+// pages so interviewer guidance can sit inside the section it belongs to.
+function InterviewerBlocks({
+  page,
+  presentable,
+  share,
+}: {
+  page: CasePage;
+  presentable: boolean;
+  share?: ShareControl;
+}) {
+  const hasExhibit = pageHasExhibit(page);
+
+  return (
+    <>
       {page.guidancePreLines && (
         <PresentWrap presentable={presentable} title={page.title} label={page.guidancePreLabel ?? "Guidance"}>
           <GuidancePreBox label={page.guidancePreLabel} note={page.guidancePreNote} intro={page.guidancePreIntro} lines={page.guidancePreLines} />
