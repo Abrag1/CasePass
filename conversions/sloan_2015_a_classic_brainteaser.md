@@ -1,0 +1,2 @@
+VERDICT: FAIL
+Reason: verify-case.mjs reports MECHANICAL: FAIL. The converter says it is a false positive: pdftotext encodes the minus in "R-r" as "K"/"!", so 3 formula lines show as additions. Converter says wording matches the page image; 3 sections, no exhibits. Not independently verified. If the owner confirms by eye, it can be republished via the copy of the converted file that was kept outside the repo (session scratchpad: keep/sloan_2015_a_classic_brainteaser.ts), or by re-running the converter after verify-case.mjs learns to normalise that minus sign.
