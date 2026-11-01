@@ -250,6 +250,8 @@ and compare it to the source page PNG side by side; fix every difference and rep
 | Stacked bar over time | `chart1`, `chart1Legend` |
 | Grouped columns with value labels | `barChart*` |
 | Single line chart (connected line) | `lineChart*` |
+| Line chart with several series (solid and/or dashed lines), with or without Y values | `multiLineTitle`, `multiLineSeries` (`{name,color,dashed?,values}`), `multiLineXLabels`, `multiLineXTitle`, `multiLineYTitle`, `multiLineYMax`, optional `multiLineYStep` (omit it for charts that print no Y values) |
+| Tree / issue-tree / framework diagram of any depth (boxes and connecting lines) | `treeTitle`, `treeRoot` (`{label, children?: [...]}`), drawn left to right; use it instead of flattening the tree into `infoSections` |
 | Scatter plot (unconnected dots, axis titles, ticks) | `scatterTitle`, `scatterPoints`, `scatterXMax/XStep/XLabel`, `scatterYMax/YStep/YLabel` (`
 ` splits a title over two lines), optional `scatterGrid` |
 
