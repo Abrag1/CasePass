@@ -3,6 +3,7 @@ import type { CasePage } from "../content";
 export const CASE_ID = "e1c35d07-546d-41cd-aae5-a874b17d0abf";
 
 export const CASE_META = {
+  review: "confirmed",
   case_type: "Profitability",
   synopsis:
     "A medical device company has developed a new device for breast conservation surgeries and wants a revenue maximizing pricing strategy for the United States.",

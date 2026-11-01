@@ -1,0 +1,235 @@
+import type { CasePage } from "../content";
+
+export const CASE_ID = "7bf82894-d282-43ee-be34-49c731e6f006";
+
+export const CASE_META = {
+  review: "auto",
+  case_type: "Market Entry",
+  synopsis:
+    "A private equity firm is offered free land on an army base to build a 400-room hotel. The candidate works through pricing, revenue, costs and breakeven to decide whether the firm should build it.",
+  full_prompt:
+    "Our client is a PE firm that has the opportunity to invest in building a 400-room hotel on an army base. The idea was given to the PE firm by the army.\n\nThe government has decided to give our client the land for free - our client can build the hotel and keep all of the profits. Our client has hired you to find out what they need to know to determine if they should build it or not.",
+  tags: ["interviewer-led", "market-entry", "light-math", "breakeven"],
+};
+
+export const PAGES: CasePage[] = [
+  {
+    n: "01",
+    label: "Candidate prompt",
+    title: "Case Prompt",
+    kind: "ready",
+    // `body` shows paragraph breaks (pre-wrap): keep the source's two paragraphs. It is all the candidate receives.
+    body: "Our client is a PE firm that has the opportunity to invest in building a 400-room hotel on an army base. The idea was given to the PE firm by the army.\n\nThe government has decided to give our client the land for free - our client can build the hotel and keep all of the profits. Our client has hired you to find out what they need to know to determine if they should build it or not.",
+    // `note` is small grey single-flow text: keep it SHORT (one or two sentences).
+    note: "**Fit Questions** — 1. Why consulting? 2. Tell me about a time when you had to face a significant challenge.",
+    // The case-level interviewer guidance lives on the SAME page, under the prompt (interviewer-only).
+    infoBoxLabel: "Interviewer Guidance",
+    infoSections: [
+      {
+        paragraphs: [
+          "This case helps candidates understand that investors' interests are usually two-fold: profitability of the investment and their own financial hurdles. In order to be successful in this case, candidates must also gain an understanding of the market and competition. McKinsey cases are interviewer driven, so you will ask all the questions listed. However, do assess the candidate on their ability to **drive the case forward**.",
+        ],
+      },
+      {
+        label: "Case Development",
+        steps: [
+          { n: "1", text: "Framework" },
+          { n: "2", text: "Pricing analysis" },
+          { n: "3", text: "Revenue analysis" },
+          { n: "4", text: "Cost analysis" },
+          { n: "5", text: "Recommendations" },
+        ],
+      },
+    ],
+  },
+  {
+    n: "02",
+    label: "Framework",
+    title: "Framework",
+    kind: "qa",
+    infoBoxLabel: "Framework",
+    // One section for the whole framework phase: the outline (framework guidance) first, then the
+    // facts the slide says to give "if asked" (clarifying info), in the slide's own order.
+    // Outline levels: label = underlined heading, group heading = dash group, items = bullets, "  " = sub-item.
+    infoSections: [
+      {
+        paragraphs: [
+          "**Working hypothesis:** The PE firm should build the hotel. To validate that, I'd like to look at",
+        ],
+      },
+      {
+        label: "Hotel Market",
+        groups: [
+          { heading: "Competition", items: ["Number of hotels", "Location"] },
+          { heading: "Customers", items: ["Soldiers", "  Proximity to base"] },
+        ],
+      },
+      {
+        label: "Profitability",
+        groups: [
+          { heading: "Revenues", items: ["Demand/Occupancy", "# of rooms", "Pricing", "  WTP", "Non-occupancy revenues"] },
+          {
+            heading: "Costs",
+            items: ["Capital expenses", "  Building/investment", "  Breakeven timeline", "Operational expenses", "  Labor", "  Maintenance"],
+          },
+        ],
+      },
+      {
+        label: "Client interests (PE firm)",
+        lines: ["Portfolio mix", "Financial and operational investment goals", "Exit opportunities", "Opportunity cost"],
+      },
+      {
+        label: "Interviewer Guidance",
+        paragraphs: ["The purpose of the hotel is to provide housing for:"],
+        lines: ["Soldiers attending training at the base", "Soldiers with temporary transfers to this base"],
+      },
+      { paragraphs: ["**If asked**, provide the candidate with the following information:"] },
+      {
+        label: "Competition",
+        lines: [
+          "There are three existing hotels near the base and each are approximately 20 miles away from it. The nightly rates for each hotel are:",
+          "  Hilton ($110/night)",
+          "  Hampton Inn ($75/night)",
+          "  Days Inn ($40/night)",
+        ],
+      },
+      {
+        label: "Occupancy",
+        lines: [
+          "There are two training classes held at the base:",
+          "  Basic Officer Training: 200 soldiers per class; class lasts 10 weeks and is held 5 times per year.",
+          "  Advanced Officer Training: 50 soldiers per class; class lasts 4 weeks and is held 10 times per year.",
+          "Temporary housing: Soldiers are transferred every 3 years and are given 15 days to find a permanent place to stay. There are 9,000 active duty soldiers subject to this rotation.",
+        ],
+      },
+    ],
+  },
+  {
+    n: "03",
+    label: "Question: Pricing Strategy",
+    title: "Pricing Strategy",
+    kind: "qa",
+    // qText = what the interviewer asks (the italic text on the slide), verbatim.
+    qText: "The Army will reimburse soldiers $75 per night (per diem). How much would you charge at the hotel?",
+    // The plain instruction line under the question is interviewer-only guidance.
+    guidancePreLines: ["**Clarify** that this per day reimbursement is also intended to cover the soldiers' breakfast and dinner."],
+    guidanceLabel: "Interviewer Guidance: Pricing Strategy",
+    guidanceLines: [
+      "**Probe** the student to determine how much per night the hotel will charge and what services should be included.",
+      "The candidate should consider how much breakfast and dinner will cost the soldier and ensure that those costs in addition to the nightly rate will not exceed the stipend.",
+      "The candidate should recognize that the Days Inn (==$40/night==) is the only competitive option the soldier is likely to consider, and should discuss how the distance away (20 miles) might also impact this decision, as well as what amenities are included.",
+    ],
+  },
+  {
+    n: "04",
+    label: "Question: Revenue",
+    title: "Revenue",
+    kind: "qa",
+    qText:
+      "Assume for purposes of the rest of the case that the client decides the hotel will charge a fee of $60/night.\n\nAssuming that the classes and relocation of soldiers are the only sources of revenue, what is the total potential revenue per year for the hotel?",
+    // The slide prints this table inside the guidance; it is the calculation, so it goes in the walkthrough box.
+    // The source prints no total row, so none is added here (report the missing sum under FLAGS instead).
+    calcNote: "Candidate should use occupancy information in previous slide to compute revenue:",
+    calcTable: {
+      headers: ["Type of training", "People #", "Time Period", "Times/year", "Total rooms/year"],
+      rows: [
+        ["Basic", "200", "10 weeks", "5", "70,000"],
+        ["Advanced", "50", "4 weeks", "10", "14,000"],
+        ["Temp.", "3,000", "15 nights", "", "45,000"],
+      ],
+    },
+    // Answer = the two printed lines, as bullets, key results highlighted.
+    answerText: "- Total rooms/yr. = ==129,000== (round to ==130,000==)\n- Total revenue = ==$7.8 million== @$60 per night",
+  },
+  {
+    n: "05",
+    label: "Question: Costs",
+    title: "Costs",
+    kind: "qa",
+    qText: "Having addressed the revenue side, let's talk about costs. What are the costs associated with operating a hotel?",
+    guidancePreNote: "If the candidate has not yet touched upon initial investment costs, **probe** them to do so by asking:",
+    guidancePreLines: ["What are the other costs associated with running a hotel?"],
+    guidanceLabel: "Interviewer Guidance: Costs",
+    // Underlined sub-headings on the slide become top-level lines; their bullets become "  " sub-bullets.
+    guidanceLines: [
+      "**Annual operating costs**",
+      "  Candidate should list off relevant fixed and variable operating costs such as labor, supplies and utilities.",
+      "  Tell them to assume total Op-ex of ==$4 million== per year.",
+      "**Upfront investment cost**",
+      "  The candidate should talk about investment costs.",
+      "  Tell them that the Hampton Inn made an initial investment of ==$50,000== per room. The same costs can be assumed for our client's hotel.",
+      "  Candidate should calculate a total initial investment of ==$20 million== to build a 400 room hotel.",
+    ],
+  },
+  {
+    n: "06",
+    label: "Question: Capacity",
+    title: "Capacity",
+    kind: "qa",
+    qText: "Are there any issues that may keep the hotel from attaining the calculated revenue?",
+    // A sentence-paragraph stays ONE line; never split prose into invented bullets.
+    guidancePreLines: [
+      "After the candidate identifies the capacity issue, state that \"during their busiest part of the year, which lasts four months, the hotel runs a capacity shortage of 80 rooms per night.\" The candidate should then recalculate the revenue projection created earlier and to determine the operating profit.",
+    ],
+    guidanceLabel: "Interviewer Guidance: Capacity",
+    guidanceLines: ["We are looking for the candidate to touch on **capacity issues**.", "The candidate should revise revenue calculation:"],
+    // The slide prints the working as bullet sentences: keep each bullet verbatim, highlight the results.
+    answerText:
+      "- 80 rooms x 4 months x 30 days per month = ==9600== rooms per year (round this to 10,000 rooms)\n- So, the new number of rooms are ==120,000== x $60 per night = ==$7.2M==/ year in annual revenue\n- Therefore operating profit is $7.2 M (Revenue) - $4M (Operating Cost) = ==$3.2M== per year (profit)",
+  },
+  {
+    n: "07",
+    label: "Question: Breakeven",
+    title: "Breakeven",
+    kind: "qa",
+    qText: "Assume the client wants to breakeven within 4-5 years, what is the breakeven point for the PE firm?",
+    guidanceLabel: "Interviewer Guidance: Breakeven",
+    guidanceLines: [
+      "Breakeven time = fixed costs (investment) / operating margin: $20M / $3.2M = ==6-7 years==.",
+      "Once calculated, **probe** the candidate by asking, \"Is this a good rate of return? Why do you think this?\"",
+      "Once the candidate responds, ask, \"What can be done to decrease the breakeven period?\"",
+      "**Probe** the candidate to come up with some ideas and suggestions to decrease breakeven period:",
+      "  Add a restaurant to the hotel",
+      "  Host army conferences",
+      "  Find ways to decrease costs or increase occupancy",
+    ],
+  },
+  {
+    n: "08",
+    label: "Recommendation",
+    title: "Recommendation",
+    kind: "qa",
+    // ONE closing section: the Recommendation slide followed by the Risks and Next Steps slide, in source order.
+    infoBoxLabel: "Recommendation",
+    infoSections: [
+      {
+        paragraphs: ["The PE firm should **not invest** in the army hotel:"],
+        lines: [
+          "Annual operating profits are ==$3.2M==",
+          "This results in a breakeven period of ==6-7 years==, exceeding the firm's goal of 4-5 years",
+          "Current army per diem does not allow for increases in the price of the hotel/night",
+        ],
+      },
+      {
+        groups: [
+          {
+            heading: "Risks",
+            items: [
+              "May lose opportunity for decreasing BE timeline by augmenting non-occupancy revenue (ex. restaurants and amenities) and by reducing costs",
+              "Trainings may change and occupancy estimations may be inaccurate",
+              "Opportunity cost for PE firm",
+            ],
+          },
+          {
+            heading: "Next Steps",
+            items: [
+              "Analyze the financial impact of non-occupancy revenue and explore areas of cost reduction",
+              "Look for other army bases with lower costs and/or higher occupancy demands",
+              "Look for other investments that have a breakeven time period of 4-5 years",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
