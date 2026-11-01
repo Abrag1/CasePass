@@ -42,9 +42,21 @@ export const PAGES: CasePage[] = [
     label: "Framework",
     title: "Framework",
     kind: "qa",
+    // One section for the whole framework phase. The facts to give when asked sit in their own
+    // box ABOVE the framework, so the framework box can be shared with the candidate on its own.
+    guidancePreLabel: "Provide when asked",
+    guidancePreIntro:
+      "The candidate should walk the interviewer through the framework and ask further questions to understand the market and revenue potential. Provide this information **when asked**:",
+    guidancePreLines: [
+      "There are around ==100,000== breast conservation surgeries per year.",
+      "The device is applicable across a wide range of procedures: it can be used in every breast conservation surgery.",
+      "The device is disposable, so every surgery needs a new device.",
+      "The device is FDA approved.",
+      "There are no concerns related to quality from R&D.",
+      "The success rate of the device is 100%.",
+      "Currently there are no competitors, and the device would be the only product of this kind available on the market.",
+    ],
     infoBoxLabel: "Framework",
-    // One section for the whole framework phase, in the casebook's order: the framework
-    // guidance, the transition statement, then the facts to give when asked.
     infoSections: [
       {
         paragraphs: ["The candidate should develop a framework that considers the following drivers:"],
@@ -89,27 +101,9 @@ export const PAGES: CasePage[] = [
           "**Transition statement:** I would like to begin by better understanding a clinician's adoption of the new device. It would be great if we had data on their willingness to adopt the device at various price points.",
         ],
       },
-      {
-        paragraphs: [
-          "The candidate should walk the interviewer through the framework and ask further questions to understand the market and revenue potential. Provide this information **when asked**:",
-        ],
-        lines: [
-          "There are around ==100,000== breast conservation surgeries per year.",
-          "The device is applicable across a wide range of procedures: it can be used in every breast conservation surgery.",
-          "The device is disposable, so every surgery needs a new device.",
-          "The device is FDA approved.",
-          "There are no concerns related to quality from R&D.",
-          "The success rate of the device is 100%.",
-          "Currently there are no competitors, and the device would be the only product of this kind available on the market.",
-        ],
-      },
-      {
-        paragraphs: [
-          "At this point, the candidate should know that the market potential for the device is ==100,000 surgeries per year==.",
-          "The candidate should then inquire if we know anything about a clinician's willingness to pay for the device. **Show Exhibit 1.**",
-        ],
-      },
     ],
+    nextStepText:
+      "At this point, the candidate should know that the market potential for the device is ==100,000 surgeries per year==. The candidate should then inquire if we know anything about a clinician's willingness to pay for the device. **Show Exhibit 1.**",
   },
   {
     n: "03",
