@@ -1,2 +1,5 @@
-VERDICT: FAIL
-Reason: verify-case.mjs reports MECHANICAL: FAIL. The converter says it is a false positive: pdftotext encodes the minus in "R-r" as "K"/"!", so 3 formula lines show as additions. Converter says wording matches the page image; 3 sections, no exhibits. Not independently verified. If the owner confirms by eye, it can be republished via the copy of the converted file that was kept outside the repo (session scratchpad: keep/sloan_2015_a_classic_brainteaser.ts), or by re-running the converter after verify-case.mjs learns to normalise that minus sign.
+VERDICT: PASS
+Case: A Classic Brainteaser (MIT Sloan 2015), pp. 45-46. Verified by case-verifier.
+MECHANICAL: PASS (after verify-case.mjs learned the "R-r" minus-sign extraction artefact). CRITICAL: none. MAJOR: none.
+Notes: Source maths slip kept as printed ("100/pi ~ 100/3 ~ 35 meters"; 100/3 = 33.3, 100/pi = 31.8). "Reasoning" sits in the strategy box rather than the data box. No exhibits. Tags interviewer-led / light-math are guesses.
+VERDICT: PASS

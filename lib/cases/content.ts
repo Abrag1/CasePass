@@ -292,6 +292,7 @@ export interface CasePage {
   multiLineYTitle?: string;
   multiLineYMax?: number;
   multiLineYStep?: number;
+  multiLineGridLines?: number; // unlabelled gridlines when there are no Y values (omit multiLineYStep)
   treeTitle?: string;
   treeRoot?: TreeNode;
   illustrationTitle?: string;
@@ -1493,6 +1494,7 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       multiLineYTitle: p.multiLineYTitle,
       multiLineYMax: p.multiLineYMax,
       multiLineYStep: p.multiLineYStep,
+      multiLineGridLines: p.multiLineGridLines,
       treeTitle: p.treeTitle,
       treeRoot: p.treeRoot,
       illustrationTitle: p.illustrationTitle,

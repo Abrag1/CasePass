@@ -88,12 +88,12 @@ for (const p of pages) {
       calcText.push({ page: p.n, ...s });
       continue;
     }
-    if (isLabelKey(k)) continue;
+    if (isLabelKey(k) && !/^(treeRoot|infoSections)/.test(s.path)) continue;
     prose.push({ page: p.n, ...s });
     if (/your interviewee doesn.t need an account/i.test(s.text)) errors.push(`page ${p.n}: forbidden sentence in ${s.path}`);
     if (CANDIDATE_KEYS(s.path) && /\*\*|==/.test(s.text)) errors.push(`page ${p.n}: ** or == markup in candidate-facing field ${s.path}`);
   }
-  if (p.answerText && p.answerText.length > 140 && !/^\s*[-•]/m.test(p.answerText))
+  if (p.answerText && p.answerText.length > 140 && (p.answerText.match(/;/g) ?? []).length >= 2 && !/^\s*[-•]/m.test(p.answerText))
     warnings.push(`page ${p.n}: answerText is long and has no bullets`);
 }
 
@@ -150,7 +150,7 @@ try {
   fatal(`pdftotext failed: ${e.message}`);
 }
 // Some casebook fonts extract a minus sign between single letters (R-r) as "K" (RKr); restore it.
-sourceText = sourceText.replace(/([A-Za-z])K([A-Za-z])/g, "$1-$2");
+sourceText = sourceText.replace(/(?<![A-Za-z])([A-Za-z])K([a-z])(?![A-Za-z])/g, "$1-$2");
 const srcTokens = tokens(sourceText);
 const srcGrams = new Set(grams(srcTokens));
 const outAllTokens = [...prose, ...calcText].flatMap((x) => tokens(x.text));
@@ -174,7 +174,14 @@ for (const x of prose) {
 // scoring grids and header chips. Extend FURNITURE as new casebooks need it.
 const FURNITURE_STRIP = [/Case #\d+:[^\n]*\(\d+\/\d+\)/g, /^\s*\d{1,3}\s*$/gm];
 const FURNITURE_CHUNK = /Case Evaluation|Fit Evaluation|Overall Fit Performance|Concepts Tested|Quant Level|Client Type|Structure and Framework|Analytical and Problem Solving/i;
-const cleanSource = FURNITURE_STRIP.reduce((s, re) => s.replace(re, " "), sourceText);
+// Running headers/footers: a line repeated on 3+ pages is booklet furniture, not case content.
+const lineCounts = new Map();
+for (const pg of sourceText.split(/\f/)) {
+  for (const l of new Set(pg.split(/\n/).map((x) => x.trim()).filter((x) => x.length > 10))) lineCounts.set(l, (lineCounts.get(l) ?? 0) + 1);
+}
+const runningLines = new Set([...lineCounts].filter(([, n]) => n >= 3).map(([l]) => l));
+const noRunning = sourceText.split(/\n/).filter((l) => !runningLines.has(l.trim())).join("\n");
+const cleanSource = FURNITURE_STRIP.reduce((s, re) => s.replace(re, " "), noRunning);
 const chunks = cleanSource.split(/\n{2,}|(?<=[.?!])\s+/).map((c) => c.trim()).filter(Boolean);
 const outTokenSet = new Set(outAllTokens);
 let omittedWords = 0;

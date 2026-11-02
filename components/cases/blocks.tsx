@@ -774,9 +774,12 @@ export function MultiLines({ page, dark }: { page: CasePage; dark?: boolean }) {
   const x = (i: number) => left + band * (i + 0.5);
   const ticks: number[] = [];
   if (yStep) for (let v = 0; v <= yMax + 1e-9; v += yStep) ticks.push(v);
+  const gridN = page.multiLineGridLines ?? 0;
+  const bare: number[] = [];
+  for (let k = 0; k <= gridN; k++) bare.push((yMax * k) / gridN);
   return (
     <ExhibitFrame dark={dark} title={page.multiLineTitle}>
-      <svg viewBox="0 0 640 360" style={{ width: "100%", maxWidth: 640, display: "block", margin: "0 auto" }}>
+      <svg viewBox="0 0 640 372" style={{ width: "100%", maxWidth: 640, display: "block", margin: "0 auto" }}>
         {ticks.map((t) => (
           <g key={t}>
             <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
@@ -785,7 +788,8 @@ export function MultiLines({ page, dark }: { page: CasePage; dark?: boolean }) {
             </text>
           </g>
         ))}
-        <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1.2} />
+        {!yStep && gridN > 0 && bare.map((t) => <line key={t} x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />)}
+        {yStep && <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1.2} />}
         <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={ink.axis} strokeWidth={1.2} />
         {page.multiLineYTitle && (
           <text x={18} y={(top + bottom) / 2} textAnchor="middle" fontSize={13} fill={ink.text} transform={`rotate(-90 18 ${(top + bottom) / 2})`}>
@@ -814,7 +818,7 @@ export function MultiLines({ page, dark }: { page: CasePage; dark?: boolean }) {
           />
         ))}
         {series.map((s, si) => (
-          <g key={si} transform={`translate(${left + si * (right - left) / series.length} 336)`}>
+          <g key={si} transform={`translate(${left + (si % 2) * ((right - left) / 2)} ${322 + Math.floor(si / 2) * 20})`}>
             <line x1={0} x2={26} stroke={s.color} strokeWidth={2.5} strokeDasharray={s.dashed ? "7 5" : undefined} />
             <text x={32} dominantBaseline="middle" fontSize={12} fill={ink.axis}>
               {s.name}
