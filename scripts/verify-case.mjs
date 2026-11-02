@@ -139,6 +139,9 @@ const grams = (t, n = 4) => {
   return out;
 };
 
+// --pages <first>-<last> overrides the catalog range when the catalog's start page is wrong.
+const pagesArg = process.argv.find((a) => a.startsWith("--pages="))?.slice(8).match(/^([0-9]+)-([0-9]+)$/);
+if (pagesArg) { entry.start = Number(pagesArg[1]); entry.end = Number(pagesArg[2]); }
 const last = entry.end ?? entry.start + 14;
 let sourceText;
 try {
@@ -153,6 +156,7 @@ try {
 sourceText = sourceText.replace(/(?<![A-Za-z])([A-Za-z])K([a-z])(?![A-Za-z])/g, "$1-$2");
 const srcTokens = tokens(sourceText);
 const srcGrams = new Set(grams(srcTokens));
+const srcTokenSet = new Set(srcTokens);
 const outAllTokens = [...prose, ...calcText].flatMap((x) => tokens(x.text));
 const outGrams = new Set(grams(outAllTokens));
 
@@ -165,6 +169,8 @@ for (const x of prose) {
     if (t.length < 5) continue;
     const g = grams(t);
     const cov = g.length ? g.filter((q) => srcGrams.has(q)).length / g.length : 1;
+    // A very short sentence whose every word is in the source is most likely text the PDF extraction reordered.
+    if (t.length <= 6 && t.every((w) => srcTokenSet.has(w))) continue;
     if (cov < ADD_MIN_COVERAGE) additions.push({ ...x, text: sentence.trim(), cov });
   }
 }

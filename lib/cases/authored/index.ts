@@ -10,6 +10,7 @@ import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
 import * as yale7Eleven from "./yale_ygcc_2013_7_eleven";
+import * as yale7Eleven2024 from "./yale_ygcc_2024_7_eleven";
 
 const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePage[] }[] = [
   // REGISTER-ENTRIES
@@ -17,6 +18,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothBreastCancerSurgery,
   sloanBrainteaser,
   yale7Eleven,
+  yale7Eleven2024,
 ];
 
 export const AUTHORED_CASES: Record<string, CasePage[]> = Object.fromEntries(
