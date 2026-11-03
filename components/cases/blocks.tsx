@@ -1337,22 +1337,32 @@ function HarveyBall({ fill, dark, label }: { fill: number; dark?: boolean; label
   );
 }
 
-export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
-  if (!page.dataTableRows || !page.dataTableHeaders) return null;
+function DataGrid({
+  title, footnote, cols, headers, rows, dark, first,
+}: {
+  title?: string;
+  footnote?: string;
+  cols: string;
+  headers: CasePage["dataTableHeaders"];
+  rows: NonNullable<CasePage["dataTableRows"]>;
+  dark?: boolean;
+  first: boolean;
+}) {
+  if (!headers) return null;
   const head = dark ? "#8a958d" : "#8a8f8a";
   const border = dark ? "1px solid #333a35" : "1px solid #f2f3f0";
   // Wide tables (many columns) get more room so cells don't wrap awkwardly.
-  const maxW = dark ? undefined : page.dataTableHeaders.length > 6 ? 820 : 560;
+  const maxW = dark ? undefined : headers.length > 6 ? 820 : 560;
   return (
-    <ExhibitFrame dark={dark}>
-      {page.dataTableTitle && (
-        <div style={{ fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 14, textAlign: "center" }}>{page.dataTableTitle}</div>
+    <div style={first ? undefined : { marginTop: 22 }}>
+      {title && (
+        <div style={{ fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 14, textAlign: "center" }}>{title}</div>
       )}
-      <div style={{ display: "grid", gridTemplateColumns: page.dataTableCols, gap: 0, fontSize: 12.5, minWidth: 280, maxWidth: maxW, margin: "0 auto" }}>
-        {page.dataTableHeaders.map((h, i) => (
+      <div style={{ display: "grid", gridTemplateColumns: cols, gap: 0, fontSize: 12.5, minWidth: 280, maxWidth: maxW, margin: "0 auto" }}>
+        {headers.map((h, i) => (
           <div key={i} style={{ fontWeight: 600, color: head, padding: "5px 4px", textAlign: h.align }}>{h.v}</div>
         ))}
-        {page.dataTableRows.map((row, i) => (
+        {rows.map((row, i) => (
           <div key={i} style={{ display: "contents" }}>
             {row.cells.map((c, j) => (
               <div
@@ -1376,9 +1386,39 @@ export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
           </div>
         ))}
       </div>
-      {page.dataTableFootnote && (
-        <div style={{ fontSize: 11, color: head, textAlign: "right", maxWidth: maxW, margin: "12px auto 0" }}>{page.dataTableFootnote}</div>
+      {footnote && (
+        <div style={{ fontSize: 11, color: head, textAlign: "right", maxWidth: maxW, margin: "12px auto 0" }}>{footnote}</div>
       )}
+    </div>
+  );
+}
+
+export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
+  if (!page.dataTableRows || !page.dataTableHeaders) return null;
+  return (
+    <ExhibitFrame dark={dark}>
+      {page.dataTableIntro && (
+        <div style={{ fontSize: 13, lineHeight: 1.6, color: dark ? "#dbe3dd" : "#2a2f2b", marginBottom: 18 }}>
+          {page.dataTableIntro.map((ln, i) => (
+            <div key={i} style={{ paddingLeft: ln.startsWith("  ") ? 18 : 0 }}>
+              {ln.startsWith("  ") ? "– " : "• "}
+              {ln.trim()}
+            </div>
+          ))}
+        </div>
+      )}
+      <DataGrid
+        title={page.dataTableTitle}
+        footnote={page.dataTableFootnote}
+        cols={page.dataTableCols ?? ""}
+        headers={page.dataTableHeaders}
+        rows={page.dataTableRows}
+        dark={dark}
+        first
+      />
+      {page.dataTableMore?.map((t, i) => (
+        <DataGrid key={i} title={t.title} footnote={t.footnote} cols={t.cols} headers={t.headers} rows={t.rows} dark={dark} first={false} />
+      ))}
     </ExhibitFrame>
   );
 }

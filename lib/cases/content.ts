@@ -91,6 +91,13 @@ export interface DataTableCell {
 export interface DataTableRow {
   cells: DataTableCell[];
 }
+export interface DataTableExtra {
+  title?: string;
+  footnote?: string;
+  cols: string;
+  headers: DataTableHeader[];
+  rows: DataTableRow[];
+}
 
 // Pie chart (slice angles are computed from `value`)
 export interface PieSlice {
@@ -430,6 +437,10 @@ export interface CasePage {
   dataTableCols?: string;
   dataTableHeaders?: DataTableHeader[];
   dataTableRows?: DataTableRow[];
+  // Further tables drawn in the same exhibit frame, below the first (for multi-table data sheets).
+  dataTableMore?: DataTableExtra[];
+  // Optional lines printed above the first table (a leading two spaces makes a sub-line).
+  dataTableIntro?: string[];
   segmentTitle?: string;
   segmentTable?: SegmentBlock[];
 
@@ -1668,6 +1679,8 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       dataTableCols: p.dataTableCols,
       dataTableHeaders: p.dataTableHeaders,
       dataTableRows: p.dataTableRows,
+      dataTableMore: p.dataTableMore,
+      dataTableIntro: p.dataTableIntro,
       segmentTitle: p.segmentTitle,
       segmentTable: p.segmentTable,
     }));
