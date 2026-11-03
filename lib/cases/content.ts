@@ -417,6 +417,8 @@ export interface CasePage {
   colBarYMin?: number;
   colBarYTickLabels?: string[];
   colBarValueLabels?: boolean;
+  colBarNoYAxis?: boolean;
+  colBarCallouts?: { from: number; to: number; label: string; level: number }[];
   colBarNoGrid?: boolean;
   // Optional title style for the colBar* / axisStack* exhibits (default: small, left, plain)
   colBarTitleStyle?: ChartTitleStyle;
@@ -1676,6 +1678,8 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       colBarYMin: p.colBarYMin,
       colBarYTickLabels: p.colBarYTickLabels,
       colBarValueLabels: p.colBarValueLabels,
+      colBarNoYAxis: p.colBarNoYAxis,
+      colBarCallouts: p.colBarCallouts,
       colBarNoGrid: p.colBarNoGrid,
       colBarTitleStyle: p.colBarTitleStyle,
       stackPanelsTitle: p.stackPanelsTitle,

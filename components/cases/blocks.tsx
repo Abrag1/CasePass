@@ -667,12 +667,12 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
     <ExhibitFrame dark={dark} title={page.colBarTitle} titleStyle={page.colBarTitleStyle}>
       {page.colBarSubtitle && <div style={{ fontSize: 13, color: ink.text, marginTop: -6, marginBottom: 10 }}>{page.colBarSubtitle}</div>}
       <svg viewBox="0 0 640 335" style={{ width: "100%", maxWidth: 720, display: "block", margin: "0 auto" }}>
-        {noGrid && <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1} />}
+        {noGrid && !page.colBarNoYAxis && <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1} />}
         {noGrid && <line x1={left} x2={right} y1={y(0)} y2={y(0)} stroke={ink.axis} strokeWidth={1} />}
         {ticks.map((t, ti) => (
           <g key={t}>
             {noGrid ? (
-              <line x1={left - 4} x2={left} y1={y(t)} y2={y(t)} stroke={ink.axis} strokeWidth={1} />
+              page.colBarNoYAxis ? null : <line x1={left - 4} x2={left} y1={y(t)} y2={y(t)} stroke={ink.axis} strokeWidth={1} />
             ) : (
               <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
             )}
@@ -709,6 +709,24 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
                   {it.label}
                 </text>
               )}
+            </g>
+          );
+        })}
+        {page.colBarCallouts?.map((co, ci) => {
+          const x1 = left + band * (co.from + 0.5);
+          const x2 = left + band * (co.to + 0.5);
+          const yTop = y(co.level);
+          const yFrom = y(items[co.from].value) - 20;
+          const yTo = y(items[co.to].value) - 20;
+          const mid = (x1 + x2) / 2;
+          return (
+            <g key={`co${ci}`} stroke={ink.axis} strokeWidth={1} fill="none">
+              <path d={`M${x1} ${yFrom} V${yTop} H${x2} V${yTo}`} />
+              <path d={`M${x2 - 3.5} ${yTo - 6} L${x2} ${yTo} L${x2 + 3.5} ${yTo - 6} Z`} fill={ink.axis} />
+              <rect x={mid - 22} y={yTop - 9} width={44} height={18} rx={9} fill={dark ? "#1b1f1c" : "#ffffff"} />
+              <text x={mid} y={yTop} textAnchor="middle" dominantBaseline="middle" fontSize={11} fontWeight={700} fill={ink.text} stroke="none">
+                {co.label}
+              </text>
             </g>
           );
         })}
