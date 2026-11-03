@@ -22,6 +22,7 @@ import * as boothFrenchBeautyCo from "./booth_2024_2025_french_beauty_co";
 import * as boothGermanTelecom from "./booth_2024_2025_german_telecom";
 import * as boothGreenCo from "./booth_2024_2025_green_co";
 import * as boothGreenshieldHealthInsurance from "./booth_2024_2025_greenshield_health_insurance";
+import * as boothHawaiianSmoothies from "./booth_2024_2025_hawaiian_smoothies";
 import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
@@ -47,6 +48,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothGermanTelecom,
   boothGreenCo,
   boothGreenshieldHealthInsurance,
+  boothHawaiianSmoothies,
   dardenCircleBubble,
   dardenRobotsInc,
   sloanBrainteaser,
