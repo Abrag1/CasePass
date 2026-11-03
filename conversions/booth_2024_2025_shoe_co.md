@@ -1,7 +1,7 @@
-# booth_2024_2025_shoe_co
+# Shoe Co. (Booth 2024-2025)
 
-VERDICT: FAIL (held back, not published)
+VERDICT: PASS
+MECHANICAL: PASS
 
-The three consumer-survey exhibits are drill-down 100%-stacked columns with dashed connectors, large labelled segments and a legend at top right. The only available renderer (stackPanels) draws them tiny in a narrow column, with segment labels overlapping or clipped ("Prices too high", "Reduction in product purchases", "Store dissatisfaction", "Lower quality than I desire"...), every tick printed with "%", orange connectors and no segment borders. The result is not a faithful or readable exhibit, so it fails the gate. verify-case also reports one false-positive addition (chart text only in the page image).
-
-Needs: a drill-down stacked-bar option (wider chart, wrapped/in-segment labels, plain tick labels, black connectors, segment borders, legend placement). The converted file is kept in the session scratchpad (keep/booth_2024_2025_shoe_co.ts); all other sections passed the mechanical check.
+Independent verifier: zero CRITICAL/MAJOR. Three drill-down exhibits rendered with the new stackCols chart; values measured from the picture (about +/-0.2 points). Source inconsistency kept as drawn: Exhibit #2 legend says Design ~75% / Quality ~25% while the segments measure ~70/30.
+Minor: label wrap differs slightly from the source; 5% segment labels are small on narrow screens.

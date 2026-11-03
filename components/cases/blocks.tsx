@@ -692,10 +692,15 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           const cx = left + band * (i + 0.5);
           return (
             <g key={i}>
-              <rect x={cx - barW / 2} y={Math.min(y(it.value), y(base))} width={barW} height={Math.abs(y(base) - y(it.value))} fill={it.pattern === "dots" ? "url(#cb-dots)" : it.color} />
+              <rect x={cx - barW / 2} y={Math.min(y(it.value), y(base))} width={barW} height={Math.abs(y(base) - y(it.value))} fill={it.pattern === "dots" ? "url(#cb-dots)" : it.color} stroke={it.innerLabel ? "#111111" : undefined} strokeWidth={it.innerLabel ? 1 : undefined} />
               {page.colBarValueLabels && (
                 <text x={cx} y={it.value < 0 ? y(it.value) + 14 : y(it.value) - 6} textAnchor="middle" fontSize={11} fill={ink.text}>
                   {it.valueLabel ?? fmtTick(it.value)}
+                </text>
+              )}
+              {it.innerLabel && (
+                <text transform={`translate(${cx + 4} ${(y(it.value) + y(base)) / 2}) rotate(-90)`} textAnchor="middle" fontSize={9} fill="#111111">
+                  {it.innerLabel}
                 </text>
               )}
               {horiz ? (

@@ -169,6 +169,8 @@ export interface ColBarItem {
   valueLabel?: string;
   // Dotted fill instead of a flat colour
   pattern?: "dots";
+  // Optional text drawn rotated inside the bar, centred (e.g. a company name); default none
+  innerLabel?: string;
 }
 export interface ColBarRefLine {
   value: number;

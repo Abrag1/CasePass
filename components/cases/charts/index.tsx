@@ -6,6 +6,7 @@ import { HBarsChart } from "./hBars";
 import { BellCurveChart } from "./bellCurve";
 import { FlowChart } from "./flow";
 import { ComboChart } from "./combo";
+import { StackColsChart } from "./stackCols";
 
 export function ExtraCharts({ charts, dark }: { charts?: ExtraChart[]; dark?: boolean }) {
   if (!charts?.length) return null;
@@ -23,6 +24,8 @@ export function ExtraCharts({ charts, dark }: { charts?: ExtraChart[]; dark?: bo
             return <BellCurveChart key={i} data={c} dark={dark} />;
           case "flow":
             return <FlowChart key={i} data={c} dark={dark} />;
+          case "stackCols":
+            return <StackColsChart key={i} data={c} dark={dark} />;
           case "combo":
             return <ComboChart key={i} data={c} dark={dark} />;
         }

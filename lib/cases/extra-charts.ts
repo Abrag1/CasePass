@@ -176,4 +176,43 @@ export interface ComboChartData {
   footnote?: string;
 }
 
-export type ExtraChart = MultiPieData | MarimekkoData | HBarsData | BellCurveData | FlowData | ComboChartData;
+// Stacked columns with labelled segments, in one or more panels side by side. Each panel has its own Y axis
+// (own maximum, ticks and tick texts), its own columns and optional dashed connectors between neighbouring columns.
+// Segment values are in the panel's axis units (percent for 100%-stacked, dollars for dollar-scaled); the FIRST
+// segment of a column is the bottom one. Labels are drawn inside the segments (wrapped, font shrinks to fit).
+export interface StackColsSeg {
+  value: number;
+  color: string;
+  label?: string;
+  textColor?: string; // default: black or white, chosen from the fill
+}
+export interface StackColsConnector {
+  // From the right edge of column `from.col` at axis value `from.at`, to the left edge of column `to.col` at `to.at`.
+  from: { col: number; at: number };
+  to: { col: number; at: number };
+}
+export interface StackColsPanel {
+  title?: string; // large underlined heading above the panel
+  subtitle?: string; // text under the heading (a newline splits lines)
+  yMax: number;
+  yStep?: number; // tick step (default yMax / 5)
+  yTickPrefix?: string; // e.g. "$"
+  yTickSuffix?: string; // e.g. "%"
+  yTickLabels?: string[]; // explicit tick texts, bottom to top (overrides prefix/suffix)
+  topLabel?: string; // text of the top tick only (e.g. "100%" or "$400K")
+  columns: { label: string; total?: string; segs: StackColsSeg[] }[]; // `total` is printed above the column
+  connectors?: StackColsConnector[];
+}
+export interface StackColsData {
+  kind: "stackCols";
+  title?: string; // chart title above the panels (a newline splits lines)
+  panels: StackColsPanel[];
+  legend?: ExtraSwatch[];
+  legendPlacement?: "topRight" | "bottom"; // default topRight
+  connectorColor?: string; // default: the ink colour
+  segBorder?: string | false; // segment border colour (default dark); false = none
+  barWidth?: number; // column width in SVG units (default 170)
+  footnote?: string;
+}
+
+export type ExtraChart = StackColsData | MultiPieData | MarimekkoData | HBarsData | BellCurveData | FlowData | ComboChartData;

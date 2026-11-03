@@ -40,6 +40,7 @@ import * as boothPharmaceuticalRareDisease from "./booth_2024_2025_pharmaceutica
 import * as boothPyeongchangWinterOlympics from "./booth_2024_2025_pyeongchang_winter_olympics";
 import * as boothQuahogPublicSchools from "./booth_2024_2025_quahog_public_schools";
 import * as boothRetirementApartmentComplexes from "./booth_2024_2025_retirement_apartment_complexes";
+import * as boothShoeCo from "./booth_2024_2025_shoe_co";
 import * as boothSmartCards from "./booth_2024_2025_smart_cards";
 import * as boothStudentHealthInsurance from "./booth_2024_2025_student_health_insurance";
 import * as boothSuenoMattress from "./booth_2024_2025_sueno_mattress";
@@ -89,6 +90,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothPyeongchangWinterOlympics,
   boothQuahogPublicSchools,
   boothRetirementApartmentComplexes,
+  boothShoeCo,
   boothSmartCards,
   boothStudentHealthInsurance,
   boothSuenoMattress,
