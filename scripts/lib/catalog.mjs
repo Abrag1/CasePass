@@ -38,7 +38,6 @@ export const CASEBOOK_FILES = {
   "Tuck (Dartmouth)|2024": "Tuck (Dartmouth) Casebook 2024.pdf",
   "Wharton|2017": "Wharton Casebook 2017.pdf",
   "Wharton|2024-2025": "Wharton Casebook 2024-2025.pdf",
-  "Yale SOM (YGCC)|2013": "Yale (YGCC) Casebook 2013.pdf",
   "Yale SOM (YGCC)|2024": "Yale (YGCC) Casebook 2024.pdf",
 };
 
