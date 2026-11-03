@@ -1426,7 +1426,7 @@ function DataGrid({
         ))}
       </div>
       {footnote && (
-        <div style={{ fontSize: 11, color: head, textAlign: "right", maxWidth: maxW, margin: "12px auto 0" }}>{footnote}</div>
+        <div style={{ fontSize: 11, color: head, textAlign: "right", whiteSpace: "pre-line", maxWidth: maxW, margin: "12px auto 0" }}>{footnote}</div>
       )}
     </div>
   );
