@@ -169,6 +169,20 @@ export interface StackPanel {
   note?: string;
 }
 
+// Columns on a numeric Y axis built from floating segments: stacked columns (each segment
+// starts where the previous one ended) or waterfall bars (`base` set explicitly), with an
+// optional legend and dashed connectors between neighbouring bar tops.
+export interface AxisStackSeg {
+  value: number;
+  color: string;
+  base?: number;
+}
+export interface AxisStackCol {
+  label: string;
+  segs: AxisStackSeg[];
+  topLabel?: string;
+}
+
 // Tree / issue-tree diagram: a root node with any depth of children, drawn left to right.
 export interface TreeNode {
   label: string;
@@ -341,6 +355,14 @@ export interface CasePage {
   colBarRefLine?: ColBarRefLine;
   stackPanelsTitle?: string;
   stackPanels?: StackPanel[];
+  axisStackTitle?: string;
+  axisStackSubtitle?: string;
+  axisStackCols?: AxisStackCol[];
+  axisStackLegend?: LegendItem[];
+  axisStackYMax?: number;
+  axisStackYStep?: number;
+  axisStackFootnote?: string;
+  axisStackConnectors?: boolean;
   treeTitle?: string;
   treeRoot?: TreeNode;
   illustrationTitle?: string;
@@ -386,6 +408,7 @@ export function pageHasExhibit(p: CasePage): boolean {
     p.multiLineSeries ||
     p.colBarItems ||
     p.stackPanels ||
+    p.axisStackCols ||
     p.treeRoot ||
     p.illustrationSrc ||
     p.dataTableRows ||
@@ -1555,6 +1578,14 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       colBarRefLine: p.colBarRefLine,
       stackPanelsTitle: p.stackPanelsTitle,
       stackPanels: p.stackPanels,
+      axisStackTitle: p.axisStackTitle,
+      axisStackSubtitle: p.axisStackSubtitle,
+      axisStackCols: p.axisStackCols,
+      axisStackLegend: p.axisStackLegend,
+      axisStackYMax: p.axisStackYMax,
+      axisStackYStep: p.axisStackYStep,
+      axisStackFootnote: p.axisStackFootnote,
+      axisStackConnectors: p.axisStackConnectors,
       treeTitle: p.treeTitle,
       treeRoot: p.treeRoot,
       illustrationTitle: p.illustrationTitle,

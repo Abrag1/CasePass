@@ -691,6 +691,91 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   );
 }
 
+// Stacked columns or waterfall bars on a numeric Y axis (floating segments), legend on the right.
+export function AxisStacks({ page, dark }: { page: CasePage; dark?: boolean }) {
+  const cols = page.axisStackCols;
+  if (!cols) return null;
+  const ink = chartInk(dark);
+  const yMax = page.axisStackYMax ?? 10;
+  const yStep = page.axisStackYStep ?? 1;
+  const legend = page.axisStackLegend;
+  const left = 56;
+  const right = legend ? 500 : 640;
+  const top = 22;
+  const bottom = 250;
+  const y = (v: number) => bottom - (v / yMax) * (bottom - top);
+  const ticks: number[] = [];
+  for (let v = 0; v <= yMax + 1e-9; v += yStep) ticks.push(v);
+  const band = (right - left) / cols.length;
+  const barW = band * 0.56;
+  const spans = cols.map((c) => {
+    let acc = 0;
+    return c.segs.map((s) => {
+      const from = s.base ?? acc;
+      acc = from + s.value;
+      return { from, to: acc, color: s.color };
+    });
+  });
+  return (
+    <ExhibitFrame dark={dark} title={page.axisStackTitle}>
+      {page.axisStackSubtitle && <div style={{ fontSize: 14, color: ink.text, marginTop: -6, marginBottom: 10 }}>{page.axisStackSubtitle}</div>}
+      <svg viewBox={`0 0 ${legend ? 640 : 680} 320`} style={{ width: "100%", maxWidth: 720, display: "block", margin: "0 auto" }}>
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={t === 0 ? ink.axis : ink.grid} strokeWidth={1} />
+            <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={12} fill={ink.text}>
+              {t.toLocaleString("en-US")}
+            </text>
+          </g>
+        ))}
+        {page.axisStackConnectors &&
+          spans.slice(0, -1).map((sp, i) => {
+            const v = sp[sp.length - 1].to;
+            return (
+              <line key={`c${i}`} x1={left + band * (i + 0.5) + barW / 2} x2={left + band * (i + 1.5) - barW / 2} y1={y(v)} y2={y(v)} stroke={ink.axis} strokeWidth={0.8} strokeDasharray="2 2" />
+            );
+          })}
+        {cols.map((c, i) => {
+          const cx = left + band * (i + 0.5);
+          const lines = c.label.split("\n");
+          const topV = Math.max(...spans[i].map((s) => s.to));
+          return (
+            <g key={i}>
+              {spans[i].map((s, j) => (
+                <rect key={j} x={cx - barW / 2} y={y(s.to)} width={barW} height={y(s.from) - y(s.to)} fill={s.color} />
+              ))}
+              {c.topLabel && (
+                <text x={cx} y={y(topV) - 6} textAnchor="middle" fontSize={13} fill={ink.text}>
+                  {c.topLabel}
+                </text>
+              )}
+              {lines.map((ln, k) => (
+                <text key={k} x={cx} y={bottom + 20 + k * 14} textAnchor="middle" fontSize={11.5} fontWeight={700} fill={ink.text}>
+                  {ln}
+                </text>
+              ))}
+            </g>
+          );
+        })}
+        {legend &&
+          legend.map((l, i) => (
+            <g key={i} transform={`translate(${right + 24} ${60 + i * 24})`}>
+              <rect width={14} height={14} y={-7} fill={l.color} />
+              <text x={20} dominantBaseline="middle" fontSize={13} fill={ink.text}>
+                {l.name}
+              </text>
+            </g>
+          ))}
+        {page.axisStackFootnote && (
+          <text x={left} y={312} fontSize={11} fill={ink.text}>
+            {page.axisStackFootnote}
+          </text>
+        )}
+      </svg>
+    </ExhibitFrame>
+  );
+}
+
 function wrapWords(text: string, max: number): string[] {
   const out: string[] = [];
   let cur = "";
@@ -1272,6 +1357,7 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <AxisBars page={page} dark={dark} />
       <ColBars page={page} dark={dark} />
       <StackPanels page={page} dark={dark} />
+      <AxisStacks page={page} dark={dark} />
       <ScatterChart page={page} dark={dark} />
       <MiniLines page={page} dark={dark} />
       <MultiLines page={page} dark={dark} />

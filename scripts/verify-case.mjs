@@ -129,6 +129,7 @@ const tokens = (s) =>
     .replace(/\*\*|==/g, " ")
     .replace(/[‘’´`]/g, "'")
     .replace(/'s\b/g, "s")
+    .replace(/%(?=[0-9])/g, "% ") // range dashes can vanish in extraction (20%30%)
     .replace(/[^a-z0-9$%.]+/g, " ")
     .replace(/(?<![0-9])\.|\.(?![0-9])/g, " ") // keep decimals, drop sentence dots
     .split(/\s+/)
@@ -169,8 +170,8 @@ for (const x of prose) {
     if (t.length < 5) continue;
     const g = grams(t);
     const cov = g.length ? g.filter((q) => srcGrams.has(q)).length / g.length : 1;
-    // A very short sentence whose every word is in the source is most likely text the PDF extraction reordered.
-    if (t.length <= 6 && t.every((w) => srcTokenSet.has(w))) continue;
+    // A short sentence whose every word is in the source is most likely text the PDF extraction reordered.
+    if (t.length <= 12 && t.every((w) => srcTokenSet.has(w))) continue;
     if (cov < ADD_MIN_COVERAGE) additions.push({ ...x, text: sentence.trim(), cov });
   }
 }
