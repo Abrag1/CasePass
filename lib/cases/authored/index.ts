@@ -38,6 +38,7 @@ import * as boothPaymentsCompany from "./booth_2024_2025_payments_company";
 import * as boothPharmaceuticalRareDisease from "./booth_2024_2025_pharmaceutical_rare_disease";
 import * as boothPyeongchangWinterOlympics from "./booth_2024_2025_pyeongchang_winter_olympics";
 import * as boothRetirementApartmentComplexes from "./booth_2024_2025_retirement_apartment_complexes";
+import * as boothSmartCards from "./booth_2024_2025_smart_cards";
 import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
@@ -79,6 +80,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothPharmaceuticalRareDisease,
   boothPyeongchangWinterOlympics,
   boothRetirementApartmentComplexes,
+  boothSmartCards,
   dardenCircleBubble,
   dardenRobotsInc,
   sloanBrainteaser,
