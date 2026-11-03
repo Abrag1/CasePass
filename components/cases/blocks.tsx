@@ -64,12 +64,16 @@ export function GuidancePreBox({
       </div>
       {note && <div style={{ fontSize: 12.5, lineHeight: 1.5, color: "#8a8f8a", fontStyle: "italic", marginBottom: 8 }}><Rich text={note} /></div>}
       {intro && <div style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b", marginBottom: 8 }}><Rich text={intro} /></div>}
-      {lines?.map((g, i) => (
-        <div key={i} style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b", padding: "4px 0", display: "flex", gap: 8 }}>
-          <span style={{ color: "#8a8f8a" }}>•</span>
-          <span><Rich text={g} /></span>
-        </div>
-      ))}
+      {lines?.map((g, i) => {
+        // Each two leading spaces indent a line one level under the line above (up to two levels).
+        const depth = Math.min(2, Math.floor((g.length - g.trimStart().length) / 2));
+        return (
+          <div key={i} style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b", padding: "4px 0", paddingLeft: depth * 20, display: "flex", gap: 8 }}>
+            <span style={{ color: "#8a8f8a" }}>{depth === 1 ? "–" : "•"}</span>
+            <span><Rich text={g.trim()} /></span>
+          </div>
+        );
+      })}
     </div>
   );
 }

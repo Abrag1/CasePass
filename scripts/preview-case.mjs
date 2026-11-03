@@ -100,7 +100,7 @@ for (const f of readdirSync(outDir).filter((n) => n.endsWith(".html")).sort()) {
       "--hide-scrollbars",
       "--allow-file-access-from-files",
       `--user-data-dir=${profile}`,
-      "--window-size=900,1500",
+      "--window-size=900,3000",
       `--screenshot=${png}`,
       pathToFileURL(join(outDir, f)).href,
     ],

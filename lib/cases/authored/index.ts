@@ -8,6 +8,7 @@ import type { CasePage } from "../content";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
+import * as boothBurgerPalace from "./booth_2024_2025_burger_palace";
 import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
@@ -19,6 +20,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   // REGISTER-ENTRIES
   boothArmyHotel,
   boothBreastCancerSurgery,
+  boothBurgerPalace,
   dardenCircleBubble,
   dardenRobotsInc,
   sloanBrainteaser,

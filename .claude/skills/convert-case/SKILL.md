@@ -138,7 +138,7 @@ Candidate pages see ONLY `body` and exhibits; everything else is interviewer-onl
 | `note` (kind "ready") | Small grey single-flow text under the prompt (newlines collapse). Keep it SHORT. |
 | any block below (on a "ready" page too) | A prompt page can also carry `infoSections`, `guidancePre*`, `guidanceLines` etc.; they render under the prompt for the interviewer only. |
 | `qText` | "Interviewer says" box (line breaks kept, markup ok): what the interviewer asks or says. |
-| `guidancePreLines` (+ `guidancePreLabel`, `guidancePreNote`, `guidancePreIntro`) | Dashed box with flat • bullets. NO nesting. The whole box renders ONLY when `guidancePreLines` is set: a `guidancePreNote`, `guidancePreIntro` or `guidancePreLabel` without `guidancePreLines` is invisible. Put an instruction sentence in `guidancePreLines` (or `qText`). |
+| `guidancePreLines` (+ `guidancePreLabel`, `guidancePreNote`, `guidancePreIntro`) | Dashed box with • bullets; lines starting with two spaces become indented sub-bullets (up to two levels: –, then •). The whole box renders ONLY when `guidancePreLines` is set: a `guidancePreNote`, `guidancePreIntro` or `guidancePreLabel` without `guidancePreLines` is invisible. Put an instruction sentence in `guidancePreLines` (or `qText`). |
 | `infoSections` (+ `infoBoxLabel`) | Reference box. Per section: `label` (bold heading) → `paragraphs` → `groups` (bold `heading` + `–` items; items starting with two spaces become • sub-items) → `lines` (• bullets; lines starting with two spaces become – sub-bullets) → `steps` (numbered circles). |
 | exhibits | Chart / table / illustration block (section 8). |
 | `calcLines` / `calcTable` (+ `calcNote`) | "Calculation walkthrough" box: label/expression rows, or a table. |
