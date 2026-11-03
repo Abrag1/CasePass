@@ -17,6 +17,7 @@ import * as boothCommercialVehicleOemInChina from "./booth_2024_2025_commercial_
 import * as boothContactLenses from "./booth_2024_2025_contact_lenses";
 import * as boothCraftCo from "./booth_2024_2025_craft_co";
 import * as boothCruiseLineAcquisition from "./booth_2024_2025_cruise_line_acquisition";
+import * as boothDeepwaterInc from "./booth_2024_2025_deepwater_inc";
 import * as boothElectricUtility from "./booth_2024_2025_electric_utility";
 import * as boothElenaSElectronics from "./booth_2024_2025_elena_s_electronics";
 import * as boothFinanceCo from "./booth_2024_2025_finance_co";
@@ -46,6 +47,7 @@ import * as boothSuperJrBabyFormula from "./booth_2024_2025_super_jr_baby_formul
 import * as boothTelcoTalks from "./booth_2024_2025_telco_talks";
 import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
+import * as rossSixPaqPeFirm from "./ross_2019_6paq_p_e_firm";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
 import * as sternPeSoda from "./stern_2015_2016_a_pe_and_a_soda";
 import * as whartonPhightingPhillies from "./wharton_2017_phighting_phillies";
@@ -65,6 +67,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothContactLenses,
   boothCraftCo,
   boothCruiseLineAcquisition,
+  boothDeepwaterInc,
   boothElectricUtility,
   boothElenaSElectronics,
   boothFinanceCo,
@@ -93,6 +96,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothTelcoTalks,
   dardenCircleBubble,
   dardenRobotsInc,
+  rossSixPaqPeFirm,
   sloanBrainteaser,
   sternPeSoda,
   whartonPhightingPhillies,

@@ -110,12 +110,54 @@ export interface BellCurveData {
   markerTicks?: boolean; // marker lines run through the axis to a small tick (default true)
 }
 
-// Process / timeline steps (chevrons or boxes), each with optional bullets underneath.
+// Process-flow diagrams and timelines. Two ways to lay one out (they can be combined):
+//  - `steps`: automatic row(s) of boxes joined by arrows (simple linear processes);
+//  - `nodes` + `arrows`: free layout on one fixed canvas, positions as 0-1 shares of the canvas
+//    (x from the left, y from the top; canvas width is 1000 units, height is 1000 * `aspect`).
+// A timeline is just nodes (tags, bar, boxes) and arrows (stems, brackets) placed on that canvas.
+export interface FlowNode {
+  // Lines are split on a newline character; long lines wrap inside w. Plain "text" nodes use (x, y) as the anchor of the text.
+  text?: string;
+  x: number;
+  y: number;
+  w?: number;
+  h?: number;
+  // box: rectangle; tag: small bordered label; text: free label (no frame);
+  // blockArrow: wide bar of size w x h with an arrow head to its right (headLen / headH, canvas shares).
+  shape?: "box" | "tag" | "text" | "blockArrow";
+  fill?: string; // "bg" = the exhibit background (used to cut gaps in a bar)
+  fill2?: string; // with fill: vertical gradient from fill (top) to fill2 (bottom)
+  stroke?: string;
+  strokeWidth?: number;
+  color?: string; // text colour
+  size?: number; // font size in canvas units (default 13)
+  bold?: boolean;
+  italic?: boolean;
+  serif?: boolean;
+  align?: "left" | "center" | "right";
+  lineGap?: number; // line spacing as a multiple of the font size (default 1.25)
+  shadow?: boolean;
+  headLen?: number;
+  headH?: number;
+}
+export interface FlowArrow {
+  points: [number, number][]; // polyline, 0-1 canvas shares
+  dashed?: boolean;
+  color?: string;
+  width?: number; // line width in canvas units (default 2.5)
+  head?: "end" | "start" | "both" | "none"; // default "end"
+  headStyle?: "open" | "filled"; // default "open"
+  headSize?: number; // head length in canvas units
+}
 export interface FlowData {
   kind: "flow";
   title?: string;
-  style?: "chevron" | "box" | "timeline";
-  steps: { title: string; bullets?: string[]; color?: string }[];
+  style?: "chevron" | "box"; // look of `steps`
+  steps?: { title: string; bullets?: string[]; color?: string }[];
+  columns?: number; // steps per row (default: all in one row, at most 4)
+  aspect?: number; // canvas height / width for the free layout (default 0.5)
+  nodes?: FlowNode[];
+  arrows?: FlowArrow[];
   footnote?: string;
 }
 
