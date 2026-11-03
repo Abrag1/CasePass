@@ -993,6 +993,57 @@ export function ScatterChart({ page, dark }: { page: CasePage; dark?: boolean })
   );
 }
 
+// Curve exhibit: a single connected line on arrow-ended axes with no gridlines and tick labels
+// only where the casebook prints them (serif bold title, rotated Y title, X title under the axis).
+export function CurveChart({ page, dark }: { page: CasePage; dark?: boolean }) {
+  const c = page.curveChart;
+  if (!c) return null;
+  const ink = chartInk(dark);
+  const stroke = dark ? "#eef2ef" : "#111";
+  const left = 110;
+  const right = 590;
+  const top = 64;
+  const bottom = 300;
+  const x = (v: number) => left + ((v - c.xMin) / (c.xMax - c.xMin)) * (right - left);
+  const y = (v: number) => bottom - ((v - c.yMin) / (c.yMax - c.yMin)) * (bottom - top);
+  return (
+    <ExhibitFrame dark={dark}>
+      <svg viewBox="0 0 640 380" style={{ width: "100%", maxWidth: 640, display: "block", margin: "0 auto" }}>
+        {c.title && (
+          <text x={(left + right) / 2} y={30} textAnchor="middle" fontSize={14} fontWeight={700} fontFamily="Georgia, 'Times New Roman', serif" fill={ink.text}>
+            {c.title}
+          </text>
+        )}
+        <line x1={left} x2={left} y1={bottom} y2={top} stroke={stroke} strokeWidth={1.2} />
+        <polygon points={`${left},${top - 7} ${left - 3.5},${top + 2} ${left + 3.5},${top + 2}`} fill={stroke} />
+        <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={stroke} strokeWidth={1.2} />
+        <polygon points={`${right + 7},${bottom} ${right - 2},${bottom - 3.5} ${right - 2},${bottom + 3.5}`} fill={stroke} />
+        {c.yTicks.map((t, i) => (
+          <text key={`y${i}`} x={left - 10} y={y(t.v)} textAnchor="end" dominantBaseline="middle" fontSize={10} fontWeight={700} fill={ink.text}>
+            {t.label}
+          </text>
+        ))}
+        {c.xTicks.map((t, i) => (
+          <text key={`x${i}`} x={x(t.v)} y={bottom + 16} textAnchor="middle" fontSize={10} fontWeight={700} fill={ink.text}>
+            {t.label}
+          </text>
+        ))}
+        {c.xTitle && (
+          <text x={(left + right) / 2} y={bottom + 30} textAnchor="middle" fontSize={11} fontWeight={700} fill={ink.text}>
+            {c.xTitle}
+          </text>
+        )}
+        {c.yTitle && (
+          <text x={46} y={(top + bottom) / 2} textAnchor="middle" fontSize={11} fontWeight={700} fill={ink.text} transform={`rotate(-90 46 ${(top + bottom) / 2})`}>
+            {c.yTitle}
+          </text>
+        )}
+        <polyline points={c.points.map((p) => `${x(p.x)},${y(p.y)}`).join(" ")} fill="none" stroke={stroke} strokeWidth={1.4} strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
+    </ExhibitFrame>
+  );
+}
+
 export function MiniLines({ page, dark }: { page: CasePage; dark?: boolean }) {
   if (!page.miniLines) return null;
   const ink = chartInk(dark);
@@ -1381,6 +1432,7 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <StackPanels page={page} dark={dark} />
       <AxisStacks page={page} dark={dark} />
       <ScatterChart page={page} dark={dark} />
+      <CurveChart page={page} dark={dark} />
       <MiniLines page={page} dark={dark} />
       <MultiLines page={page} dark={dark} />
       <TreeDiagram page={page} dark={dark} />

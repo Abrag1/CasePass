@@ -112,6 +112,26 @@ export interface ScatterPoint {
   label?: string;
 }
 
+// Hand-drawn style curve exhibit: one connected line through numeric (x, y) points on arrow-ended
+// axes, no gridlines, tick labels only where printed (e.g. a "Cumulative distribution" S-curve).
+export interface CurveTick {
+  v: number;
+  label: string;
+}
+export interface CurveChartData {
+  title?: string;
+  points: ScatterPoint[];
+  // Axis extents: the axes start at (xMin, yMin) and end (arrow tip) at (xMax, yMax)
+  xMin: number;
+  xMax: number;
+  yMin: number;
+  yMax: number;
+  xTicks: CurveTick[];
+  yTicks: CurveTick[];
+  xTitle?: string;
+  yTitle?: string;
+}
+
 // Small-multiple line chart: one entry per panel
 export interface MiniLineChart {
   title: string;
@@ -350,6 +370,7 @@ export interface CasePage {
   scatterYStep?: number;
   scatterYLabel?: string;
   scatterGrid?: boolean;
+  curveChart?: CurveChartData;
   miniLinesTitle?: string;
   miniLines?: MiniLineChart[];
   multiLineTitle?: string;
@@ -439,6 +460,7 @@ export function pageHasExhibit(p: CasePage): boolean {
     p.pieSlices ||
     p.axisBarGroups ||
     p.scatterPoints ||
+    p.curveChart ||
     p.miniLines ||
     p.multiLineSeries ||
     p.colBarItems ||
@@ -1593,6 +1615,7 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       scatterYStep: p.scatterYStep,
       scatterYLabel: p.scatterYLabel,
       scatterGrid: p.scatterGrid,
+      curveChart: p.curveChart,
       miniLinesTitle: p.miniLinesTitle,
       miniLines: p.miniLines,
       multiLineTitle: p.multiLineTitle,
