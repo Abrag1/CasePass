@@ -9,6 +9,7 @@ import type { CasePage } from "../content";
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
 import * as boothBurgerPalace from "./booth_2024_2025_burger_palace";
+import * as boothConsumerProductsStrategy from "./booth_2024_2025_consumer_products_strategy";
 import * as boothChickenPoxVaccine from "./booth_2024_2025_chicken_pox_vaccine";
 import * as boothCleaningProducts from "./booth_2024_2025_cleaning_products";
 import * as boothCoffeeAndTeaApparel from "./booth_2024_2025_coffee_and_tea_apparel";
@@ -25,6 +26,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothArmyHotel,
   boothBreastCancerSurgery,
   boothBurgerPalace,
+  boothConsumerProductsStrategy,
   boothChickenPoxVaccine,
   boothCleaningProducts,
   boothCoffeeAndTeaApparel,
