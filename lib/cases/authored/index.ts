@@ -18,6 +18,7 @@ import * as boothContactLenses from "./booth_2024_2025_contact_lenses";
 import * as boothElectricUtility from "./booth_2024_2025_electric_utility";
 import * as boothElenaSElectronics from "./booth_2024_2025_elena_s_electronics";
 import * as boothFinanceCo from "./booth_2024_2025_finance_co";
+import * as boothFrenchBeautyCo from "./booth_2024_2025_french_beauty_co";
 import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
@@ -39,6 +40,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothElectricUtility,
   boothElenaSElectronics,
   boothFinanceCo,
+  boothFrenchBeautyCo,
   dardenCircleBubble,
   dardenRobotsInc,
   sloanBrainteaser,

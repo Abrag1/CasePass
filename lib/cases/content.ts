@@ -374,6 +374,7 @@ export interface CasePage {
   axisBarYTickSuffix?: string;
   axisBarValueLabels?: boolean;
   axisBarLegendRight?: boolean;
+  axisBarRotateLabels?: boolean;
   // Scatter plot (points only, no connecting line). Axes run from Min (default 0) to Max in
   // `Step` increments; `scatterYLabel` may contain "\n" to break the axis title over two lines.
   scatterTitle?: string;
@@ -1636,6 +1637,7 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       axisBarYLabel: p.axisBarYLabel,
       axisBarYTickSuffix: p.axisBarYTickSuffix,
       axisBarValueLabels: p.axisBarValueLabels,
+      axisBarRotateLabels: p.axisBarRotateLabels,
       axisBarLegendRight: p.axisBarLegendRight,
       scatterTitle: p.scatterTitle,
       scatterPoints: p.scatterPoints,

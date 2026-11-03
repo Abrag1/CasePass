@@ -588,9 +588,10 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   const barW = Math.min(34, (band * 0.7) / m);
   const gap = 8;
   const clusterW = m * barW + (m - 1) * gap;
+  const rotX = page.axisBarRotateLabels ? 36 : 0;
   return (
     <ExhibitFrame dark={dark} title={page.axisBarTitle}>
-      <svg viewBox="0 0 520 330" style={{ width: "100%", maxWidth: 560, display: "block", margin: "0 auto" }}>
+      <svg viewBox={`0 0 520 ${330 + rotX}`} style={{ width: "100%", maxWidth: 560, display: "block", margin: "0 auto" }}>
         {ticks.map((t) => (
           <g key={t}>
             <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
@@ -617,7 +618,7 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
                     {fmtTick(v)}{page.axisBarYTickSuffix ?? ""}
                   </text>
                 ))}
-              <text x={left + band * gi + band / 2} y={bottom + 20} textAnchor="middle" fontSize={14} fill={ink.axis}>
+              <text x={left + band * gi + band / 2} y={bottom + 20} textAnchor={page.axisBarRotateLabels ? "end" : "middle"} transform={page.axisBarRotateLabels ? `rotate(-35 ${left + band * gi + band / 2} ${bottom + 20})` : undefined} fontSize={14} fill={ink.axis}>
                 {g.label}
               </text>
             </g>
@@ -627,7 +628,7 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           const itemW = 110;
           const startX = 260 - (m * itemW) / 2;
           return page.axisBarSeries.map((s, i) => (
-            <g key={i} transform={legendRight ? `translate(${right + 12} ${120 + i * 22})` : `translate(${startX + i * itemW} 308)`}>
+            <g key={i} transform={legendRight ? `translate(${right + 12} ${120 + i * 22})` : `translate(${startX + i * itemW} ${308 + rotX})`}>
               <rect width={10} height={10} y={-5} fill={s.color} />
               <text x={16} dominantBaseline="middle" fontSize={14} fill={ink.axis}>
                 {s.name}
