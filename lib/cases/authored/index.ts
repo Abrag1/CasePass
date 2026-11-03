@@ -24,6 +24,7 @@ import * as boothGreenCo from "./booth_2024_2025_green_co";
 import * as boothGreenshieldHealthInsurance from "./booth_2024_2025_greenshield_health_insurance";
 import * as boothHawaiianSmoothies from "./booth_2024_2025_hawaiian_smoothies";
 import * as boothHeavyAttrition from "./booth_2024_2025_heavy_attrition";
+import * as boothApacheHelicopter from "./booth_2024_2025_apache_helicopter";
 import * as boothInternationalAirlines from "./booth_2024_2025_international_airlines";
 import * as boothKatrina from "./booth_2024_2025_katrina";
 import * as boothLindasGreatBurgers from "./booth_2024_2025_linda_s_great_burgers";
@@ -36,6 +37,7 @@ import * as yale7Eleven2024 from "./yale_ygcc_2024_7_eleven";
 
 const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePage[] }[] = [
   // REGISTER-ENTRIES
+  boothApacheHelicopter,
   boothArmyHotel,
   boothBreastCancerSurgery,
   boothBurgerPalace,
