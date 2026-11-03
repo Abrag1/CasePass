@@ -1,3 +1,2 @@
 VERDICT: FAIL
-Reason: Exhibit 1 (p. 88) is a 4-series line chart (2 solid, 2 dashed, no axis values). The app has no multi-series/dashed line chart, so the converter saved a page crop (unsupported exhibit type), which the batch gate rejects. Needs a new chart type in components/cases/blocks.tsx, then re-run.
-Converter output was removed from the registry; no verifier run.
+Reason: Held back by the owner. The retry (with the multi-series line chart) passed the verifier and the mechanical check, but the p. 91 Y0-Y5 timeline diagram has no block and is kept only as calc rows, which the batch gate counts as an unsupported exhibit. Re-convert once a timeline block exists (or accept the text rows and re-run the converter).
