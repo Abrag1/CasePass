@@ -1,0 +1,2 @@
+VERDICT: FAIL
+Reason: Held back by the batch gate. Exhibit 1 (p. 131 area) is a process flow diagram (boxes, solid and dashed arrows, labels) that no existing renderer can draw; the converter used a cropped page image (illustrationSrc), which counts as an unsupported exhibit type. Mechanical check passed and the case is otherwise complete; it can be published as-is if the owner accepts the image crop, or after a flow-diagram block exists. Converted file and image copy kept outside the repo (session scratchpad: keep/).
