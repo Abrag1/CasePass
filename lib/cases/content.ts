@@ -428,6 +428,10 @@ export interface CasePage {
   colBarLegend?: { name: string; color: string; pattern?: "dots" }[];
   colBarCallouts?: { from: number; to: number; label: string; level: number }[];
   colBarNoGrid?: boolean;
+  // Optional (defaults unchanged): text printed inside the plot at the top right, draw this chart before axisBar* on the same page, no legend on axisBar*
+  colBarInnerNote?: string;
+  colBarFirst?: boolean;
+  axisBarNoLegend?: boolean;
   // Optional title style for the colBar* / axisStack* exhibits (default: small, left, plain)
   colBarTitleStyle?: ChartTitleStyle;
   stackPanelsTitle?: string;
@@ -1697,6 +1701,9 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       colBarLegend: p.colBarLegend,
       colBarCallouts: p.colBarCallouts,
       colBarNoGrid: p.colBarNoGrid,
+      colBarInnerNote: p.colBarInnerNote,
+      colBarFirst: p.colBarFirst,
+      axisBarNoLegend: p.axisBarNoLegend,
       colBarTitleStyle: p.colBarTitleStyle,
       stackPanelsTitle: p.stackPanelsTitle,
       stackPanels: p.stackPanels,

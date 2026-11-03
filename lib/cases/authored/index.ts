@@ -40,6 +40,7 @@ import * as boothPyeongchangWinterOlympics from "./booth_2024_2025_pyeongchang_w
 import * as boothRetirementApartmentComplexes from "./booth_2024_2025_retirement_apartment_complexes";
 import * as boothSmartCards from "./booth_2024_2025_smart_cards";
 import * as boothSuenoMattress from "./booth_2024_2025_sueno_mattress";
+import * as boothSuperJrBabyFormula from "./booth_2024_2025_super_jr_baby_formula";
 import * as boothTelcoTalks from "./booth_2024_2025_telco_talks";
 import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
@@ -84,6 +85,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothRetirementApartmentComplexes,
   boothSmartCards,
   boothSuenoMattress,
+  boothSuperJrBabyFormula,
   boothTelcoTalks,
   dardenCircleBubble,
   dardenRobotsInc,

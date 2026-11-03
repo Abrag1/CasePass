@@ -614,6 +614,7 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
         {(() => {
           const itemW = 110;
           const startX = 260 - (m * itemW) / 2;
+          if (page.axisBarNoLegend) return null;
           return page.axisBarSeries.map((s, i) => (
             <g key={i} transform={page.axisBarLegendTopLeft ? `translate(${left + 10} ${34 + i * 20})` : legendRight ? `translate(${right + 12} ${120 + i * 22})` : `translate(${startX + i * itemW} ${308 + rotX})`}>
               <rect width={10} height={10} y={-5} fill={s.color} />
@@ -644,6 +645,8 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   const y = (v: number) => bottom - ((v - yMin) / (yMax - yMin)) * (bottom - top);
   const ticks: number[] = [];
   for (let v = yMin; v <= yMax + 1e-9; v += yStep) ticks.push(v);
+  // Bars start at zero, or at the axis minimum when it is above zero (axis not starting at 0).
+  const base = Math.max(yMin, 0);
   const noGrid = !!page.colBarNoGrid;
   const band = (right - left) / items.length;
   const barW = band * (page.colBarBarRatio ?? 0.52);
@@ -662,7 +665,7 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           </pattern>
         </defs>
         {noGrid && !page.colBarNoYAxis && <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1} />}
-        {noGrid && <line x1={left} x2={right} y1={y(0)} y2={y(0)} stroke={ink.axis} strokeWidth={1} />}
+        {noGrid && <line x1={left} x2={right} y1={y(base)} y2={y(base)} stroke={ink.axis} strokeWidth={1} />}
         {ticks.map((t, ti) => (
           <g key={t}>
             {noGrid ? (
@@ -675,6 +678,11 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
             </text>
           </g>
         ))}
+        {page.colBarInnerNote && (
+          <text x={right - 6} y={top + 14} textAnchor="end" fontSize={12} fill={ink.text}>
+            {page.colBarInnerNote}
+          </text>
+        )}
         {page.colBarYLabel && (
           <text transform={`translate(14 ${(top + bottom) / 2}) rotate(-90)`} textAnchor="middle" fontSize={11} fill={ink.axis}>
             {page.colBarYLabel}
@@ -684,7 +692,7 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           const cx = left + band * (i + 0.5);
           return (
             <g key={i}>
-              <rect x={cx - barW / 2} y={Math.min(y(it.value), y(0))} width={barW} height={Math.abs(y(0) - y(it.value))} fill={it.pattern === "dots" ? "url(#cb-dots)" : it.color} />
+              <rect x={cx - barW / 2} y={Math.min(y(it.value), y(base))} width={barW} height={Math.abs(y(base) - y(it.value))} fill={it.pattern === "dots" ? "url(#cb-dots)" : it.color} />
               {page.colBarValueLabels && (
                 <text x={cx} y={it.value < 0 ? y(it.value) + 14 : y(it.value) - 6} textAnchor="middle" fontSize={11} fill={ink.text}>
                   {it.valueLabel ?? fmtTick(it.value)}
@@ -1530,8 +1538,9 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <CostTable page={page} dark={dark} />
       <LineChart page={page} dark={dark} />
       <PieChart page={page} dark={dark} />
+      {page.colBarFirst && <ColBars page={page} dark={dark} />}
       <AxisBars page={page} dark={dark} />
-      <ColBars page={page} dark={dark} />
+      {!page.colBarFirst && <ColBars page={page} dark={dark} />}
       <StackPanels page={page} dark={dark} />
       <AxisStacks page={page} dark={dark} />
       <ScatterChart page={page} dark={dark} />

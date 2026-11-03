@@ -34,6 +34,14 @@ export interface MarimekkoData {
   xTitle?: string;
   subLabel?: string; // row label for each column's `sub` text (e.g. "CAGR")
   footnote?: string;
+  // Optional additions (defaults keep the original behaviour).
+  // `slices` follow the order of `series`; the FIRST series is drawn at the TOP of each column (same order as the legend).
+  seriesNotes?: string[]; // small second line under each legend entry, one per series (e.g. "4 players")
+  labelsAbove?: boolean; // column labels above the columns instead of under them
+  valueLabels?: boolean; // percentage label inside each slice (default true)
+  noGrid?: boolean; // hide the horizontal gridlines
+  yStep?: number; // Y tick step in % (default 10)
+  yTickSuffix?: string; // default "%" unless a yLabel is given, then ""
 }
 
 // Horizontal (grouped) bars with value labels.
