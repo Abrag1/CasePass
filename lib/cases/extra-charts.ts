@@ -69,14 +69,45 @@ export interface HBarsData {
 export interface BellCurveData {
   kind: "bellCurve";
   title?: string;
-  curves: { name?: string; mean: number; sd: number; color: string; fill?: boolean }[];
+  curves: {
+    name?: string;
+    mean: number;
+    sd: number;
+    color: string;
+    fill?: boolean;
+    // Optional additions: draw only x in [from, to] (default: the whole xMin..xMax range); peak height as a share of the
+    // tallest curve (default: the true normal density, so a wider curve is lower); stroke width in SVG units.
+    from?: number;
+    to?: number;
+    height?: number;
+    strokeWidth?: number;
+  }[];
   xMin: number;
   xMax: number;
-  markers?: { at: number; label?: string; dashed?: boolean }[];
+  markers?: { at: number; label?: string; dashed?: boolean }[]; // a "_" in `label` makes the rest a subscript (e.g. "μ_1")
   spans?: { from: number; to: number; label: string; level?: number }[]; // e.g. a sigma bracket
-  callouts?: { text: string; x: number; y: number; color?: string }[]; // x, y as 0-1 of the plot area
+  // x, y are 0-1 of the whole drawing canvas (top-left of the box, or the text centre when there is no box).
+  callouts?: {
+    text: string;
+    x: number;
+    y: number;
+    color?: string;
+    // Optional additions: box size (0-1 of the canvas, draws a bordered box); `pointer` is a polyline [x, y][] in canvas 0-1 units.
+    w?: number;
+    h?: number;
+    boxed?: boolean;
+    pointer?: [number, number][];
+  }[];
   xTitle?: string;
   footnote?: string;
+  // Optional additions (defaults keep the original behaviour).
+  titleStyle?: "centered-underlined";
+  // Labels beside a curve: `x` in data units, `y` as a share of the peak height (a "_" makes a subscript, e.g. "σ_1").
+  curveLabels?: { text: string; x: number; y: number }[];
+  axisFrom?: number; // the x-axis line starts here (data units; default xMin)
+  axisTo?: number; // the x-axis line ends here (default xMax)
+  axisEndLabel?: string; // italic label just past the right end of the axis (e.g. "x")
+  markerTicks?: boolean; // marker lines run through the axis to a small tick (default true)
 }
 
 // Process / timeline steps (chevrons or boxes), each with optional bullets underneath.
