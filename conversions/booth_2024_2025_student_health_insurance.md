@@ -1,12 +1,14 @@
 # booth_2024_2025_student_health_insurance
 
-VERDICT: FAIL (held back, not converted)
+VERDICT: PASS
+MECHANICAL: PASS (orchestrator override)
 
-Data Sheet 1 (casebook page 302) is a four-panel composite exhibit that the existing renderers cannot draw faithfully:
-- Panel 3 "Product Revenue Contribution" is horizontal bars with value labels (Medical 99%, Dental 0.6%, Discount Cards 0.2%, SAP 0.2%).
-- Panel 4 "Select Product Penetration" is grouped horizontal bars, School vs Student, with a legend (Dental 42.0/6.6, Discount Cards 52.3/19.5, SAP 7.5/100.0).
-- Panel 1 is a column chart with boxed "% of all students" labels (32%, 26%, 20%, 20%, 2%), one with a speech-bubble pointer; colBarCallouts only draws brackets.
-- Panel 2 (pie 93%/7%) is supported.
-There is no horizontal-bar renderer, and changing the chart type is not allowed.
+Re-converted after the new hBars exhibit renderer (components/cases/charts/hBars.tsx) was built; the earlier hold-back was for Data Sheet 1's horizontal-bar panels. Independent verifier: zero CRITICAL; all text, tables and maths correct (Q4 calc table recomputed; printed quirks 99.5% ($498K) and 102% ($510K) kept). verify-case's 11 additions are text that exists only in the Data Sheet images (legend names, footnotes, titles) plus two wrapped tree labels, and its 2 omissions are the flattened p.300 grid text, which is present as a tree.
 
-Needs: horizontal and grouped-horizontal bar blocks, and boxed per-bar annotations on column charts. Data Sheet 2 (page 305, paired Revenue/Pretax Income columns plus three small tables) is also a composite that needs layout work. The rest of the case is straightforward; source quirks to preserve when converted: "Multiple Recommandations" typo on page 298; Q4 calc rows printed 99.5% ($498K) and 102% ($510K). Nothing was written for this case.
+Verifier's MAJOR findings: gridlines on Data Sheet 1 panel 1 (the source has none) was fixed by the orchestrator with colBarNoGrid and re-previewed (not re-verified). Remaining differences accepted as cosmetic, for the owner to approve:
+- Data Sheet 1 is drawn as four separate framed exhibits titled "Data Sheet 1 · (1) ..." to "(4) ..." instead of one composite sheet.
+- Panel 1's boxed "% of all students" labels and speech-bubble pointer are plain percentage text above the bars, with "% of all students" as a subtitle.
+- Panel 2's 7% slice is not pulled out at about 3 o'clock; the pie starts at 12 o'clock with the 7% label outside.
+- Panel 1 bar heights are read from pixel geometry (about +/-15 schools); the other chart values are printed.
+- Q1 grid and Q6 framework are trees (shareable:false); Q3/Q5 tables put one bullet per row, which pairs qualitative and quantitative bullets side by side.
+- "Multiple Recommandations" (p.298) is the PDF text-layer wording, kept as printed.

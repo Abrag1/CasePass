@@ -49,11 +49,20 @@ export interface HBarsData {
   kind: "hBars";
   title?: string;
   series?: ExtraSwatch[]; // one per value in a group; legend drawn when more than one
-  groups: { label: string; values: number[] }[];
+  // `valueTexts` overrides the printed label per bar (when the source mixes decimals, e.g. "99%" and "0.6%");
+  // `colors` overrides the series colour per bar.
+  groups: { label: string; values: number[]; valueTexts?: string[]; colors?: string[] }[];
   max: number;
   valueSuffix?: string;
   valueDecimals?: number;
   footnote?: string;
+  // Optional additions (defaults keep the original behaviour).
+  categoryTicks?: boolean; // tick marks on the category axis between the groups
+  axisStep?: number; // draw a value axis under the bars with ticks every `axisStep`
+  axisTitle?: string; // title under the value axis
+  grid?: boolean; // vertical gridlines at the axis ticks
+  outline?: boolean; // thin outline around each bar (and legend swatch)
+  footnoteLines?: { bold?: string; text: string }[]; // footnote lines with an optional bold lead-in, drawn before `footnote`
 }
 
 // Two or more normal-distribution curves with vertical markers and call-out boxes.
