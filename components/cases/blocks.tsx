@@ -574,7 +574,8 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   const yMax = page.axisBarYMax ?? 10;
   const yStep = page.axisBarYStep ?? 5;
   const left = 54;
-  const right = 500;
+  const legendRight = !!page.axisBarLegendRight;
+  const right = legendRight ? 400 : 500;
   const top = 16;
   const bottom = 250;
   const plotW = right - left;
@@ -594,7 +595,7 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           <g key={t}>
             <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
             <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
-              {fmtTick(t)}
+              {fmtTick(t)}{page.axisBarYTickSuffix ?? ""}
             </text>
           </g>
         ))}
@@ -610,6 +611,12 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
               {g.values.map((v, si) => (
                 <rect key={si} x={x0 + si * (barW + gap)} y={y(v)} width={barW} height={bottom - y(v)} fill={page.axisBarSeries![si].color} />
               ))}
+              {page.axisBarValueLabels &&
+                g.values.map((v, si) => (
+                  <text key={`v${si}`} x={x0 + si * (barW + gap) + barW / 2} y={y(v) + 14} textAnchor="middle" fontSize={12} fill={(() => { const h = page.axisBarSeries![si].color; const c = /^#[0-9a-f]{6}$/i.test(h) ? parseInt(h.slice(1), 16) : 0xffffff; const lum = (0.299 * (c >> 16) + 0.587 * ((c >> 8) & 255) + 0.114 * (c & 255)) / 255; return lum < 0.55 ? "#ffffff" : "#222222"; })()}>
+                    {fmtTick(v)}{page.axisBarYTickSuffix ?? ""}
+                  </text>
+                ))}
               <text x={left + band * gi + band / 2} y={bottom + 20} textAnchor="middle" fontSize={14} fill={ink.axis}>
                 {g.label}
               </text>
@@ -620,7 +627,7 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           const itemW = 110;
           const startX = 260 - (m * itemW) / 2;
           return page.axisBarSeries.map((s, i) => (
-            <g key={i} transform={`translate(${startX + i * itemW} 308)`}>
+            <g key={i} transform={legendRight ? `translate(${right + 12} ${120 + i * 22})` : `translate(${startX + i * itemW} 308)`}>
               <rect width={10} height={10} y={-5} fill={s.color} />
               <text x={16} dominantBaseline="middle" fontSize={14} fill={ink.axis}>
                 {s.name}

@@ -364,6 +364,10 @@ export interface CasePage {
   axisBarYMax?: number;
   axisBarYStep?: number;
   axisBarYLabel?: string;
+  // Optional (defaults unchanged): suffix on Y ticks (e.g. "%"), value labels inside bars, legend at the right
+  axisBarYTickSuffix?: string;
+  axisBarValueLabels?: boolean;
+  axisBarLegendRight?: boolean;
   // Scatter plot (points only, no connecting line). Axes run from Min (default 0) to Max in
   // `Step` increments; `scatterYLabel` may contain "\n" to break the axis title over two lines.
   scatterTitle?: string;
@@ -1615,6 +1619,9 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       axisBarYMax: p.axisBarYMax,
       axisBarYStep: p.axisBarYStep,
       axisBarYLabel: p.axisBarYLabel,
+      axisBarYTickSuffix: p.axisBarYTickSuffix,
+      axisBarValueLabels: p.axisBarValueLabels,
+      axisBarLegendRight: p.axisBarLegendRight,
       scatterTitle: p.scatterTitle,
       scatterPoints: p.scatterPoints,
       scatterXMin: p.scatterXMin,

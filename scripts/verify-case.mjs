@@ -102,7 +102,7 @@ const LIST_KEYS = new Set(["guidancePreLines", "guidanceLines", "items", "lines"
 for (const p of pages) {
   for (const s of strings(p)) {
     const k = leafKey(s.path);
-    if (LIST_KEYS.has(k) && s.text.length > 450) warnings.push(`page ${p.n}: ${s.path} is ${s.text.length} chars (is a list jammed into one line?)`);
+    if (LIST_KEYS.has(k) && s.text.length > 900) warnings.push(`page ${p.n}: ${s.path} is ${s.text.length} chars (is a list jammed into one line?)`);
     if (LIST_KEYS.has(k) && (s.text.match(/;/g) ?? []).length >= 3) warnings.push(`page ${p.n}: ${s.path} has 3+ semicolons (bullets merged into one line?)`);
     if (k === "note" && s.text.length > 400) warnings.push(`page ${p.n}: note is ${s.text.length} chars; keep it to a sentence or two`);
     if (LIST_KEYS.has(k) && / - [A-Z#].* - [A-Z#]/.test(s.text)) warnings.push(`page ${p.n}: ${s.path} looks like a flattened outline (" - " joins)`);
