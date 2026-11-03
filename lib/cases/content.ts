@@ -10,6 +10,7 @@
 // note, cheat) must never reach the interviewee's browser. Use
 // `redactPagesForCandidate()` before sending pages to an interviewee.
 
+import type { ExtraChart } from "@/lib/cases/extra-charts";
 import { AUTHORED_CASES, AUTO_GENERATED_IDS } from "./authored";
 
 export type PageKind = "ready" | "qa" | "cheat";
@@ -472,6 +473,8 @@ export interface CasePage {
   dataTableIntro?: string[];
   segmentTitle?: string;
   segmentTable?: SegmentBlock[];
+  // Newer data-driven exhibit types (multi-pie, Marimekko, horizontal bars, bell curves, flow, combo); see lib/cases/extra-charts.ts
+  extraCharts?: ExtraChart[];
 
   // Interviewer cheat sheet (kind: 'cheat')
   cheatRows?: CheatRow[];
@@ -509,7 +512,8 @@ export function pageHasExhibit(p: CasePage): boolean {
     p.treeRoot ||
     p.illustrationSrc ||
     p.dataTableRows ||
-    p.segmentTable
+    p.segmentTable ||
+    p.extraCharts?.length
   );
 }
 
@@ -1729,5 +1733,6 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       dataTableIntro: p.dataTableIntro,
       segmentTitle: p.segmentTitle,
       segmentTable: p.segmentTable,
+      extraCharts: p.extraCharts,
     }));
 }

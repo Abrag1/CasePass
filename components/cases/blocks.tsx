@@ -9,6 +9,8 @@
 
 import { pageHasExhibit, type CalcTableData, type CasePage, type ChartTitleStyle, type InfoSection, type TreeNode } from "@/lib/cases/content";
 import { Presentable, type ShareControl } from "@/components/interview/Presenter";
+import { ExhibitFrame, chartInk } from "@/components/cases/charts/chart-kit";
+import { ExtraCharts } from "@/components/cases/charts";
 
 /* ---------------------------------- callouts --------------------------------- */
 
@@ -344,29 +346,6 @@ export function CheatSheet({ rows, takeaway }: { rows: NonNullable<CasePage["che
 
 /* --------------------------------- exhibits ---------------------------------- */
 
-function ExhibitFrame({ dark, title, titleStyle, children }: { dark?: boolean; title?: string; titleStyle?: ChartTitleStyle; children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        border: dark ? "none" : "1px solid #e6e7e3",
-        background: dark ? "#262c28" : undefined,
-        borderRadius: 10,
-        padding: dark ? 20 : "22px 24px",
-        marginBottom: 14,
-        minWidth: 0,
-        overflowX: "auto",
-      }}
-    >
-      {title && titleStyle === "centered-underlined" ? (
-        <div style={{ fontSize: 20, fontWeight: 700, textAlign: "center", textDecoration: "underline", color: dark ? "#dbe3dd" : "#1f2421", marginBottom: 16 }}>{title}</div>
-      ) : (
-        title && <div style={{ fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 16 }}>{title}</div>
-      )}
-      {children}
-    </div>
-  );
-}
-
 export function StackedBar({ page, dark }: { page: CasePage; dark?: boolean }) {
   if (!page.chart1) return null;
   return (
@@ -506,15 +485,6 @@ export function LineChart({ page, dark }: { page: CasePage; dark?: boolean }) {
 }
 
 /* ---------------- data-driven charts (geometry computed from values) ---------------- */
-
-function chartInk(dark?: boolean) {
-  return {
-    text: dark ? "#dbe3dd" : "#3a3f3b",
-    axis: dark ? "#8a958d" : "#6b716c",
-    grid: dark ? "#333a35" : "#e6e7e3",
-    sliceStroke: dark ? "#262c28" : "#ffffff",
-  };
-}
 
 function fmtTick(v: number): string {
   return Number(v.toFixed(2)).toString();
@@ -1572,6 +1542,7 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <Illustration page={page} dark={dark} />
       <SegmentTable page={page} dark={dark} />
       <DataTable page={page} dark={dark} />
+      <ExtraCharts charts={page.extraCharts} dark={dark} />
     </>
   );
 }
