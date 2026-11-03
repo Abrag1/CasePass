@@ -16,6 +16,7 @@ import * as boothCoffeeAndTeaApparel from "./booth_2024_2025_coffee_and_tea_appa
 import * as boothCommercialVehicleOemInChina from "./booth_2024_2025_commercial_vehicle_oem_in_china";
 import * as boothContactLenses from "./booth_2024_2025_contact_lenses";
 import * as boothCraftCo from "./booth_2024_2025_craft_co";
+import * as boothCruiseLineAcquisition from "./booth_2024_2025_cruise_line_acquisition";
 import * as boothElectricUtility from "./booth_2024_2025_electric_utility";
 import * as boothElenaSElectronics from "./booth_2024_2025_elena_s_electronics";
 import * as boothFinanceCo from "./booth_2024_2025_finance_co";
@@ -49,6 +50,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothCommercialVehicleOemInChina,
   boothContactLenses,
   boothCraftCo,
+  boothCruiseLineAcquisition,
   boothElectricUtility,
   boothElenaSElectronics,
   boothFinanceCo,

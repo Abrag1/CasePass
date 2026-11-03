@@ -589,12 +589,19 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   const gap = 8;
   const clusterW = m * barW + (m - 1) * gap;
   const rotX = page.axisBarRotateLabels ? 36 : 0;
+  const topPad = page.axisBarInnerTitle ? 34 : 0;
   return (
     <ExhibitFrame dark={dark} title={page.axisBarTitle}>
-      <svg viewBox={`0 0 520 ${330 + rotX}`} style={{ width: "100%", maxWidth: 560, display: "block", margin: "0 auto" }}>
+      <svg viewBox={`0 0 520 ${330 + rotX + topPad}`} style={{ width: "100%", maxWidth: 560, display: "block", margin: "0 auto" }}>
+        {page.axisBarInnerTitle && (
+          <text x={left - 40} y={22} fontSize={19} fill={ink.axis}>
+            {page.axisBarInnerTitle}
+          </text>
+        )}
+        <g transform={`translate(0 ${topPad})`}>
         {ticks.map((t) => (
           <g key={t}>
-            <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
+            {!page.axisBarNoGrid && <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />}
             <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
               {fmtTick(t)}{page.axisBarYTickSuffix ?? ""}
             </text>
@@ -612,14 +619,24 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
               {g.values.map((v, si) => (
                 <rect key={si} x={x0 + si * (barW + gap)} y={y(v)} width={barW} height={bottom - y(v)} fill={page.axisBarSeries![si].color} />
               ))}
-              {page.axisBarValueLabels &&
+              {page.axisBarValueLabels && page.axisBarLabelsAbove &&
+                g.values.map((v, si) => (
+                  <text key={`va${si}`} x={x0 + si * (barW + gap) + barW / 2} y={y(v) - 5} textAnchor="middle" fontSize={12} fill={page.axisBarSeries![si].color === "#f4cccc" ? "#e6a8a8" : page.axisBarSeries![si].color}>
+                    {fmtTick(v)}{page.axisBarYTickSuffix ?? ""}
+                  </text>
+                ))}
+              {page.axisBarValueLabels && !page.axisBarLabelsAbove &&
                 g.values.map((v, si) => (
                   <text key={`v${si}`} x={x0 + si * (barW + gap) + barW / 2} y={y(v) + 14} textAnchor="middle" fontSize={12} fill={(() => { const h = page.axisBarSeries![si].color; const c = /^#[0-9a-f]{6}$/i.test(h) ? parseInt(h.slice(1), 16) : 0xffffff; const lum = (0.299 * (c >> 16) + 0.587 * ((c >> 8) & 255) + 0.114 * (c & 255)) / 255; return lum < 0.55 ? "#ffffff" : "#222222"; })()}>
                     {fmtTick(v)}{page.axisBarYTickSuffix ?? ""}
                   </text>
                 ))}
-              <text x={left + band * gi + band / 2} y={bottom + 20} textAnchor={page.axisBarRotateLabels ? "end" : "middle"} transform={page.axisBarRotateLabels ? `rotate(-35 ${left + band * gi + band / 2} ${bottom + 20})` : undefined} fontSize={14} fill={ink.axis}>
-                {g.label}
+              <text x={left + band * gi + band / 2} y={bottom + 20} textAnchor={page.axisBarRotateLabels ? "end" : "middle"} transform={page.axisBarRotateLabels ? `rotate(-35 ${left + band * gi + band / 2} ${bottom + 20})` : undefined} fontSize={page.axisBarLabelsAbove ? 12 : 14} fill={ink.axis}>
+                {g.label.split("\n").map((ln, k) => (
+                  <tspan key={k} x={left + band * gi + band / 2} dy={k === 0 ? 0 : 14}>
+                    {ln}
+                  </tspan>
+                ))}
               </text>
             </g>
           );
@@ -628,7 +645,7 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           const itemW = 110;
           const startX = 260 - (m * itemW) / 2;
           return page.axisBarSeries.map((s, i) => (
-            <g key={i} transform={legendRight ? `translate(${right + 12} ${120 + i * 22})` : `translate(${startX + i * itemW} ${308 + rotX})`}>
+            <g key={i} transform={page.axisBarLegendTopLeft ? `translate(${left + 10} ${34 + i * 20})` : legendRight ? `translate(${right + 12} ${120 + i * 22})` : `translate(${startX + i * itemW} ${308 + rotX})`}>
               <rect width={10} height={10} y={-5} fill={s.color} />
               <text x={16} dominantBaseline="middle" fontSize={14} fill={ink.axis}>
                 {s.name}
@@ -636,6 +653,7 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
             </g>
           ));
         })()}
+      </g>
       </svg>
     </ExhibitFrame>
   );
@@ -667,6 +685,12 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
     <ExhibitFrame dark={dark} title={page.colBarTitle} titleStyle={page.colBarTitleStyle}>
       {page.colBarSubtitle && <div style={{ fontSize: 13, color: ink.text, marginTop: -6, marginBottom: 10 }}>{page.colBarSubtitle}</div>}
       <svg viewBox="0 0 640 335" style={{ width: "100%", maxWidth: 720, display: "block", margin: "0 auto" }}>
+        <defs>
+          <pattern id="cb-dots" width="3" height="3" patternUnits="userSpaceOnUse">
+            <rect width="3" height="3" fill="#ffffff" />
+            <rect width="1.6" height="1.6" fill="#1a1a1a" />
+          </pattern>
+        </defs>
         {noGrid && !page.colBarNoYAxis && <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1} />}
         {noGrid && <line x1={left} x2={right} y1={y(0)} y2={y(0)} stroke={ink.axis} strokeWidth={1} />}
         {ticks.map((t, ti) => (
@@ -690,7 +714,7 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           const cx = left + band * (i + 0.5);
           return (
             <g key={i}>
-              <rect x={cx - barW / 2} y={Math.min(y(it.value), y(0))} width={barW} height={Math.abs(y(0) - y(it.value))} fill={it.color} />
+              <rect x={cx - barW / 2} y={Math.min(y(it.value), y(0))} width={barW} height={Math.abs(y(0) - y(it.value))} fill={it.pattern === "dots" ? "url(#cb-dots)" : it.color} />
               {page.colBarValueLabels && (
                 <text x={cx} y={it.value < 0 ? y(it.value) + 14 : y(it.value) - 6} textAnchor="middle" fontSize={11} fill={ink.text}>
                   {it.valueLabel ?? fmtTick(it.value)}
@@ -740,8 +764,20 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
             )}
           </g>
         )}
+        {page.colBarLegend && (
+          <g transform={`translate(${right - 118} ${bottom - 40})`}>
+            {page.colBarLegend.map((lg, li) => (
+              <g key={li} transform={`translate(0 ${li * 20})`}>
+                <rect width={16} height={12} y={-6} fill={lg.pattern === "dots" ? "url(#cb-dots)" : lg.color} />
+                <text x={22} dominantBaseline="middle" fontSize={11} fill={ink.text}>
+                  {lg.name}
+                </text>
+              </g>
+            ))}
+          </g>
+        )}
         {page.colBarXTitle && (
-          <text x={(left + right) / 2} y={326} textAnchor="middle" fontSize={12} fill={ink.axis}>
+          <text x={(left + right) / 2} y={items.every((it) => !it.label) ? bottom + 24 : 326} textAnchor="middle" fontSize={12} fill={ink.axis}>
             {page.colBarXTitle}
           </text>
         )}

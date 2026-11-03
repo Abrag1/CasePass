@@ -166,6 +166,8 @@ export interface ColBarItem {
   color: string;
   // Optional text for the value label (default: the value)
   valueLabel?: string;
+  // Dotted fill instead of a flat colour
+  pattern?: "dots";
 }
 export interface ColBarRefLine {
   value: number;
@@ -374,6 +376,10 @@ export interface CasePage {
   axisBarYTickSuffix?: string;
   axisBarValueLabels?: boolean;
   axisBarLegendRight?: boolean;
+  axisBarNoGrid?: boolean;
+  axisBarInnerTitle?: string;
+  axisBarLegendTopLeft?: boolean;
+  axisBarLabelsAbove?: boolean;
   axisBarRotateLabels?: boolean;
   // Scatter plot (points only, no connecting line). Axes run from Min (default 0) to Max in
   // `Step` increments; `scatterYLabel` may contain "\n" to break the axis title over two lines.
@@ -418,6 +424,7 @@ export interface CasePage {
   colBarYTickLabels?: string[];
   colBarValueLabels?: boolean;
   colBarNoYAxis?: boolean;
+  colBarLegend?: { name: string; color: string; pattern?: "dots" }[];
   colBarCallouts?: { from: number; to: number; label: string; level: number }[];
   colBarNoGrid?: boolean;
   // Optional title style for the colBar* / axisStack* exhibits (default: small, left, plain)
@@ -1640,6 +1647,10 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       axisBarYTickSuffix: p.axisBarYTickSuffix,
       axisBarValueLabels: p.axisBarValueLabels,
       axisBarRotateLabels: p.axisBarRotateLabels,
+      axisBarNoGrid: p.axisBarNoGrid,
+      axisBarInnerTitle: p.axisBarInnerTitle,
+      axisBarLegendTopLeft: p.axisBarLegendTopLeft,
+      axisBarLabelsAbove: p.axisBarLabelsAbove,
       axisBarLegendRight: p.axisBarLegendRight,
       scatterTitle: p.scatterTitle,
       scatterPoints: p.scatterPoints,
@@ -1679,6 +1690,7 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       colBarYTickLabels: p.colBarYTickLabels,
       colBarValueLabels: p.colBarValueLabels,
       colBarNoYAxis: p.colBarNoYAxis,
+      colBarLegend: p.colBarLegend,
       colBarCallouts: p.colBarCallouts,
       colBarNoGrid: p.colBarNoGrid,
       colBarTitleStyle: p.colBarTitleStyle,
