@@ -14,7 +14,12 @@ export interface MultiPieData {
   columns?: number; // pies per row (default: all in one row)
   colLabels?: string[];
   rowLabels?: string[];
-  pies: { title?: string; center?: string; note?: string; slices: { label: string; value: number; color: string }[] }[];
+  // `text` overrides the printed percent label of a slice (used when the source prints rounded values that do not sum to 100).
+  pies: { title?: string; center?: string; note?: string; slices: { label: string; value: number; color: string; text?: string }[] }[];
+  // One label per row, drawn in the gap between the two pies of that row (a newline splits lines; the first line is bold).
+  rowCenters?: string[];
+  centerBox?: boolean; // draw each rowCenters entry inside a bordered box
+  radius?: number; // pie radius in SVG units (default chosen from the layout)
   legend?: ExtraSwatch[];
   footnote?: string;
 }
