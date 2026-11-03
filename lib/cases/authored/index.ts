@@ -31,6 +31,7 @@ import * as boothInternationalAirlines from "./booth_2024_2025_international_air
 import * as boothKatrina from "./booth_2024_2025_katrina";
 import * as boothLindasGreatBurgers from "./booth_2024_2025_linda_s_great_burgers";
 import * as boothLolaLosZoo from "./booth_2024_2025_lola_lo_s_zoo";
+import * as boothLostPatent from "./booth_2024_2025_lost_patent";
 import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
@@ -65,6 +66,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothKatrina,
   boothLindasGreatBurgers,
   boothLolaLosZoo,
+  boothLostPatent,
   dardenCircleBubble,
   dardenRobotsInc,
   sloanBrainteaser,
