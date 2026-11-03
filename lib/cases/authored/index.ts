@@ -15,6 +15,7 @@ import * as boothCleaningProducts from "./booth_2024_2025_cleaning_products";
 import * as boothCoffeeAndTeaApparel from "./booth_2024_2025_coffee_and_tea_apparel";
 import * as boothCommercialVehicleOemInChina from "./booth_2024_2025_commercial_vehicle_oem_in_china";
 import * as boothContactLenses from "./booth_2024_2025_contact_lenses";
+import * as boothElectricUtility from "./booth_2024_2025_electric_utility";
 import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
@@ -33,6 +34,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothCoffeeAndTeaApparel,
   boothCommercialVehicleOemInChina,
   boothContactLenses,
+  boothElectricUtility,
   dardenCircleBubble,
   dardenRobotsInc,
   sloanBrainteaser,
