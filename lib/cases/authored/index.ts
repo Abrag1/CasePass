@@ -33,6 +33,7 @@ import * as boothLindasGreatBurgers from "./booth_2024_2025_linda_s_great_burger
 import * as boothLolaLosZoo from "./booth_2024_2025_lola_lo_s_zoo";
 import * as boothLostPatent from "./booth_2024_2025_lost_patent";
 import * as boothMidwestMachineryCo from "./booth_2024_2025_midwest_machinery_co";
+import * as boothNewVaccine from "./booth_2024_2025_new_vaccine";
 import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
@@ -69,6 +70,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   boothLolaLosZoo,
   boothLostPatent,
   boothMidwestMachineryCo,
+  boothNewVaccine,
   dardenCircleBubble,
   dardenRobotsInc,
   sloanBrainteaser,
