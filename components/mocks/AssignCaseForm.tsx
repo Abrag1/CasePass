@@ -114,7 +114,6 @@ export function AssignCaseForm({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2.5 flex-wrap mb-1">
                 <span className="font-semibold text-[15px]">{c.name}</span>
-                {c.is_seed && <Badge tone="warn">Example</Badge>}
                 {c.extraction_status === "basic" ? <Badge tone="neutral">Outline</Badge> : <Badge tone="green">Full case</Badge>}
                 {currentCaseId === c.id && <Badge tone="green">Assigned</Badge>}
               </div>
