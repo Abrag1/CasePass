@@ -1218,7 +1218,7 @@ function TreeBranch({ node, ink }: { node: TreeNode; ink: ReturnType<typeof char
           padding: "6px 10px",
           fontSize: 13,
           color: ink.text,
-          whiteSpace: "nowrap",
+          maxWidth: 230,
         }}
       >
         {node.label}
@@ -1265,7 +1265,7 @@ export function TreeDiagram({ page, dark }: { page: CasePage; dark?: boolean }) 
   if (!page.treeRoot) return null;
   return (
     <ExhibitFrame dark={dark} title={page.treeTitle}>
-      <TreeBranch node={page.treeRoot} ink={chartInk(dark)} />
+      <div style={{ overflowX: "auto" }}><TreeBranch node={page.treeRoot} ink={chartInk(dark)} /></div>
     </ExhibitFrame>
   );
 }
