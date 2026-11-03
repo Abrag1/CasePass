@@ -7,7 +7,7 @@
 // handoff design system): Say-next (blue), Guidance (dashed), Calc (gray),
 // Answer (green). Keep their label casing/weight consistent.
 
-import { pageHasExhibit, type CasePage, type InfoSection, type TreeNode } from "@/lib/cases/content";
+import { pageHasExhibit, type CalcTableData, type CasePage, type ChartTitleStyle, type InfoSection, type TreeNode } from "@/lib/cases/content";
 import { Presentable, type ShareControl } from "@/components/interview/Presenter";
 
 /* ---------------------------------- callouts --------------------------------- */
@@ -117,12 +117,13 @@ export function CalcBox({ note, lines }: { note?: string; lines: { q: string; a:
 
 // Walkthrough laid out as a table (one row per item, one column per scenario) so a
 // total row can sit directly under the rows it sums. Cells accept **bold** / ==highlight==.
-export function CalcTableBox({ note, table }: { note?: string; table: { headers: string[]; rows: string[][]; totalLast?: boolean } }) {
-  const cols = `minmax(110px, 0.9fr) ${table.headers.slice(1).map(() => "minmax(170px, 1.4fr)").join(" ")}`;
+export function CalcTableBox({ note, table }: { note?: string; table: CalcTableData }) {
+  const ncols = Math.max(table.headers.length, table.rows[0]?.length ?? 0);
+  const cols = `minmax(110px, 0.9fr) ${Array.from({ length: ncols - 1 }, () => "minmax(170px, 1.4fr)").join(" ")}`;
   return (
     <div style={{ background: "#fafbf9", border: "1px solid #e6e7e3", borderRadius: 10, padding: "16px 18px", marginBottom: 14, overflowX: "auto" }}>
       <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#8a8f8a", fontWeight: 700, marginBottom: 10 }}>
-        Calculation walkthrough
+        {table.title ?? "Calculation walkthrough"}
       </div>
       {note && <div style={{ fontSize: 12, color: "#8a8f8a", marginBottom: 10, fontStyle: "italic" }}><Rich text={note} /></div>}
       <div style={{ display: "grid", gridTemplateColumns: cols, fontSize: 13.5, minWidth: 460 }}>
@@ -253,7 +254,7 @@ export function InfoSectionsBox({ label, sections }: { label?: string; sections:
         </div>
       )}
       {sections.map((sec, i) => (
-        <div key={i} style={{ marginBottom: 16 }}>
+        <div key={i} style={{ marginBottom: 16, marginTop: sec.spaceBefore }}>
           {sec.label && (
             <div style={{ fontSize: sec.labelSize ?? "13px", fontWeight: 700, color: "#3a3f3b", marginBottom: 8 }}>
               {sec.label}{" "}
@@ -339,7 +340,7 @@ export function CheatSheet({ rows, takeaway }: { rows: NonNullable<CasePage["che
 
 /* --------------------------------- exhibits ---------------------------------- */
 
-function ExhibitFrame({ dark, title, children }: { dark?: boolean; title?: string; children: React.ReactNode }) {
+function ExhibitFrame({ dark, title, titleStyle, children }: { dark?: boolean; title?: string; titleStyle?: ChartTitleStyle; children: React.ReactNode }) {
   return (
     <div
       style={{
@@ -352,8 +353,10 @@ function ExhibitFrame({ dark, title, children }: { dark?: boolean; title?: strin
         overflowX: "auto",
       }}
     >
-      {title && (
-        <div style={{ fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 16 }}>{title}</div>
+      {title && titleStyle === "centered-underlined" ? (
+        <div style={{ fontSize: 20, fontWeight: 700, textAlign: "center", textDecoration: "underline", color: dark ? "#dbe3dd" : "#1f2421", marginBottom: 16 }}>{title}</div>
+      ) : (
+        title && <div style={{ fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 16 }}>{title}</div>
       )}
       {children}
     </div>
@@ -641,17 +644,20 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   const ticks: number[] = [];
   for (let v = 0; v <= yMax + 1e-9; v += yStep) ticks.push(v);
   const band = (right - left) / items.length;
-  const barW = band * 0.52;
+  const barW = band * (page.colBarBarRatio ?? 0.52);
   const ref = page.colBarRefLine;
+  const horiz = !!page.colBarHorizontalLabels;
+  const tickText = (t: number) =>
+    (page.colBarYTickDecimals !== undefined ? t.toFixed(page.colBarYTickDecimals) : fmtTick(t)) + (page.colBarYTickSuffix ?? "");
   return (
-    <ExhibitFrame dark={dark} title={page.colBarTitle}>
+    <ExhibitFrame dark={dark} title={page.colBarTitle} titleStyle={page.colBarTitleStyle}>
       {page.colBarSubtitle && <div style={{ fontSize: 13, color: ink.text, marginTop: -6, marginBottom: 10 }}>{page.colBarSubtitle}</div>}
       <svg viewBox="0 0 640 335" style={{ width: "100%", maxWidth: 720, display: "block", margin: "0 auto" }}>
         {ticks.map((t) => (
           <g key={t}>
             <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
             <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={11} fill={ink.axis}>
-              {fmtTick(t)}
+              {tickText(t)}
             </text>
           </g>
         ))}
@@ -665,9 +671,19 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           return (
             <g key={i}>
               <rect x={cx - barW / 2} y={y(it.value)} width={barW} height={bottom - y(it.value)} fill={it.color} />
-              <text transform={`translate(${cx + 4} ${bottom + 8}) rotate(-90)`} textAnchor="end" fontSize={9.5} fill={ink.axis}>
-                {it.label}
-              </text>
+              {horiz ? (
+                <text x={cx} y={bottom + 18} textAnchor="middle" fontSize={11} fill={ink.axis}>
+                  {it.label.split("\n").map((ln, k) => (
+                    <tspan key={k} x={cx} dy={k === 0 ? 0 : 14}>
+                      {ln}
+                    </tspan>
+                  ))}
+                </text>
+              ) : (
+                <text transform={`translate(${cx + 4} ${bottom + 8}) rotate(-90)`} textAnchor="end" fontSize={9.5} fill={ink.axis}>
+                  {it.label}
+                </text>
+              )}
             </g>
           );
         })}
@@ -699,15 +715,17 @@ export function AxisStacks({ page, dark }: { page: CasePage; dark?: boolean }) {
   const yMax = page.axisStackYMax ?? 10;
   const yStep = page.axisStackYStep ?? 1;
   const legend = page.axisStackLegend;
+  const below = !!page.axisStackLegendBelow && !!legend;
   const left = 56;
-  const right = legend ? 500 : 640;
+  const right = legend && !below ? 500 : 640;
   const top = 22;
   const bottom = 250;
   const y = (v: number) => bottom - (v / yMax) * (bottom - top);
   const ticks: number[] = [];
   for (let v = 0; v <= yMax + 1e-9; v += yStep) ticks.push(v);
   const band = (right - left) / cols.length;
-  const barW = band * 0.56;
+  const barW = band * (page.axisStackBarRatio ?? 0.56);
+  const lscale = page.axisStackLegendScale ?? 1;
   const spans = cols.map((c) => {
     let acc = 0;
     return c.segs.map((s) => {
@@ -717,14 +735,14 @@ export function AxisStacks({ page, dark }: { page: CasePage; dark?: boolean }) {
     });
   });
   return (
-    <ExhibitFrame dark={dark} title={page.axisStackTitle}>
+    <ExhibitFrame dark={dark} title={page.axisStackTitle} titleStyle={page.axisStackTitleStyle}>
       {page.axisStackSubtitle && <div style={{ fontSize: 14, color: ink.text, marginTop: -6, marginBottom: 10 }}>{page.axisStackSubtitle}</div>}
-      <svg viewBox={`0 0 ${legend ? 640 : 680} 320`} style={{ width: "100%", maxWidth: 720, display: "block", margin: "0 auto" }}>
+      <svg viewBox={`0 0 ${legend && !below ? 640 : 680} ${below ? 350 : 320}`} style={{ width: "100%", maxWidth: 720, display: "block", margin: "0 auto" }}>
         {ticks.map((t) => (
           <g key={t}>
-            <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={t === 0 ? ink.axis : ink.grid} strokeWidth={1} />
+            <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={t === 0 && !page.axisStackLightBaseline ? ink.axis : ink.grid} strokeWidth={1} />
             <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={12} fill={ink.text}>
-              {t.toLocaleString("en-US")}
+              {t === 0 && page.axisStackZeroLabel ? page.axisStackZeroLabel : (page.axisStackYTickPrefix ?? "") + t.toLocaleString("en-US")}
             </text>
           </g>
         ))}
@@ -750,7 +768,7 @@ export function AxisStacks({ page, dark }: { page: CasePage; dark?: boolean }) {
                 </text>
               )}
               {lines.map((ln, k) => (
-                <text key={k} x={cx} y={bottom + 20 + k * 14} textAnchor="middle" fontSize={11.5} fontWeight={700} fill={ink.text}>
+                <text key={k} x={cx} y={bottom + 20 + k * 14} textAnchor="middle" fontSize={11.5} fontWeight={page.axisStackLabelsRegular ? 400 : 700} fill={ink.text}>
                   {ln}
                 </text>
               ))}
@@ -759,15 +777,15 @@ export function AxisStacks({ page, dark }: { page: CasePage; dark?: boolean }) {
         })}
         {legend &&
           legend.map((l, i) => (
-            <g key={i} transform={`translate(${right + 24} ${60 + i * 24})`}>
-              <rect width={14} height={14} y={-7} fill={l.color} />
-              <text x={20} dominantBaseline="middle" fontSize={13} fill={ink.text}>
+            <g key={i} transform={below ? `translate(${left + 40 + (i % 2) * 220} ${296 + Math.floor(i / 2) * 22})` : `translate(${right + 24} ${60 + i * 24})`}>
+              <rect width={14 * lscale} height={14 * lscale} y={-7 * lscale} fill={l.color} />
+              <text x={20 * lscale} dominantBaseline="middle" fontSize={13 * lscale} fill={ink.text}>
                 {l.name}
               </text>
             </g>
           ))}
         {page.axisStackFootnote && (
-          <text x={left} y={312} fontSize={11} fill={ink.text}>
+          <text x={left} y={below ? 344 : 312} fontSize={11} fill={ink.text}>
             {page.axisStackFootnote}
           </text>
         )}
@@ -1487,6 +1505,11 @@ function InterviewerBlocks({
           <CalcTableBox note={page.calcNote} table={page.calcTable} />
         </PresentWrap>
       )}
+      {page.calcTables?.map((t, i) => (
+        <PresentWrap key={i} presentable={presentable} title={page.title} label={t.title ?? "Calculation walkthrough"}>
+          <CalcTableBox table={t} />
+        </PresentWrap>
+      ))}
       {page.answerText && page.answerBonusLines ? (
         <PresentWrap presentable={presentable} title={page.title} label="Answer">
           <AnswerGroup

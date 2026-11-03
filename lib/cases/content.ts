@@ -233,6 +233,8 @@ export interface InfoSection {
   label?: string;
   labelSize?: string;
   labelNote?: string;
+  // Extra space (px) above this section
+  spaceBefore?: number;
   paragraphs?: string[];
   iconLines?: InfoIconLine[];
   groups?: InfoGroup[];
@@ -248,6 +250,16 @@ export interface CheatRow {
   profit: string;
   fg: string;
 }
+
+export interface CalcTableData {
+  title?: string;
+  headers: string[];
+  rows: string[][];
+  totalLast?: boolean;
+}
+
+// Chart title drawn centred, bold, underlined and larger (as in some casebook charts).
+export type ChartTitleStyle = "centered-underlined";
 
 export interface CasePage {
   n: string;
@@ -282,7 +294,10 @@ export interface CasePage {
   calcLines?: CalcLine[];
   // Table-style walkthrough: first column labels each row; `totalLast` styles the
   // final row as a total.
-  calcTable?: { headers: string[]; rows: string[][]; totalLast?: boolean };
+  // `title` replaces the "Calculation walkthrough" label; `headers` may be empty (no header row).
+  calcTable?: CalcTableData;
+  // Further tables shown after `calcTable`, in order (for slides that print several tables).
+  calcTables?: CalcTableData[];
 
   // Answer + "what a strong candidate spots" insight. Text supports **bold**
   // markup; when it contains it the answer renders in regular weight so only the
@@ -353,6 +368,13 @@ export interface CasePage {
   colBarYLabel?: string;
   colBarXTitle?: string;
   colBarRefLine?: ColBarRefLine;
+  // Optional chart styling: horizontal (wrapped) category labels, tick text, bar width share of its slot
+  colBarHorizontalLabels?: boolean;
+  colBarYTickSuffix?: string;
+  colBarYTickDecimals?: number;
+  colBarBarRatio?: number;
+  // Optional title style for the colBar* / axisStack* exhibits (default: small, left, plain)
+  colBarTitleStyle?: ChartTitleStyle;
   stackPanelsTitle?: string;
   stackPanels?: StackPanel[];
   axisStackTitle?: string;
@@ -363,6 +385,19 @@ export interface CasePage {
   axisStackYStep?: number;
   axisStackFootnote?: string;
   axisStackConnectors?: boolean;
+  // Optional chart styling: tick prefix, label for the zero tick, legend under the chart in two columns
+  axisStackYTickPrefix?: string;
+  axisStackZeroLabel?: string;
+  axisStackLegendBelow?: boolean;
+  axisStackTitleStyle?: ChartTitleStyle;
+  // Share of a column's slot taken by each bar (default 0.56)
+  axisStackBarRatio?: number;
+  // Category labels in regular weight (default bold)
+  axisStackLabelsRegular?: boolean;
+  // Zero line drawn like the other gridlines instead of a darker baseline
+  axisStackLightBaseline?: boolean;
+  // Legend text / square scale (default 1)
+  axisStackLegendScale?: number;
   treeTitle?: string;
   treeRoot?: TreeNode;
   illustrationTitle?: string;
@@ -1576,6 +1611,11 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       colBarYLabel: p.colBarYLabel,
       colBarXTitle: p.colBarXTitle,
       colBarRefLine: p.colBarRefLine,
+      colBarHorizontalLabels: p.colBarHorizontalLabels,
+      colBarYTickSuffix: p.colBarYTickSuffix,
+      colBarYTickDecimals: p.colBarYTickDecimals,
+      colBarBarRatio: p.colBarBarRatio,
+      colBarTitleStyle: p.colBarTitleStyle,
       stackPanelsTitle: p.stackPanelsTitle,
       stackPanels: p.stackPanels,
       axisStackTitle: p.axisStackTitle,
@@ -1586,6 +1626,14 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       axisStackYStep: p.axisStackYStep,
       axisStackFootnote: p.axisStackFootnote,
       axisStackConnectors: p.axisStackConnectors,
+      axisStackYTickPrefix: p.axisStackYTickPrefix,
+      axisStackZeroLabel: p.axisStackZeroLabel,
+      axisStackLegendBelow: p.axisStackLegendBelow,
+      axisStackTitleStyle: p.axisStackTitleStyle,
+      axisStackBarRatio: p.axisStackBarRatio,
+      axisStackLabelsRegular: p.axisStackLabelsRegular,
+      axisStackLightBaseline: p.axisStackLightBaseline,
+      axisStackLegendScale: p.axisStackLegendScale,
       treeTitle: p.treeTitle,
       treeRoot: p.treeRoot,
       illustrationTitle: p.illustrationTitle,

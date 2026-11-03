@@ -12,6 +12,7 @@ import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
 import * as sternPeSoda from "./stern_2015_2016_a_pe_and_a_soda";
+import * as whartonPhightingPhillies from "./wharton_2017_phighting_phillies";
 import * as yale7Eleven2024 from "./yale_ygcc_2024_7_eleven";
 
 const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePage[] }[] = [
@@ -22,6 +23,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   dardenRobotsInc,
   sloanBrainteaser,
   sternPeSoda,
+  whartonPhightingPhillies,
   yale7Eleven2024,
 ];
 
