@@ -85,11 +85,11 @@ export function GuidanceBox({ label = "Interviewer guidance", lines }: { label?:
         {label}
       </div>
       {lines.map((g, i) => {
-        // Lines that start with two spaces are sub-bullets of the line above.
-        const sub = g.startsWith("  ");
+        // Each two leading spaces indent a line one level under the line above (up to two levels).
+        const depth = Math.min(2, Math.floor((g.length - g.trimStart().length) / 2));
         return (
-          <div key={i} style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b", padding: "4px 0", paddingLeft: sub ? 20 : 0, display: "flex", gap: 8 }}>
-            <span style={{ color: "#8a8f8a" }}>{sub ? "•" : "–"}</span>
+          <div key={i} style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b", padding: "4px 0", paddingLeft: depth * 20, display: "flex", gap: 8 }}>
+            <span style={{ color: "#8a8f8a" }}>{depth === 0 ? "–" : depth === 1 ? "•" : "–"}</span>
             <span><Rich text={g.trim()} /></span>
           </div>
         );
