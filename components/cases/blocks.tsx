@@ -626,6 +626,186 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   );
 }
 
+// Single-series column chart: per-bar colours, rotated category labels, dashed reference line.
+export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
+  const items = page.colBarItems;
+  if (!items) return null;
+  const ink = chartInk(dark);
+  const yMax = page.colBarYMax ?? Math.max(...items.map((i) => i.value));
+  const yStep = page.colBarYStep ?? 50;
+  const left = 70;
+  const right = 600;
+  const top = 16;
+  const bottom = 230;
+  const y = (v: number) => bottom - (v / yMax) * (bottom - top);
+  const ticks: number[] = [];
+  for (let v = 0; v <= yMax + 1e-9; v += yStep) ticks.push(v);
+  const band = (right - left) / items.length;
+  const barW = band * 0.52;
+  const ref = page.colBarRefLine;
+  return (
+    <ExhibitFrame dark={dark} title={page.colBarTitle}>
+      {page.colBarSubtitle && <div style={{ fontSize: 13, color: ink.text, marginTop: -6, marginBottom: 10 }}>{page.colBarSubtitle}</div>}
+      <svg viewBox="0 0 640 335" style={{ width: "100%", maxWidth: 720, display: "block", margin: "0 auto" }}>
+        {ticks.map((t) => (
+          <g key={t}>
+            <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
+            <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={11} fill={ink.axis}>
+              {fmtTick(t)}
+            </text>
+          </g>
+        ))}
+        {page.colBarYLabel && (
+          <text transform={`translate(14 ${(top + bottom) / 2}) rotate(-90)`} textAnchor="middle" fontSize={11} fill={ink.axis}>
+            {page.colBarYLabel}
+          </text>
+        )}
+        {items.map((it, i) => {
+          const cx = left + band * (i + 0.5);
+          return (
+            <g key={i}>
+              <rect x={cx - barW / 2} y={y(it.value)} width={barW} height={bottom - y(it.value)} fill={it.color} />
+              <text transform={`translate(${cx + 4} ${bottom + 8}) rotate(-90)`} textAnchor="end" fontSize={9.5} fill={ink.axis}>
+                {it.label}
+              </text>
+            </g>
+          );
+        })}
+        {ref && (
+          <g>
+            <line x1={left} x2={right + 24} y1={y(ref.value)} y2={y(ref.value)} stroke={ref.color} strokeWidth={2} strokeDasharray="7 5" />
+            {ref.label && (
+              <text x={right + 12} y={y(ref.value) - 10} textAnchor="middle" fontSize={12} fontWeight={700} fill={dark ? "#dbe3dd" : "#14285f"}>
+                {ref.label}
+              </text>
+            )}
+          </g>
+        )}
+        {page.colBarXTitle && (
+          <text x={(left + right) / 2} y={326} textAnchor="middle" fontSize={12} fill={ink.axis}>
+            {page.colBarXTitle}
+          </text>
+        )}
+      </svg>
+    </ExhibitFrame>
+  );
+}
+
+function wrapWords(text: string, max: number): string[] {
+  const out: string[] = [];
+  let cur = "";
+  for (const w of text.split(" ")) {
+    if (cur && (cur + " " + w).length > max) {
+      out.push(cur);
+      cur = w;
+    } else cur = cur ? cur + " " + w : w;
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+
+// Panels of 100%-stacked columns (segment labels, legend, dashed connectors between columns).
+export function StackPanels({ page, dark }: { page: CasePage; dark?: boolean }) {
+  const panels = page.stackPanels;
+  if (!panels) return null;
+  const ink = chartInk(dark);
+  const left = 44;
+  const right = 250;
+  const top = 36;
+  const bottom = 216;
+  const y = (v: number) => bottom - (v / 100) * (bottom - top);
+  const ticks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  return (
+    <ExhibitFrame dark={dark} title={page.stackPanelsTitle}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "nowrap", justifyContent: "center" }}>
+        {panels.map((pn, pi) => {
+          const n = pn.columns.length;
+          const band = (right - left) / n;
+          const barW = band * 0.52;
+          const cxOf = (ci: number) => left + band * (ci + 0.5);
+          const widths = pn.legend.map((lg) => lg.name.length * 5 + 20);
+          const total = widths.reduce((a, b) => a + b, 0);
+          let lx = Math.max(4, (left + right) / 2 - total / 2);
+          return (
+            <div key={pi} style={{ flex: "1 1 0", maxWidth: 300, minWidth: 0 }}>
+              <svg viewBox="0 0 270 300" style={{ width: "100%", display: "block" }}>
+                <text x={4} y={10} fontSize={10} fontWeight={700} fill={ink.axis}>
+                  {pn.title}
+                </text>
+                {ticks.map((t) => (
+                  <g key={t}>
+                    <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
+                    <text x={left - 5} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={8.5} fill={ink.axis}>
+                      {t}%
+                    </text>
+                  </g>
+                ))}
+                {pn.columns.map((c, ci) => {
+                  let acc = 0;
+                  return (
+                    <g key={ci}>
+                      {c.segs.map((sg, si) => {
+                        const y0 = y(acc);
+                        acc += sg.value;
+                        const y1 = y(acc);
+                        return (
+                          <g key={si}>
+                            <rect x={cxOf(ci) - barW / 2} y={y1} width={barW} height={y0 - y1} fill={sg.color} />
+                            {sg.label && (
+                              <text x={cxOf(ci)} y={(y0 + y1) / 2} textAnchor="middle" dominantBaseline="middle" fontSize={9.5} fill="#ffffff">
+                                {sg.label}
+                              </text>
+                            )}
+                          </g>
+                        );
+                      })}
+                      {c.topLabel && (
+                        <text x={cxOf(ci)} y={top - 8} textAnchor="middle" fontSize={9.5} fontWeight={700} fill={dark ? "#dbe3dd" : "#14285f"}>
+                          {c.topLabel}
+                        </text>
+                      )}
+                      {wrapWords(c.label, 19).map((ln, li) => (
+                        <text key={li} x={cxOf(ci)} y={bottom + 14 + li * 11} textAnchor="middle" fontSize={9} fill={ink.axis}>
+                          {ln}
+                        </text>
+                      ))}
+                    </g>
+                  );
+                })}
+                {(pn.connectors ?? []).map((cn, k) => (
+                  <line
+                    key={k}
+                    x1={cxOf(cn.fromCol) + barW / 2}
+                    x2={cxOf(cn.fromCol + 1) - barW / 2}
+                    y1={y(cn.fromPct)}
+                    y2={y(cn.toPct)}
+                    stroke="#f47321"
+                    strokeWidth={1.2}
+                    strokeDasharray="4 3"
+                  />
+                ))}
+                {pn.legend.map((lg, i) => {
+                  const gx = lx;
+                  lx += widths[i];
+                  return (
+                    <g key={i} transform={`translate(${gx} 284)`}>
+                      <rect width={7} height={7} y={-4} fill={lg.color} />
+                      <text x={10} dominantBaseline="middle" fontSize={9.5} fill={ink.axis}>
+                        {lg.name}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+              {pn.note && <div style={{ fontSize: 11, color: ink.text, textAlign: "center", marginTop: 4 }}>{pn.note}</div>}
+            </div>
+          );
+        })}
+      </div>
+    </ExhibitFrame>
+  );
+}
+
 // Scatter plot: points only (no connecting line), L-shaped axes with tick marks, optional
 // two-line Y title, replicating the usual spreadsheet-style scatter exhibit.
 export function ScatterChart({ page, dark }: { page: CasePage; dark?: boolean }) {
@@ -1090,6 +1270,8 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <LineChart page={page} dark={dark} />
       <PieChart page={page} dark={dark} />
       <AxisBars page={page} dark={dark} />
+      <ColBars page={page} dark={dark} />
+      <StackPanels page={page} dark={dark} />
       <ScatterChart page={page} dark={dark} />
       <MiniLines page={page} dark={dark} />
       <MultiLines page={page} dark={dark} />

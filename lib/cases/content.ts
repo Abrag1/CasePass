@@ -131,6 +131,44 @@ export interface MultiLineSeries {
   values: number[];
 }
 
+// Single-series column chart with per-bar colours, rotated category labels and an optional
+// dashed horizontal reference line (e.g. cumulative sales with an "80%" line).
+export interface ColBarItem {
+  label: string;
+  value: number;
+  color: string;
+}
+export interface ColBarRefLine {
+  value: number;
+  label?: string;
+  color: string;
+}
+
+// Panels of 100%-stacked columns with segment labels, a legend and optional dashed
+// connector lines between neighbouring columns (values are percentages, bottom segment first).
+export interface StackSeg {
+  value: number;
+  color: string;
+  label?: string;
+}
+export interface StackColumn {
+  label: string;
+  topLabel?: string;
+  segs: StackSeg[];
+}
+export interface StackConnector {
+  fromCol: number;
+  fromPct: number;
+  toPct: number;
+}
+export interface StackPanel {
+  title: string;
+  columns: StackColumn[];
+  legend: LegendItem[];
+  connectors?: StackConnector[];
+  note?: string;
+}
+
 // Tree / issue-tree diagram: a root node with any depth of children, drawn left to right.
 export interface TreeNode {
   label: string;
@@ -293,6 +331,16 @@ export interface CasePage {
   multiLineYMax?: number;
   multiLineYStep?: number;
   multiLineGridLines?: number; // unlabelled gridlines when there are no Y values (omit multiLineYStep)
+  colBarTitle?: string;
+  colBarSubtitle?: string;
+  colBarItems?: ColBarItem[];
+  colBarYMax?: number;
+  colBarYStep?: number;
+  colBarYLabel?: string;
+  colBarXTitle?: string;
+  colBarRefLine?: ColBarRefLine;
+  stackPanelsTitle?: string;
+  stackPanels?: StackPanel[];
   treeTitle?: string;
   treeRoot?: TreeNode;
   illustrationTitle?: string;
@@ -336,6 +384,8 @@ export function pageHasExhibit(p: CasePage): boolean {
     p.scatterPoints ||
     p.miniLines ||
     p.multiLineSeries ||
+    p.colBarItems ||
+    p.stackPanels ||
     p.treeRoot ||
     p.illustrationSrc ||
     p.dataTableRows ||
@@ -1495,6 +1545,16 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       multiLineYMax: p.multiLineYMax,
       multiLineYStep: p.multiLineYStep,
       multiLineGridLines: p.multiLineGridLines,
+      colBarTitle: p.colBarTitle,
+      colBarSubtitle: p.colBarSubtitle,
+      colBarItems: p.colBarItems,
+      colBarYMax: p.colBarYMax,
+      colBarYStep: p.colBarYStep,
+      colBarYLabel: p.colBarYLabel,
+      colBarXTitle: p.colBarXTitle,
+      colBarRefLine: p.colBarRefLine,
+      stackPanelsTitle: p.stackPanelsTitle,
+      stackPanels: p.stackPanels,
       treeTitle: p.treeTitle,
       treeRoot: p.treeRoot,
       illustrationTitle: p.illustrationTitle,
