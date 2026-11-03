@@ -7,7 +7,7 @@ description: Autonomously converts casebook cases into CasePass cases, one after
 
 The owner has authorized this loop to commit, push to `main` and publish WITHOUT asking per case,
 but only for cases that pass every gate below. Published cases carry
-`CASE_META.review: "auto"`, which shows an "Auto-generated · pending review" badge on the case
+`CASE_META.review: "auto"`, which shows an "Auto-generated · double-check accuracy before giving this case" badge on the case
 list and the case page until the owner confirms the case.
 
 You (the main session) orchestrate; subagents cannot spawn subagents. Per case you run
