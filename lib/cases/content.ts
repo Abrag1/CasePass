@@ -164,6 +164,8 @@ export interface ColBarItem {
   label: string;
   value: number;
   color: string;
+  // Optional text for the value label (default: the value)
+  valueLabel?: string;
 }
 export interface ColBarRefLine {
   value: number;
@@ -177,6 +179,8 @@ export interface StackSeg {
   value: number;
   color: string;
   label?: string;
+  // Optional segment label colour (default white)
+  labelColor?: string;
 }
 export interface StackColumn {
   label: string;
@@ -190,6 +194,8 @@ export interface StackConnector {
 }
 export interface StackPanel {
   title: string;
+  // Optional smaller text under the title (a newline splits lines)
+  subtitle?: string;
   columns: StackColumn[];
   legend: LegendItem[];
   connectors?: StackConnector[];
@@ -405,10 +411,19 @@ export interface CasePage {
   colBarYTickSuffix?: string;
   colBarYTickDecimals?: number;
   colBarBarRatio?: number;
+  // Optional (defaults unchanged): Y axis minimum (negative bars), explicit tick texts (one per tick),
+  // value labels at the bar ends, axis lines with tick marks instead of gridlines
+  colBarYMin?: number;
+  colBarYTickLabels?: string[];
+  colBarValueLabels?: boolean;
+  colBarNoGrid?: boolean;
   // Optional title style for the colBar* / axisStack* exhibits (default: small, left, plain)
   colBarTitleStyle?: ChartTitleStyle;
   stackPanelsTitle?: string;
   stackPanels?: StackPanel[];
+  // Optional (defaults unchanged): Y tick step in % (default 10) and axis lines instead of gridlines
+  stackPanelsTickStep?: number;
+  stackPanelsNoGrid?: boolean;
   axisStackTitle?: string;
   axisStackSubtitle?: string;
   axisStackCols?: AxisStackCol[];
@@ -1656,9 +1671,15 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       colBarYTickSuffix: p.colBarYTickSuffix,
       colBarYTickDecimals: p.colBarYTickDecimals,
       colBarBarRatio: p.colBarBarRatio,
+      colBarYMin: p.colBarYMin,
+      colBarYTickLabels: p.colBarYTickLabels,
+      colBarValueLabels: p.colBarValueLabels,
+      colBarNoGrid: p.colBarNoGrid,
       colBarTitleStyle: p.colBarTitleStyle,
       stackPanelsTitle: p.stackPanelsTitle,
       stackPanels: p.stackPanels,
+      stackPanelsTickStep: p.stackPanelsTickStep,
+      stackPanelsNoGrid: p.stackPanelsNoGrid,
       axisStackTitle: p.axisStackTitle,
       axisStackSubtitle: p.axisStackSubtitle,
       axisStackCols: p.axisStackCols,

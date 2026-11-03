@@ -123,14 +123,14 @@ export function CalcBox({ note, lines }: { note?: string; lines: { q: string; a:
 // total row can sit directly under the rows it sums. Cells accept **bold** / ==highlight==.
 export function CalcTableBox({ note, table }: { note?: string; table: CalcTableData }) {
   const ncols = Math.max(table.headers.length, table.rows[0]?.length ?? 0);
-  const cols = `minmax(110px, 0.9fr) ${Array.from({ length: ncols - 1 }, () => "minmax(170px, 1.4fr)").join(" ")}`;
+  const cols = `minmax(110px, 0.9fr) ${Array.from({ length: ncols - 1 }, () => (ncols > 5 ? "minmax(70px, 1fr)" : "minmax(170px, 1.4fr)")).join(" ")}`;
   return (
     <div style={{ background: "#fafbf9", border: "1px solid #e6e7e3", borderRadius: 10, padding: "16px 18px", marginBottom: 14, overflowX: "auto" }}>
       <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#8a8f8a", fontWeight: 700, marginBottom: 10 }}>
         {table.title ?? "Calculation walkthrough"}
       </div>
       {note && <div style={{ fontSize: 12, color: "#8a8f8a", marginBottom: 10, fontStyle: "italic" }}><Rich text={note} /></div>}
-      <div style={{ display: "grid", gridTemplateColumns: cols, fontSize: 13.5, minWidth: 460 }}>
+      <div style={{ display: "grid", gridTemplateColumns: cols, fontSize: 13.5, minWidth: ncols > 5 ? 0 : 460 }}>
         {table.headers.map((h, i) => (
           <div key={i} style={{ padding: "6px 8px", fontSize: 11, letterSpacing: ".04em", textTransform: "uppercase", fontWeight: 700, color: "#8a8f8a", borderBottom: "1px solid #e6e7e3" }}>
             {h}
@@ -651,9 +651,11 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   const right = 600;
   const top = 16;
   const bottom = 230;
-  const y = (v: number) => bottom - (v / yMax) * (bottom - top);
+  const yMin = page.colBarYMin ?? 0;
+  const y = (v: number) => bottom - ((v - yMin) / (yMax - yMin)) * (bottom - top);
   const ticks: number[] = [];
-  for (let v = 0; v <= yMax + 1e-9; v += yStep) ticks.push(v);
+  for (let v = yMin; v <= yMax + 1e-9; v += yStep) ticks.push(v);
+  const noGrid = !!page.colBarNoGrid;
   const band = (right - left) / items.length;
   const barW = band * (page.colBarBarRatio ?? 0.52);
   const ref = page.colBarRefLine;
@@ -664,11 +666,17 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
     <ExhibitFrame dark={dark} title={page.colBarTitle} titleStyle={page.colBarTitleStyle}>
       {page.colBarSubtitle && <div style={{ fontSize: 13, color: ink.text, marginTop: -6, marginBottom: 10 }}>{page.colBarSubtitle}</div>}
       <svg viewBox="0 0 640 335" style={{ width: "100%", maxWidth: 720, display: "block", margin: "0 auto" }}>
-        {ticks.map((t) => (
+        {noGrid && <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1} />}
+        {noGrid && <line x1={left} x2={right} y1={y(0)} y2={y(0)} stroke={ink.axis} strokeWidth={1} />}
+        {ticks.map((t, ti) => (
           <g key={t}>
-            <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
+            {noGrid ? (
+              <line x1={left - 4} x2={left} y1={y(t)} y2={y(t)} stroke={ink.axis} strokeWidth={1} />
+            ) : (
+              <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
+            )}
             <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={11} fill={ink.axis}>
-              {tickText(t)}
+              {page.colBarYTickLabels?.[ti] ?? tickText(t)}
             </text>
           </g>
         ))}
@@ -681,7 +689,12 @@ export function ColBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           const cx = left + band * (i + 0.5);
           return (
             <g key={i}>
-              <rect x={cx - barW / 2} y={y(it.value)} width={barW} height={bottom - y(it.value)} fill={it.color} />
+              <rect x={cx - barW / 2} y={Math.min(y(it.value), y(0))} width={barW} height={Math.abs(y(0) - y(it.value))} fill={it.color} />
+              {page.colBarValueLabels && (
+                <text x={cx} y={it.value < 0 ? y(it.value) + 14 : y(it.value) - 6} textAnchor="middle" fontSize={11} fill={ink.text}>
+                  {it.valueLabel ?? fmtTick(it.value)}
+                </text>
+              )}
               {horiz ? (
                 <text x={cx} y={bottom + 18} textAnchor="middle" fontSize={11} fill={ink.axis}>
                   {it.label.split("\n").map((ln, k) => (
@@ -828,7 +841,10 @@ export function StackPanels({ page, dark }: { page: CasePage; dark?: boolean }) 
   const top = 36;
   const bottom = 216;
   const y = (v: number) => bottom - (v / 100) * (bottom - top);
-  const ticks = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  const tickStep = page.stackPanelsTickStep ?? 10;
+  const ticks: number[] = [];
+  for (let v = 0; v <= 100; v += tickStep) ticks.push(v);
+  const noGrid = !!page.stackPanelsNoGrid;
   return (
     <ExhibitFrame dark={dark} title={page.stackPanelsTitle}>
       <div style={{ display: "flex", gap: 8, flexWrap: "nowrap", justifyContent: "center" }}>
@@ -846,11 +862,26 @@ export function StackPanels({ page, dark }: { page: CasePage; dark?: boolean }) 
                 <text x={4} y={10} fontSize={10} fontWeight={700} fill={ink.axis}>
                   {pn.title}
                 </text>
+                {pn.subtitle && (
+                  <text x={4} y={19} fontSize={9} fill={ink.text}>
+                    {pn.subtitle.split("\n").map((ln, k) => (
+                      <tspan key={k} x={4} dy={k === 0 ? 0 : 10}>
+                        {ln}
+                      </tspan>
+                    ))}
+                  </text>
+                )}
+                {noGrid && <line x1={left} x2={left} y1={y(100)} y2={y(0)} stroke={ink.axis} strokeWidth={1} />}
+                {noGrid && <line x1={left} x2={right} y1={y(0)} y2={y(0)} stroke={ink.axis} strokeWidth={1} />}
                 {ticks.map((t) => (
                   <g key={t}>
-                    <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
+                    {noGrid ? (
+                      <line x1={left - 3} x2={left} y1={y(t)} y2={y(t)} stroke={ink.axis} strokeWidth={1} />
+                    ) : (
+                      <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />
+                    )}
                     <text x={left - 5} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={8.5} fill={ink.axis}>
-                      {t}%
+                      {noGrid && t === 0 ? "0" : `${t}%`}
                     </text>
                   </g>
                 ))}
@@ -866,7 +897,7 @@ export function StackPanels({ page, dark }: { page: CasePage; dark?: boolean }) 
                           <g key={si}>
                             <rect x={cxOf(ci) - barW / 2} y={y1} width={barW} height={y0 - y1} fill={sg.color} />
                             {sg.label && (
-                              <text x={cxOf(ci)} y={(y0 + y1) / 2} textAnchor="middle" dominantBaseline="middle" fontSize={9.5} fill="#ffffff">
+                              <text x={cxOf(ci)} y={(y0 + y1) / 2} textAnchor="middle" dominantBaseline="middle" fontSize={9.5} fill={sg.labelColor ?? "#ffffff"}>
                                 {sg.label}
                               </text>
                             )}
