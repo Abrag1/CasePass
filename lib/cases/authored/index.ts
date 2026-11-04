@@ -35,6 +35,7 @@ import * as johnson2122CasinoRoyale from "./johnson_2021_2022_casino_royale";
 import * as johnson2122CellPhone from "./johnson_2021_2022_cell_phone_manufacturer";
 import * as johnson2122CpgAcquisition from "./johnson_2021_2022_cpg_acquisition";
 import * as johnson2122Croger from "./johnson_2021_2022_croger";
+import * as johnson2122DiabetesDevice from "./johnson_2021_2022_diabetes_device";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
@@ -124,6 +125,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnson2122CellPhone,
   johnson2122CpgAcquisition,
   johnson2122Croger,
+  johnson2122DiabetesDevice,
   // REGISTER-ENTRIES
   boothApacheHelicopter,
   boothArmyHotel,
