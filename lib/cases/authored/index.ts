@@ -41,6 +41,7 @@ import * as johnson2122DownUnder from "./johnson_2021_2022_down_under";
 import * as johnson2122Drugco from "./johnson_2021_2022_drugco";
 import * as johnson2122ErpSystems from "./johnson_2021_2022_erp_systems";
 import * as johnson2122Honeybuns from "./johnson_2021_2022_honeybuns";
+import * as johnson2122IceCreamTruck from "./johnson_2021_2022_ice_cream_truck";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
@@ -136,6 +137,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnson2122Drugco,
   johnson2122ErpSystems,
   johnson2122Honeybuns,
+  johnson2122IceCreamTruck,
   // REGISTER-ENTRIES
   boothApacheHelicopter,
   boothArmyHotel,
