@@ -6,3 +6,5 @@ MECHANICAL: PASS (orchestrator override: the script's additions are the callout 
 Independent verifier: zero MAJOR; one CRITICAL (callout leader lines vertical instead of diagonal) fixed afterwards and checked by the orchestrator in the preview (not re-run through the verifier).
 Exhibit 1 values: bars from printed labels, last-year ticks read from the picture (+-1). Source quirk kept: "John Deer". Metadata is the converter's.
 Shared renderer additions (optional): combo panels, per-bar colours, value labels, level ticks, reference lines, callouts with leader lines.
+
+Update 2021: the p.148 Case Flow Guide was added to the case overview verbatim (Question 1-4 wording as printed).

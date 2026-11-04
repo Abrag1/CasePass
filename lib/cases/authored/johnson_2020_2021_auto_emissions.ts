@@ -55,6 +55,15 @@ export const PAGES: CasePage[] = [
           "This is a McKinsey-style, interviewer-led case. Provide the interviewee with the prompt and answer any clarifying questions. Once the interviewee has no more questions, ask the case questions sequentially.",
         ],
       },
+      {
+        label: "Case Flow Guide",
+        lines: [
+          "**Question 1:** What things do you want to consider in order to determine how much revenue we can gain in the next five years.",
+          "**Questions 2:** Looking at the chart provided, what are the big takeaways you see? → Which companies would you target to sell to?",
+          "**Question 3:** How much revenue could you gain from selling to your selected targets over the next five years?",
+          "**Question 4:** What are some options to increase revenues after the 5-year window?",
+        ],
+      },
     ],
   },
   {

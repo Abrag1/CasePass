@@ -77,6 +77,7 @@ import * as johnsonAfricanCallCenter from "./johnson_2020_2021_african_call_cent
 import * as johnsonAmericanAirlines from "./johnson_2020_2021_american_airlines";
 import * as johnson2122AmericanAirlines from "./johnson_2021_2022_american_airlines";
 import * as johnsonAutoEmissions from "./johnson_2020_2021_auto_emissions";
+import * as johnson2122AutoEmissions from "./johnson_2021_2022_auto_emissions";
 import * as johnsonBankLoanOperations from "./johnson_2020_2021_bank_loan_operations";
 import * as johnsonBigWheel from "./johnson_2020_2021_big_wheel";
 import * as rossSixPaqPeFirm from "./ross_2019_6paq_p_e_firm";
@@ -158,6 +159,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonAmericanAirlines,
   johnson2122AmericanAirlines,
   johnsonAutoEmissions,
+  johnson2122AutoEmissions,
   johnsonBankLoanOperations,
   johnsonBigWheel,
   rossSixPaqPeFirm,
