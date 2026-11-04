@@ -65,12 +65,14 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   const titleH = titleLines.length ? titleLines.length * 27 + 6 : 0;
   const titleW = Math.max(0, ...titleLines.map((l) => l.length * titleFs * 0.5)) + leftM;
   const legendTop = !!data.legend?.length && (data.legendPlacement ?? "topRight") === "topRight";
-  const legendBottom = !!data.legend?.length && !legendTop;
+  const legendRight = !!data.legend?.length && data.legendPlacement === "right";
+  const legendBottom = !!data.legend?.length && !legendTop && !legendRight;
   const legFs = 15;
   const legRows = (data.legend ?? []).map((l) => l.name.split("\n"));
   const legTopH = legendTop ? legRows.reduce((s, r) => s + r.length * 19 + 8, 0) : 0;
   const legTopW = legendTop ? Math.max(...legRows.flat().map((l) => l.length * legFs * 0.52)) + 28 : 0;
-  const W = Math.max(panelsW, legendTop ? titleW + legTopW + 24 : 0);
+  const legRightW = legendRight ? Math.max(...legRows.flat().map((l) => l.length * legFs * 0.52)) + 50 : 0;
+  const W = Math.max(panelsW + legRightW, legendTop ? titleW + legTopW + 24 : 0);
 
   const hasTitles = data.panels.some((p) => p.title);
   const pTitleH = hasTitles ? 46 : 0;
@@ -92,11 +94,18 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   return (
     <ExhibitFrame dark={dark}>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: Math.max(760, W * 1.1), display: "block", margin: "0 auto" }} role="img" aria-label={data.title ?? "Stacked columns"}>
-        {titleLines.map((l, i) => (
-          <text key={i} x={leftM - 8} y={24 + i * 27} fontSize={titleFs} fill={ink.text}>
-            {l}
-          </text>
-        ))}
+        {data.frame && <rect x={1} y={1} width={W - 2} height={H - 2} fill="none" stroke="#b5b5b5" strokeWidth={2} />}
+        {titleLines.map((l, i) =>
+          data.titleBold ? (
+            <text key={i} x={(panelsW + leftM) / 2 - 20 + (legendTop ? -legTopW / 2 : 0)} y={30 + i * 27} textAnchor="middle" fontSize={titleFs + 4} fontWeight={700} fill={ink.text} textDecoration="underline">
+              {l}
+            </text>
+          ) : (
+            <text key={i} x={leftM - 8} y={24 + i * 27} fontSize={titleFs} fill={ink.text}>
+              {l}
+            </text>
+          ),
+        )}
         {legendTop &&
           (() => {
             let yy = 4;
@@ -109,6 +118,27 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
                   <rect x={W - legTopW} y={y0 + 2} width={15} height={15} fill={l.color} stroke={border ?? ink.axis} strokeWidth={1} />
                   {rows.map((r, k) => (
                     <text key={k} x={W - legTopW + 22} y={y0 + 14 + k * 19} fontSize={legFs} fill={ink.text}>
+                      {r}
+                    </text>
+                  ))}
+                </g>
+              );
+            });
+          })()}
+
+        {legendRight &&
+          (() => {
+            const total = legRows.reduce((sum, r) => sum + r.length * 19 + 12, 0);
+            let yy = top + (plotH - total) / 2;
+            return (data.legend ?? []).map((l, i) => {
+              const rows = legRows[i];
+              const y0 = yy;
+              yy += rows.length * 19 + 12;
+              return (
+                <g key={i}>
+                  <rect x={panelsW + 24} y={y0 + 2} width={15} height={15} fill={l.color} stroke={border ?? ink.axis} strokeWidth={1} />
+                  {rows.map((r, k) => (
+                    <text key={k} x={panelsW + 46} y={y0 + 14 + k * 19} fontSize={legFs} fill={ink.text}>
                       {r}
                     </text>
                   ))}
@@ -138,6 +168,10 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
                   {l}
                 </text>
               ))}
+              {data.gridlines &&
+                ticks.slice(1).map((t, ti) => (
+                  <line key={`g${ti}`} x1={axisX} x2={x0 + pw[pi] - 20} y1={y(t)} y2={y(t)} stroke="#c8c8c8" strokeWidth={1.2} />
+                ))}
               {/* axes */}
               <line x1={axisX} x2={axisX} y1={y(p.yMax)} y2={base} stroke={ink.text} strokeWidth={1.6} />
               <line x1={axisX} x2={x0 + pw[pi] - 20} y1={base} y2={base} stroke={ink.text} strokeWidth={1.6} />

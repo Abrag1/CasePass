@@ -78,6 +78,9 @@ export interface LineChartPoint {
 export interface DataTableHeader {
   v: string;
   align: "left" | "center" | "right";
+  // Optional fill and text colour for the header cell (default: plain grey text)
+  bg?: string;
+  fg?: string;
 }
 export interface DataTableCell {
   v: string;
@@ -88,6 +91,8 @@ export interface DataTableCell {
   icon?: string;
   // Optional Harvey-ball fill, 0–1 (rendered instead of text)
   harvey?: number;
+  // Optional cell fill colour
+  bg?: string;
 }
 export interface DataTableRow {
   cells: DataTableCell[];

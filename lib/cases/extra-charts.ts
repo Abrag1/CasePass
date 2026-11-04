@@ -208,10 +208,13 @@ export interface StackColsData {
   title?: string; // chart title above the panels (a newline splits lines)
   panels: StackColsPanel[];
   legend?: ExtraSwatch[];
-  legendPlacement?: "topRight" | "bottom"; // default topRight
+  legendPlacement?: "topRight" | "bottom" | "right"; // "right": vertically centred beside the plot; default topRight
   connectorColor?: string; // default: the ink colour
   segBorder?: string | false; // segment border colour (default dark); false = none
   barWidth?: number; // column width in SVG units (default 170)
+  gridlines?: boolean; // light grey horizontal gridlines at every tick (default none)
+  frame?: boolean; // thin grey border around the whole chart area (default none)
+  titleBold?: boolean; // title bold, underlined and centred over the panels (default plain, left)
   footnote?: string;
 }
 

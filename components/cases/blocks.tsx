@@ -1436,7 +1436,7 @@ function DataGrid({
       )}
       <div style={{ display: "grid", gridTemplateColumns: cols, gap: 0, fontSize: 12.5, minWidth: 280, maxWidth: maxW, margin: "0 auto" }}>
         {headers.map((h, i) => (
-          <div key={i} style={{ fontWeight: 600, color: head, padding: "5px 4px", textAlign: h.align }}>{h.v}</div>
+          <div key={i} style={{ fontWeight: 600, color: h.fg ?? head, background: h.bg, padding: "5px 4px", textAlign: h.align }}>{h.v}</div>
         ))}
         {rows.map((row, i) => (
           <div key={i} style={{ display: "contents" }}>
@@ -1445,6 +1445,7 @@ function DataGrid({
                 key={j}
                 style={{
                   padding: "8px 4px",
+                  background: c.bg,
                   borderTop: border,
                   textAlign: c.align,
                   fontWeight: c.w,
