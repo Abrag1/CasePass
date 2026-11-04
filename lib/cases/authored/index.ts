@@ -22,6 +22,7 @@ import * as johnsonMunderDifflin from "./johnson_2020_2021_munder_difflin";
 import * as johnsonPatientOperatedMachines from "./johnson_2020_2021_patient_operated_machines";
 import * as johnsonPayco from "./johnson_2020_2021_payco";
 import * as johnsonPotashCo from "./johnson_2020_2021_potash_co";
+import * as johnsonSurgicalRobot from "./johnson_2020_2021_surgical_robot";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
@@ -96,6 +97,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonPatientOperatedMachines,
   johnsonPayco,
   johnsonPotashCo,
+  johnsonSurgicalRobot,
   // REGISTER-ENTRIES
   boothApacheHelicopter,
   boothArmyHotel,
