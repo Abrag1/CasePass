@@ -26,6 +26,7 @@ export const CASEBOOK_FILES = {
   "Berkeley Haas|2019": "Haas (Berkeley) Casebook 2019.pdf",
   "INSEAD|2021": "INSEAD Casebook 2021.pdf",
   "Cornell Johnson|2020-2021": "Johnson (Cornell) Casebook 2020-2021.pdf",
+  "Cornell Johnson|2021-2022": "Johnson (Cornell) Casebook 2021-2022.pdf",
   "Kellogg (Northwestern)|2012": "Kellogg Casebook 2012.pdf",
   "Kellogg (Northwestern)|2020": "Kellogg Casebook 2020.pdf",
   "NYU Stern|2015-2016": "NYU Stern Casebook 2015-2016.pdf",
