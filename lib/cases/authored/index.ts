@@ -27,6 +27,7 @@ import * as johnsonToothpaste from "./johnson_2020_2021_toothpaste_manufacturer"
 import * as johnsonUnPolio from "./johnson_2020_2021_un_polio";
 import * as johnsonVitriolicWealth from "./johnson_2020_2021_vitriolic_wealth";
 import * as johnsonWirelessCo from "./johnson_2020_2021_wireless_co";
+import * as johnsonWorkplaceInsuranceCo from "./johnson_2020_2021_workplace_insurance_co";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
@@ -106,6 +107,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonUnPolio,
   johnsonVitriolicWealth,
   johnsonWirelessCo,
+  johnsonWorkplaceInsuranceCo,
   // REGISTER-ENTRIES
   boothApacheHelicopter,
   boothArmyHotel,
