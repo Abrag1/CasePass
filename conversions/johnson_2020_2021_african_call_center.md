@@ -4,3 +4,5 @@ VERDICT: PASS
 MECHANICAL: PASS
 
 Independent verifier: zero CRITICAL/MAJOR. Minor: country labels in the Exhibit 1 table render bold (source regular). Dropped p.43 "Case Flow Guide" only repeats the six questions. Math recomputed correct. Source typo kept: "is represents". Metadata (case_type, tags, synopsis) is the converter's.
+
+Update 2026-11: the source Case Flow Guide panel was added to the case overview verbatim (audit of live Johnson cases).

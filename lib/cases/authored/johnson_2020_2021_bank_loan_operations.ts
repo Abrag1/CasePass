@@ -31,7 +31,7 @@ export const PAGES: CasePage[] = [
       },
       {
         label: "Case Information",
-        paragraphs: ["The bank's original loan process has the following steps:"],
+        paragraphs: ["The bank’s original loan process has the following steps:"],
         lines: [
           "A loan application is generated at a bank branch",
           "The branch completes a first background check",
@@ -43,8 +43,16 @@ export const PAGES: CasePage[] = [
         paragraphs: [
           "The bank is considering eliminating the first background check and relying only on the check at the central office. Because more scrutiny would be needed at the central office, the total background check cost for each application would increase from $100 to $110 per application.",
           "For the original system, about 50% of all applicants make it through the first background check, and then 90% of those make it through the second background check.",
-          "For any \"good loans\" where the bank is re-paid, the bank makes $0.20 per dollar loaned.\nFor any \"bad loans\" that are not re-paid, the bank loses $0.50 per dollar loaned.",
+          "For any “good loans” where the bank is re-paid, the bank makes $0.20 per dollar loaned.\nFor any “bad loans” that are not re-paid, the bank loses $0.50 per dollar loaned.",
           "Should the bank proceed with the new system?",
+        ],
+      },
+      {
+        label: "Case Flow Guide",
+        lines: [
+          "**Part I: Ask the interviewee to come up with a framework**",
+          "**Part II: Provide the interviewee with specifications and guide them to come up with a profitability analysis**",
+          "**Part III: Ask for recommendation**",
         ],
       },
     ],
@@ -68,7 +76,7 @@ export const PAGES: CasePage[] = [
     guidanceLines: [
       "The interviewee should look to evaluate the profitability of each proposed system.",
       "  A good structure will show: strong profitability calculations and mental math.",
-      "  A better structure will show: a distinct layout of \"original system vs. new system\", along with some of the non-financial implications",
+      "  A better structure will show: a distinct layout of “original system vs. new system”, along with some of the non-financial implications",
     ],
   },
   {

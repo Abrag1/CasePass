@@ -38,6 +38,17 @@ export const PAGES: CasePage[] = [
           "Timeframe: Mid-nineties. iPhone is not the answer!",
         ],
       },
+      {
+        label: "Case Flow Guide",
+        lines: [
+          "**Part 1: Show candidate the Exhibit 1, 2, and 3.**",
+          "  What is the potential cause of the stagnant market size in the US?",
+          "**Part 2: The client wants to focus on the low/very low end market.**",
+          "  What are the pros and cons of this strategy?",
+          "**Part 3: You walk into the CEO. What’s your quick 2-minute recommendation?**",
+          "  Ask the candidate to come up with the recommendation immediately. No time to think about the structure.",
+        ],
+      },
     ],
   },
   {

@@ -52,6 +52,19 @@ export const PAGES: CasePage[] = [
           "The call center will make money through a combination of licensing fees and incentives from companies.",
         ],
       },
+      {
+        label: "Case Flow Guide",
+        lines: [
+          "**Question 1:** What key issues should I4H look at when deciding which country and type of call center they should invest in?",
+          "**Question 2:** After some initial research, the team thinks that operational risks will be especially important to understand. What are they key operational/logistical challenges that must be addressed when making this investment decision, and which call center is more affected?",
+          "**Question 3:** Provide Exhibit 1. Ask the interviewee for initial insights. Given that a call center requires at least 600 people to operate, which country and wage would you advise I4H to first consider?",
+          "**Question 4:** Look at Exhibit 1 and consider Country C. If the probability that a worker will accept the job at $1.0 per hour is 0.8, how many workers can I4H expect to hire? (640 workers)",
+          "  The team has done some research and found that to operate a retail call center will require 700 workers. By what percentage must they increase the number of workers to reach this number?",
+          "  What are some ideas to gain the additional workers?",
+          "**Question 5:** Which call center makes more profit on an hourly basis? By what percent is it larger? What does your analysis imply for your recommendation for I4H?",
+          "**Question 6:** The CEO of I4H has just entered the room and wants an update on progress and preliminary recommendations.",
+        ],
+      },
     ],
   },
   {

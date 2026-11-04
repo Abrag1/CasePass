@@ -56,6 +56,16 @@ export const PAGES: CasePage[] = [
           { heading: "All Store Sales", items: ["Not a concern for this case"] },
         ],
       },
+      {
+        label: "Case Flow Guide",
+        lines: [
+          "Part 1: Top-Line Frozen Food Sales",
+          "Part 2: Frozen Category Sales",
+          "Part 3: Ice Cream Sales",
+          "Part 4: Potential Solutions / Risks (Brainstorming)",
+          "Part 5: Recommendation",
+        ],
+      },
     ],
   },
   {

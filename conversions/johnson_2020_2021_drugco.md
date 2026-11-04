@@ -5,3 +5,5 @@ MECHANICAL: PASS (orchestrator override: the script's single omission is the Par
 
 Independent verifier: zero CRITICAL/MAJOR. Exhibit 1 (clustered columns Client vs Industry, % labels, no Y axis, thin baseline via axisBarNoYAxis) matches; values printed in the source (Pre-Clinical 75/30, Phase 1 60/40, Phase 2 40/60, Phase 3 30/75). The guidance-only sections the verifier noted (Part 1 and Part 4) were merged afterwards (Part 1 into the prompt page, Part 4 as a block at the end of Part 3), 3 sections; not re-run through the verifier. Case Flow Guide content distributed across the sections. Metadata is the converter's.
 Shared renderer addition (optional, off by default): axisBarNoYAxis.
+
+Update 2026-11: the source Case Flow Guide panel was added to the case overview verbatim (audit of live Johnson cases).

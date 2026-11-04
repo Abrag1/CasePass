@@ -61,6 +61,14 @@ export const PAGES: CasePage[] = [
           "    Less kickback / incentives to order more units",
         ],
       },
+      {
+        label: "Case Flow Guide",
+        lines: [
+          "**Question 1:** What would you ask the CMO?",
+          "**Question 2:** What would you ask the CFO?",
+          "**Question 3:** What is your recommendation to the CEO and the COO?",
+        ],
+      },
     ],
   },
   {

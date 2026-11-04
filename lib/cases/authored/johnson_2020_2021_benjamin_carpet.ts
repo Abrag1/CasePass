@@ -59,6 +59,16 @@ export const PAGES: CasePage[] = [
         ],
       },
       { paragraphs: ["**Machine costs $25M**"] },
+      {
+        label: "Case Flow Guide",
+        lines: [
+          "**Question 1:** Should Benjamin Carpet Co. purchase the machine? How would you structure your solution?",
+          "  Provide Exhibit 1 to interviewee",
+          "**Question 2:** What are some of the categories that will affect the calculations?",
+          "**Question 3:** Given the following information is the machine worth investing in?",
+          "**Question 4:** With the following additional revenue is the venture worth pursuing?",
+        ],
+      },
     ],
   },
   {
