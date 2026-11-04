@@ -111,7 +111,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
   const H = base + labH + xTitleH + 12 + clusterLegendH;
 
   // Legend entries: columns, lines and per-bar ticks.
-  type Entry = { name: string; color: string; line?: ComboLine; tick?: boolean };
+  type Entry = { name: string; color: string; line?: ComboLine; tick?: boolean; circle?: boolean };
   const entries: Entry[] = [];
   for (const p of panels) {
     for (const sr of p.stack?.series ?? []) if (!entries.some((e) => e.name === sr.name)) entries.push({ name: sr.name, color: sr.color });
@@ -119,6 +119,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
     if (p.bars?.tickName && !entries.some((e) => e.name === p.bars!.tickName)) entries.push({ name: p.bars.tickName, color: p.bars.tickColor ?? TICK_GREY, tick: true });
     for (const l of p.lines ?? []) if (!entries.some((e) => e.name === l.name)) entries.push({ name: l.name, color: l.color, line: l });
   }
+  if (data.customLegend?.length) { entries.length = 0; for (const c of data.customLegend) entries.push({ name: c.label, color: c.color, circle: c.marker === "circle" }); }
   const legendPos = data.legend ?? "bottom";
   const insideLegend = legendPos === "inside";
   const showLegend = legendPos !== "none" && entries.some((s) => s.name);
@@ -141,6 +142,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
         paddingLeft: legendPos === "bottom" && multi ? `${(firstX0 / W) * 100}%` : 0,
       }}
     >
+      {data.customLegend?.length && data.legendPrefix ? <span style={{ fontWeight: 700 }}>{data.legendPrefix}</span> : null}
       {entries.map((s, i) => (
         <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <svg width={34} height={14} style={{ flex: "none" }}>
@@ -149,6 +151,8 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
                 <line x1={0} x2={34} y1={7} y2={7} stroke={s.line.color} strokeWidth={Math.min(s.line.width ?? 3, 4)} strokeDasharray={s.line.dashed ? "6 4" : undefined} />
                 {s.line.marker && <Marker kind={s.line.marker} x={17} y={7} size={Math.min(s.line.markerSize ?? 9, 9)} fill={s.line.markerColor ?? s.line.color} stroke={s.line.color} />}
               </>
+            ) : s.circle ? (
+              <circle cx={17} cy={7} r={6.5} fill={s.color} stroke="#3a3a3a" strokeWidth={1} />
             ) : s.tick ? (
               <line x1={1} x2={33} y1={7} y2={7} stroke={s.color} strokeWidth={2} strokeDasharray="6 3" />
             ) : (
@@ -224,7 +228,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
           if (i % every !== 0) return null;
           return (
             <g key={`c${i}`}>
-              {on && <line x1={x} x2={x} y1={base} y2={base + 5} stroke={ink.axis} strokeWidth={1.4} />}
+              {on && (data.majorXTicks ? i % data.majorXTicks === 0 : !data.hideXTicks) && <line x1={x} x2={x} y1={base} y2={base + 5} stroke={ink.axis} strokeWidth={1.4} />}
               {rot ? (
                 <text transform={`translate(${x + 4} ${base + 14}) rotate(${-rot})`} textAnchor="end" dominantBaseline="middle" fontSize={labFs} fill={ink.text}>
                   {c}
@@ -485,6 +489,14 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
 
   return (
     <ExhibitFrame dark={dark}>
+      {data.slideTitle && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontFamily: font, fontWeight: 700, fontSize: 22, color: ink.text, paddingBottom: 6 }}>{data.slideTitle}</div>
+          <div style={{ position: "relative", height: 4, borderBottom: "1px dotted #b5b5b5" }}>
+            <div style={{ position: "absolute", left: 0, top: 0, width: "30%", height: 4, background: "#b81818" }} />
+          </div>
+        </div>
+      )}
       {legendPos === "topRight" && legend}
       {legendPos === "right" && showLegend ? (
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>

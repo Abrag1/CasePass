@@ -299,6 +299,11 @@ export interface ComboChartData extends Partial<ComboPanel> {
   fontScale?: number; // multiplier for tick texts, category labels and axis titles (default 1)
   plotAspect?: number; // plot height as a share of the chart width (default about 0.34)
   legendNoWrap?: boolean; // keep the legend on one row
+  customLegend?: { color: string; label: string; marker?: "circle" }[]; // replaces the series-derived legend entries (still needs legend not "none")
+  legendPrefix?: string; // bold text before the custom legend entries, e.g. "Legend:"
+  slideTitle?: string; // bold slide-style heading above the chart with a thick red bar at the left and a thin dotted rule (as printed on some exhibits)
+  majorXTicks?: number; // with "on" X axis: tick marks only at every n-th category (overrides hideXTicks)
+  hideXTicks?: boolean; // no tick marks on an "on" X axis (labels stay)
   baselineOnly?: boolean; // with axisStyle "none" and no gridlines: still draw a light baseline at the axis minimum
   lightBaseline?: boolean; // with axisStyle "none": the zero line is a normal light gridline
   legend?: "topRight" | "right" | "bottom" | "inside" | "none"; // "inside": top right corner of the plot; // default "bottom" when series are named

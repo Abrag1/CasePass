@@ -24,6 +24,7 @@ import * as johnsonPayco from "./johnson_2020_2021_payco";
 import * as johnsonPotashCo from "./johnson_2020_2021_potash_co";
 import * as johnsonSurgicalRobot from "./johnson_2020_2021_surgical_robot";
 import * as johnsonToothpaste from "./johnson_2020_2021_toothpaste_manufacturer";
+import * as johnsonUnPolio from "./johnson_2020_2021_un_polio";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
@@ -100,6 +101,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonPotashCo,
   johnsonSurgicalRobot,
   johnsonToothpaste,
+  johnsonUnPolio,
   // REGISTER-ENTRIES
   boothApacheHelicopter,
   boothArmyHotel,
