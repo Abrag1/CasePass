@@ -177,7 +177,34 @@ export interface ComboLine {
   markerSize?: number; // marker size in SVG units (default 9)
   dashed?: boolean; // dashed line
 }
-export interface ComboChartData {
+// Everything that belongs to one plot area. With `panels`, each panel is drawn side by side sharing the Y scale
+// of the chart; without, the same fields on the chart itself describe a single panel.
+export interface ComboBars {
+  name: string;
+  color: string;
+  values: number[];
+  colors?: string[]; // per-bar colours (override `color`)
+  valueLabels?: boolean; // value printed above each bar
+  ticks?: (number | null)[]; // short dashed tick across each bar at this level (e.g. last year's value)
+  tickColor?: string; // default grey
+  tickName?: string; // legend entry for the ticks
+}
+export interface ComboPanel {
+  categories: string[]; // a newline inside a label splits it into lines
+  bars?: ComboBars;
+  lines?: ComboLine[];
+  xTitle?: string; // axis title under the category labels
+  // Free text at data coordinates: x as a (fractional) category index, y as an axis value.
+  texts?: { text: string; x: number; y: number; color?: string; size?: number; bold?: boolean; anchor?: "start" | "middle" | "end" }[];
+  // Vertical markers at (fractional) category indexes, from the axis to the top of the plot.
+  markers?: { at: number; label?: string; dashed?: boolean; color?: string; labelColor?: string }[];
+  // Full-width horizontal reference lines at axis values.
+  refLines?: { at: number; color: string; width?: number; dashed?: boolean; label?: string; labelColor?: string }[];
+  // Boxed text with an optional leader line. `x` (category index, fractional) and `y` (axis value) place the box's
+  // top-left corner; `w` is its width in SVG units; `pointer` is the data coordinate the leader line points to.
+  callouts?: { text: string; x: number; y: number; w: number; pointer?: { x: number; y: number }; from?: number; size?: number }[]; // `from`: where the leader leaves the box bottom, 0 (left) to 1 (right); default nearest the pointer
+}
+export interface ComboChartData extends Partial<ComboPanel> {
   kind: "combo";
   title?: string; // a newline splits lines
   titleBold?: boolean;
@@ -185,9 +212,7 @@ export interface ComboChartData {
   titleSerif?: boolean;
   titleAlign?: "left" | "center"; // default left
   titleSize?: number; // SVG units (default 20)
-  categories: string[]; // a newline inside a label splits it into lines
-  bars?: { name: string; color: string; values: number[] };
-  lines?: ComboLine[];
+  panels?: ComboPanel[]; // side-by-side panels sharing the Y axis settings (each draws its own tick labels)
   yMin?: number;
   yMax: number;
   yStep?: number;
@@ -195,19 +220,14 @@ export interface ComboChartData {
   yTickPrefix?: string;
   yTickSuffix?: string; // e.g. "%"
   yLabel?: string; // rotated axis title at the left
-  xTitle?: string; // axis title under the category labels
   axisTitleBold?: boolean;
   yGrid?: boolean; // light horizontal gridlines at every tick
-  axisStyle?: "plain" | "arrows"; // arrowheads at the end of both axes
+  axisStyle?: "plain" | "arrows" | "none"; // arrowheads at the end of both axes / "none": no axis lines or tick marks (gridlines and tick texts only)
   xPlacement?: "between" | "on"; // "on": first/last category sit on the axis ends (scatter-like); default "between"
   xLabelRotate?: number; // degrees, e.g. 45 (labels read upwards to the right, ending at their tick)
   xLabelEvery?: number; // draw only every n-th category label (dense axes)
   serif?: boolean; // serif font for all chart text
   legend?: "topRight" | "right" | "bottom" | "none"; // default "bottom" when series are named
-  // Free text at data coordinates: x as a (fractional) category index, y as an axis value.
-  texts?: { text: string; x: number; y: number; color?: string; size?: number; bold?: boolean; anchor?: "start" | "middle" | "end" }[];
-  // Vertical markers at (fractional) category indexes, from the axis to the top of the plot.
-  markers?: { at: number; label?: string; dashed?: boolean; color?: string; labelColor?: string }[];
   footnote?: string;
   footnoteBold?: boolean; // serif bold footnote in the ink colour (as printed under some exhibits)
 }
