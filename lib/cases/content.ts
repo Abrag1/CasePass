@@ -309,6 +309,9 @@ export interface CalcTableData {
   headers: string[];
   rows: string[][];
   totalLast?: boolean;
+  // Optional per-row styling, parallel to `rows`: bold on/off for the label, indent level (steps of 18px).
+  // When present, text after a newline in the first cell prints as a small second line.
+  rowStyles?: { bold?: boolean; indent?: number }[];
 }
 
 // Chart title drawn centred, bold, underlined and larger (as in some casebook charts).
@@ -349,6 +352,7 @@ export interface CasePage {
   // final row as a total.
   // `title` replaces the "Calculation walkthrough" label; `headers` may be empty (no header row).
   calcTable?: CalcTableData;
+  calcAfterGuidance?: boolean; // draw `calcTable` after `guidanceLines` instead of before
   // Further tables shown after `calcTable`, in order (for slides that print several tables).
   calcTables?: CalcTableData[];
 
@@ -1788,6 +1792,7 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       segmentTitle: p.segmentTitle,
       segmentTable: p.segmentTable,
       extraCharts: p.extraCharts,
+      calcAfterGuidance: p.calcAfterGuidance,
       exhibitColumns: p.exhibitColumns,
       exhibitTitle: p.exhibitTitle,
     }));

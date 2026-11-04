@@ -147,12 +147,20 @@ export function CalcTableBox({ note, table }: { note?: string; table: CalcTableD
                 padding: "10px 8px",
                 borderTop: total ? "2px solid #d7d9d4" : "1px solid #f2f3f0",
                 background: total ? "#f2f4f0" : undefined,
-                fontWeight: ci === 0 || total ? 700 : 400,
+                fontWeight: total ? 700 : ci === 0 ? (table.rowStyles?.[ri]?.bold ?? true) ? 700 : 400 : 400,
+                paddingLeft: ci === 0 && table.rowStyles?.[ri]?.indent ? 8 + table.rowStyles[ri].indent! * 18 : undefined,
                 color: "#1f2421",
                 lineHeight: 1.55,
               }}
             >
-              <Rich text={cell} />
+              {ci === 0 && table.rowStyles && cell.includes("\n") ? (
+                <>
+                  <Rich text={cell.split("\n")[0]} />
+                  <div style={{ fontSize: 11.5, fontWeight: 400, color: "#5b615c", lineHeight: 1.35 }}>{cell.split("\n").slice(1).join(" ")}</div>
+                </>
+              ) : (
+                <Rich text={cell} />
+              )}
             </div>
           ));
         })}
@@ -1764,7 +1772,7 @@ function InterviewerBlocks({
           <CalcBox note={page.calcNote} lines={page.calcLines} />
         </PresentWrap>
       )}
-      {page.calcTable && (
+      {page.calcTable && !page.calcAfterGuidance && (
         <PresentWrap presentable={presentable} title={page.title} label="Calculation walkthrough">
           <CalcTableBox note={page.calcNote} table={page.calcTable} />
         </PresentWrap>
@@ -1802,6 +1810,11 @@ function InterviewerBlocks({
       {page.guidanceLines && (
         <PresentWrap presentable={presentable} title={page.title} label={page.guidanceLabel ?? "Guidance"}>
           <GuidanceBox label={page.guidanceLabel} lines={page.guidanceLines} />
+        </PresentWrap>
+      )}
+      {page.calcTable && page.calcAfterGuidance && (
+        <PresentWrap presentable={presentable} title={page.title} label="Calculation walkthrough">
+          <CalcTableBox note={page.calcNote} table={page.calcTable} />
         </PresentWrap>
       )}
     </>

@@ -15,6 +15,7 @@ import * as johnsonDiscountRetailer from "./johnson_2020_2021_discount_retailer"
 import * as johnsonDownUnder from "./johnson_2020_2021_down_under";
 import * as johnsonDrugco from "./johnson_2020_2021_drugco";
 import * as johnsonErpSystems from "./johnson_2020_2021_erp_systems";
+import * as johnsonFinTastic from "./johnson_2020_2021_fin_tastic";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
@@ -82,6 +83,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonDownUnder,
   johnsonDrugco,
   johnsonErpSystems,
+  johnsonFinTastic,
   // REGISTER-ENTRIES
   boothApacheHelicopter,
   boothArmyHotel,
