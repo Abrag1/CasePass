@@ -452,6 +452,7 @@ export interface CasePage {
   axisBarYTickPrefix?: string; // e.g. "$" before each Y tick
   axisBarTitleCentered?: boolean; // larger plain centred title drawn in the chart (sans-serif unless axisBarSerif)
   axisBarValueInk?: boolean; // value labels above the bars in the ink colour instead of the series colour
+  axisBarNoYAxis?: boolean; // hide the Y tick texts and axis; only a thin baseline under the bars
   axisBarAxisLines?: boolean; // thin Y-axis line and baseline under the bars
   axisBarSerif?: boolean; // serif face, bold centred title drawn in the chart (lines split on a newline), serif axis and legend text
   // Optional title style for the colBar* / axisStack* exhibits (default: small, left, plain)
@@ -1695,6 +1696,7 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       axisBarLegendRight: p.axisBarLegendRight,
       axisBarSerif: p.axisBarSerif,
       axisBarAxisLines: p.axisBarAxisLines,
+      axisBarNoYAxis: p.axisBarNoYAxis,
       axisBarYTickPrefix: p.axisBarYTickPrefix,
       axisBarTitleCentered: p.axisBarTitleCentered,
       axisBarValueInk: p.axisBarValueInk,

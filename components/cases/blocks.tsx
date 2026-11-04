@@ -588,13 +588,14 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           </text>
         )}
         <g transform={`translate(0 ${topPad + serifTitleH})`}>
+        {page.axisBarNoYAxis && <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={ink.axis} strokeWidth={1} />}
         {page.axisBarAxisLines && (
           <>
             <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1} />
             <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={ink.axis} strokeWidth={1} />
           </>
         )}
-        {ticks.map((t) => (
+        {(page.axisBarNoYAxis ? [] : ticks).map((t) => (
           <g key={t}>
             {!page.axisBarNoGrid && <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />}
             <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
