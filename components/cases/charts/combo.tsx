@@ -391,8 +391,9 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
               l.values.map((v, i) => {
                 if (v == null) return null;
                 const below = l.labelPos?.[i] === "below";
+                const right = l.labelPos?.[i] === "right";
                 return (
-                  <text key={`vl${i}`} x={cx(i)} y={yOf(l)(v) + (below ? 22 * fs : -11)} textAnchor="middle" fontSize={15 * fs} fill={l.labelColors?.[i] ?? l.labelColor ?? "#595959"}>
+                  <text key={`vl${i}`} x={right ? cx(i) + 16 : cx(i)} y={right ? yOf(l)(v) : yOf(l)(v) + (below ? 22 * fs : -11)} dominantBaseline={right ? "middle" : undefined} textAnchor={right ? "start" : "middle"} fontSize={15 * fs} fontWeight={l.labelBold === undefined ? undefined : l.labelBold ? 700 : 400} fill={l.labelColors?.[i] ?? l.labelColor ?? "#595959"}>
                     {v}
                     {l.valueSuffix ?? ""}
                   </text>

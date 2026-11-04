@@ -200,7 +200,8 @@ export interface ComboLine {
   valueSuffix?: string; // e.g. "%"
   labelColor?: string; // default grey
   labelColors?: (string | null)[]; // per-point colour (e.g. white over a column)
-  labelPos?: ("above" | "below" | null)[]; // per-point side (default above)
+  labelPos?: ("above" | "below" | "right" | null)[]; // per-point side (default above)
+  labelBold?: boolean; // value label weight (default: bold only when the chart is axisBold)
 }
 // Everything that belongs to one plot area. With `panels`, each panel is drawn side by side sharing the Y scale
 // of the chart; without, the same fields on the chart itself describe a single panel.
