@@ -14,16 +14,21 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
   const rows = Math.ceil(n / cols);
   const centers = data.rowCenters;
   const r = data.radius ?? (rows > 1 || cols > 2 ? 66 : 84);
-  const side = 34; // room for outside labels left/right of a pie
+  const out = !!data.outsideLabels;
+  const outFs = 14;
+  const outLh = outFs * 1.15;
+  // Outside-label mode: room left/right for the widest label (bold sans, ~0.62em per character) plus its leader line.
+  const outW = Math.max(0, ...data.pies.flatMap((p) => p.slices.map((s) => Math.max(s.label.length, (s.text ?? "100%").length)))) * outFs * 0.62;
+  const side = out ? Math.ceil(outW) + 26 : 34; // room for outside labels left/right of a pie
   const cellW = 2 * r + 2 * side;
-  const gap = centers ? 150 : 24;
+  const gap = centers ? 150 : out ? 0 : 24;
   const rowLabelW = data.rowLabels ? 80 : 0;
   const width = rowLabelW + cols * cellW + (cols - 1) * gap;
   const colLabelH = data.colLabels?.length ? 30 : 0;
   const rowRange = (ri: number) => data.pies.slice(ri * cols, ri * cols + cols);
   const rowExtra = (ri: number) => {
     const ps = rowRange(ri);
-    return (ps.some((p) => p.center) ? 20 : 0) + (ps.some((p) => p.note) ? 18 : 0);
+    return (ps.some((p) => p.center) ? 20 : 0) + (ps.some((p) => p.note) ? 18 : 0) + (out ? 30 : 0);
   };
   // Long pie titles wrap onto several lines (never wider than the pie's own cell plus half of the gap).
   const titleFs = 15;
@@ -46,7 +51,7 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
   const titleLinesOf = data.pies.map((p) => (p.title ? wrapTitle(p.title) : []));
   const maxTitleLines = Math.max(0, ...titleLinesOf.map((l) => l.length));
   const titleH = maxTitleLines ? maxTitleLines * 19 + 9 : 0;
-  const padTop = 22; // room for an outside label above a pie
+  const padTop = out ? 38 : 22; // room for an outside label above a pie
   const rowGap = 14;
   const rowTops: number[] = [];
   let y = colLabelH;
@@ -78,6 +83,8 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
     let acc = 0;
     const shapes: React.ReactNode[] = [];
     const labels: React.ReactNode[] = [];
+    // Outside-label mode: collected here, then spread vertically per side so they never overlap.
+    const outs: { i: number; sign: number; ex: number; ey: number; y: number; name: string; text: string }[] = [];
     pie.slices.forEach((sl, i) => {
       const a0 = -Math.PI / 2 + (acc / total) * Math.PI * 2;
       acc += sl.value;
@@ -96,7 +103,13 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
       }
       const text = sl.text ?? `${Math.round(pct)}%`;
       const fs = r >= 80 ? 16 : 12;
-      if (pct >= SMALL) {
+      if (out) {
+        if (sl.value > 0) {
+          const [ex, ey] = pt(r, mid);
+          const sign = Math.cos(mid) >= 0 ? 1 : -1;
+          outs.push({ i, sign, ex, ey, y: cy + (r + 12) * Math.sin(mid), name: sl.label, text });
+        }
+      } else if (pct >= SMALL) {
         const [px, py] = pt(r * 0.68, mid);
         labels.push(sliceText(`l${i}`, sl.label, text, px, py, "middle", fs, data.sliceLabelColor ?? "#fff"));
       } else {
@@ -106,6 +119,38 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
         labels.push(sliceText(`l${i}`, sl.label, text, px, py, anchor, fs, ink.text));
       }
     });
+    if (out) {
+      const minGap = 2 * outLh + 3;
+      const lo = cy - r - 8;
+      const hi = cy + r + 8;
+      for (const sign of [1, -1]) {
+        const side_ = outs.filter((o) => o.sign === sign).sort((a, b) => a.y - b.y);
+        for (let k = 1; k < side_.length; k++) side_[k].y = Math.max(side_[k].y, side_[k - 1].y + minGap);
+        if (side_.length && side_[side_.length - 1].y > hi) {
+          side_[side_.length - 1].y = hi;
+          for (let k = side_.length - 2; k >= 0; k--) side_[k].y = Math.min(side_[k].y, side_[k + 1].y - minGap);
+        }
+        if (side_.length && side_[0].y < lo) {
+          side_[0].y = lo;
+          for (let k = 1; k < side_.length; k++) side_[k].y = Math.max(side_[k].y, side_[k - 1].y + minGap);
+        }
+        for (const o of side_) {
+          const lx = cx + sign * (r + 14);
+          const tx = lx + sign * 4;
+          labels.push(
+            <polyline key={`k${o.i}`} points={`${o.ex},${o.ey} ${lx},${o.y} ${tx},${o.y}`} fill="none" stroke={ink.axis} strokeWidth={0.8} />,
+            <text key={`l${o.i}`} textAnchor={sign > 0 ? "start" : "end"} fontSize={outFs} fontWeight={700} fill={ink.text}>
+              <tspan x={tx + sign * 3} y={o.y - outLh / 2 + outFs * 0.35}>
+                {o.name}
+              </tspan>
+              <tspan x={tx + sign * 3} y={o.y + outLh / 2 + outFs * 0.35}>
+                {o.text}
+              </tspan>
+            </text>,
+          );
+        }
+      }
+    }
     return [...shapes, ...labels];
   };
 

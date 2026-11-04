@@ -22,6 +22,9 @@ export interface MultiPieData {
   radius?: number; // pie radius in SVG units (default chosen from the layout)
   noRowDivider?: boolean; // no dashed line between rows of a grid
   sliceNames?: boolean; // print the slice name (e.g. "Yes") above its percentage, in a serif face
+  // Every slice label goes outside the pie (bold sans, name over percentage) on a thin leader line; labels are spread so they never overlap. Off by default.
+  // With it, `label` is the name line and `text` (or the rounded percent) the second line.
+  outsideLabels?: boolean;
   sliceLabelColor?: string; // colour of labels drawn inside the slices (default white)
   legend?: ExtraSwatch[];
   footnote?: string;
