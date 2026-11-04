@@ -29,6 +29,7 @@ import * as johnsonUnPolio from "./johnson_2020_2021_un_polio";
 import * as johnsonVitriolicWealth from "./johnson_2020_2021_vitriolic_wealth";
 import * as johnsonWirelessCo from "./johnson_2020_2021_wireless_co";
 import * as johnsonWorkplaceInsuranceCo from "./johnson_2020_2021_workplace_insurance_co";
+import * as johnson2122WorkplaceInsuranceCo from "./johnson_2021_2022_workplace_insurance_co";
 import * as johnson2122BankLoanOperations from "./johnson_2021_2022_bank_loan_operations";
 import * as johnson2122BenjaminCarpet from "./johnson_2021_2022_benjamin_carpet";
 import * as johnson2122BigWheel from "./johnson_2021_2022_big_wheel";
@@ -133,6 +134,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonVitriolicWealth,
   johnsonWirelessCo,
   johnsonWorkplaceInsuranceCo,
+  johnson2122WorkplaceInsuranceCo,
   johnson2122BankLoanOperations,
   johnson2122BenjaminCarpet,
   johnson2122BigWheel,
