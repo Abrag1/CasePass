@@ -39,6 +39,7 @@ import * as johnson2122DiabetesDevice from "./johnson_2021_2022_diabetes_device"
 import * as johnson2122DiscountRetailer from "./johnson_2021_2022_discount_retailer";
 import * as johnson2122DownUnder from "./johnson_2021_2022_down_under";
 import * as johnson2122Drugco from "./johnson_2021_2022_drugco";
+import * as johnson2122ErpSystems from "./johnson_2021_2022_erp_systems";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
@@ -132,6 +133,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnson2122DiscountRetailer,
   johnson2122DownUnder,
   johnson2122Drugco,
+  johnson2122ErpSystems,
   // REGISTER-ENTRIES
   boothApacheHelicopter,
   boothArmyHotel,
