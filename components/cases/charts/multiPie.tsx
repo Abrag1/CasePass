@@ -3,6 +3,7 @@
 import type { MultiPieData } from "@/lib/cases/extra-charts";
 import { ExhibitFrame, chartInk } from "./chart-kit";
 
+const SERIF = 'Cambria, "Times New Roman", Times, serif';
 const SMALL = 8; // slices under this percentage get their label outside the pie
 
 export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boolean }) {
@@ -24,7 +25,27 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
     const ps = rowRange(ri);
     return (ps.some((p) => p.center) ? 20 : 0) + (ps.some((p) => p.note) ? 18 : 0);
   };
-  const titleH = data.pies.some((p) => p.title) ? 28 : 0;
+  // Long pie titles wrap onto several lines (never wider than the pie's own cell plus half of the gap).
+  const titleFs = 15;
+  const titleMaxW = cellW + Math.min(gap, 40);
+  const perLine = Math.max(8, Math.floor(titleMaxW / (titleFs * 0.56)));
+  const wrapTitle = (t: string) => {
+    const out: string[] = [];
+    for (const part of t.split("\n")) {
+      let cur = "";
+      for (const w of part.split(/\s+/).filter(Boolean)) {
+        if (cur && (cur + " " + w).length > perLine) {
+          out.push(cur);
+          cur = w;
+        } else cur = cur ? cur + " " + w : w;
+      }
+      if (cur) out.push(cur);
+    }
+    return out;
+  };
+  const titleLinesOf = data.pies.map((p) => (p.title ? wrapTitle(p.title) : []));
+  const maxTitleLines = Math.max(0, ...titleLinesOf.map((l) => l.length));
+  const titleH = maxTitleLines ? maxTitleLines * 19 + 9 : 0;
   const padTop = 22; // room for an outside label above a pie
   const rowGap = 14;
   const rowTops: number[] = [];
@@ -34,6 +55,21 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
     y += titleH + padTop + 2 * r + rowExtra(ri) + rowGap;
   }
   const height = y;
+
+  // One slice label: the percentage, preceded by the slice name on its own line when `sliceNames` is set.
+  const sliceText = (key: string, name: string, text: string, px: number, py: number, anchor: "start" | "middle" | "end", fs: number, fill: string) => {
+    const lines = data.sliceNames ? [name, text] : [text];
+    const lh = fs * 1.15;
+    return (
+      <text key={key} textAnchor={anchor} fontSize={fs} fontWeight={700} fill={fill} fontFamily={data.sliceNames ? SERIF : undefined}>
+        {lines.map((ln, li) => (
+          <tspan key={li} x={px} y={py + (li - (lines.length - 1) / 2) * lh + fs * 0.35}>
+            {ln}
+          </tspan>
+        ))}
+      </text>
+    );
+  };
 
   const drawPie = (pi: number, cx: number, cy: number) => {
     const pie = data.pies[pi];
@@ -62,20 +98,12 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
       const fs = r >= 80 ? 16 : 12;
       if (pct >= SMALL) {
         const [px, py] = pt(r * 0.68, mid);
-        labels.push(
-          <text key={`l${i}`} x={px} y={py} textAnchor="middle" dominantBaseline="middle" fontSize={fs} fontWeight={700} fill="#fff">
-            {text}
-          </text>
-        );
+        labels.push(sliceText(`l${i}`, sl.label, text, px, py, "middle", fs, data.sliceLabelColor ?? "#fff"));
       } else {
         const [px, py] = pt(r + 12, mid);
         const c = Math.cos(mid);
         const anchor = Math.abs(c) < 0.3 ? "middle" : c > 0 ? "start" : "end";
-        labels.push(
-          <text key={`l${i}`} x={px} y={py} textAnchor={anchor} dominantBaseline="middle" fontSize={fs} fontWeight={700} fill={ink.text}>
-            {text}
-          </text>
-        );
+        labels.push(sliceText(`l${i}`, sl.label, text, px, py, anchor, fs, ink.text));
       }
     });
     return [...shapes, ...labels];
@@ -97,7 +125,7 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
           const rowH = titleH + padTop + 2 * r + rowExtra(ri);
           return (
             <g key={`r${ri}`}>
-              {ri > 0 && <line x1={0} x2={width} y1={top - rowGap / 2} y2={top - rowGap / 2} stroke={ink.grid} strokeDasharray="3 3" />}
+              {!data.noRowDivider && ri > 0 && <line x1={0} x2={width} y1={top - rowGap / 2} y2={top - rowGap / 2} stroke={ink.grid} strokeDasharray="3 3" />}
               {data.rowLabels?.[ri] && (
                 <text x={0} y={top + rowH / 2} dominantBaseline="middle" fontSize={15} fontWeight={700} fill={ink.text}>
                   {data.rowLabels[ri]}
@@ -128,9 +156,13 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
                 const cx = rowLabelW + ci * (cellW + gap) + cellW / 2;
                 return (
                   <g key={ci}>
-                    {p.title && (
-                      <text x={cx} y={top + 14} textAnchor="middle" fontSize={15} fontWeight={700} fill={ink.text}>
-                        {p.title}
+                    {titleLinesOf[ri * cols + ci].length > 0 && (
+                      <text textAnchor="middle" fontSize={titleFs} fontWeight={700} fill={ink.text} fontFamily={data.sliceNames ? SERIF : undefined}>
+                        {titleLinesOf[ri * cols + ci].map((ln, li) => (
+                          <tspan key={li} x={cx} y={top + 14 + li * 19}>
+                            {ln}
+                          </tspan>
+                        ))}
                       </text>
                     )}
                     {drawPie(ri * cols + ci, cx, cy)}

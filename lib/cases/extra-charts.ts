@@ -20,6 +20,9 @@ export interface MultiPieData {
   rowCenters?: string[];
   centerBox?: boolean; // draw each rowCenters entry inside a bordered box
   radius?: number; // pie radius in SVG units (default chosen from the layout)
+  noRowDivider?: boolean; // no dashed line between rows of a grid
+  sliceNames?: boolean; // print the slice name (e.g. "Yes") above its percentage, in a serif face
+  sliceLabelColor?: string; // colour of labels drawn inside the slices (default white)
   legend?: ExtraSwatch[];
   footnote?: string;
 }
@@ -161,19 +164,52 @@ export interface FlowData {
   footnote?: string;
 }
 
-// Columns plus overlaid lines on one shared axis.
+// General line / column chart on one shared category axis: optional columns, any number of lines, optional
+// point markers, dashed vertical markers, free text labels and a styled title. Only `categories` and `yMax`
+// are required; everything else is an optional addition.
+export interface ComboLine {
+  name: string;
+  color: string;
+  values: (number | null)[]; // null = gap (no point at this category)
+  width?: number; // stroke width in SVG units (default 3)
+  marker?: "circle" | "diamond" | "square"; // point marker at each value
+  markerColor?: string; // fill (default: the line colour)
+  markerSize?: number; // marker size in SVG units (default 9)
+  dashed?: boolean; // dashed line
+}
 export interface ComboChartData {
   kind: "combo";
-  title?: string;
-  categories: string[];
+  title?: string; // a newline splits lines
+  titleBold?: boolean;
+  titleUnderline?: boolean;
+  titleSerif?: boolean;
+  titleAlign?: "left" | "center"; // default left
+  titleSize?: number; // SVG units (default 20)
+  categories: string[]; // a newline inside a label splits it into lines
   bars?: { name: string; color: string; values: number[] };
-  lines?: { name: string; color: string; values: number[] }[];
+  lines?: ComboLine[];
   yMin?: number;
   yMax: number;
   yStep?: number;
-  yTickLabels?: string[];
-  yLabel?: string;
+  yTickLabels?: string[]; // custom text per tick, bottom to top (overrides prefix/suffix)
+  yTickPrefix?: string;
+  yTickSuffix?: string; // e.g. "%"
+  yLabel?: string; // rotated axis title at the left
+  xTitle?: string; // axis title under the category labels
+  axisTitleBold?: boolean;
+  yGrid?: boolean; // light horizontal gridlines at every tick
+  axisStyle?: "plain" | "arrows"; // arrowheads at the end of both axes
+  xPlacement?: "between" | "on"; // "on": first/last category sit on the axis ends (scatter-like); default "between"
+  xLabelRotate?: number; // degrees, e.g. 45 (labels read upwards to the right, ending at their tick)
+  xLabelEvery?: number; // draw only every n-th category label (dense axes)
+  serif?: boolean; // serif font for all chart text
+  legend?: "topRight" | "right" | "bottom" | "none"; // default "bottom" when series are named
+  // Free text at data coordinates: x as a (fractional) category index, y as an axis value.
+  texts?: { text: string; x: number; y: number; color?: string; size?: number; bold?: boolean; anchor?: "start" | "middle" | "end" }[];
+  // Vertical markers at (fractional) category indexes, from the axis to the top of the plot.
+  markers?: { at: number; label?: string; dashed?: boolean; color?: string; labelColor?: string }[];
   footnote?: string;
+  footnoteBold?: boolean; // serif bold footnote in the ink colour (as printed under some exhibits)
 }
 
 // Stacked columns with labelled segments, in one or more panels side by side. Each panel has its own Y axis

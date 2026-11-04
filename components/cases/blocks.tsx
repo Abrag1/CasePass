@@ -538,6 +538,8 @@ export function PieChart({ page, dark }: { page: CasePage; dark?: boolean }) {
   );
 }
 
+const SERIF_FACE = 'Cambria, "Times New Roman", Times, serif';
+
 export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   if (!page.axisBarGroups || !page.axisBarSeries) return null;
   const ink = chartInk(dark);
@@ -560,15 +562,23 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   const clusterW = m * barW + (m - 1) * gap;
   const rotX = page.axisBarRotateLabels ? 36 : 0;
   const topPad = page.axisBarInnerTitle ? 34 : 0;
+  const serif = !!page.axisBarSerif;
+  const serifTitle = serif && page.axisBarTitle ? page.axisBarTitle.split("\n") : [];
+  const serifTitleH = serifTitle.length ? serifTitle.length * 25 + 14 : 0;
   return (
-    <ExhibitFrame dark={dark} title={page.axisBarTitle}>
-      <svg viewBox={`0 0 520 ${330 + rotX + topPad}`} style={{ width: "100%", maxWidth: 560, display: "block", margin: "0 auto" }}>
+    <ExhibitFrame dark={dark} title={serif ? undefined : page.axisBarTitle}>
+      <svg viewBox={`0 0 520 ${330 + rotX + topPad + serifTitleH}`} style={{ width: "100%", maxWidth: 560, display: "block", margin: "0 auto", fontFamily: serif ? SERIF_FACE : undefined }}>
+        {serifTitle.map((ln, i) => (
+          <text key={`st${i}`} x={(left + right) / 2} y={22 + i * 25} textAnchor="middle" fontSize={21} fontWeight={700} fill={ink.text}>
+            {ln}
+          </text>
+        ))}
         {page.axisBarInnerTitle && (
           <text x={left - 40} y={22} fontSize={19} fill={ink.axis}>
             {page.axisBarInnerTitle}
           </text>
         )}
-        <g transform={`translate(0 ${topPad})`}>
+        <g transform={`translate(0 ${topPad + serifTitleH})`}>
         {ticks.map((t) => (
           <g key={t}>
             {!page.axisBarNoGrid && <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />}

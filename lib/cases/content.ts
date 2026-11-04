@@ -439,6 +439,7 @@ export interface CasePage {
   colBarInnerNote?: string;
   colBarFirst?: boolean;
   axisBarNoLegend?: boolean;
+  axisBarSerif?: boolean; // serif face, bold centred title drawn in the chart (lines split on a newline), serif axis and legend text
   // Optional title style for the colBar* / axisStack* exhibits (default: small, left, plain)
   colBarTitleStyle?: ChartTitleStyle;
   stackPanelsTitle?: string;
@@ -1667,6 +1668,7 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       axisBarLegendTopLeft: p.axisBarLegendTopLeft,
       axisBarLabelsAbove: p.axisBarLabelsAbove,
       axisBarLegendRight: p.axisBarLegendRight,
+      axisBarSerif: p.axisBarSerif,
       scatterTitle: p.scatterTitle,
       scatterPoints: p.scatterPoints,
       scatterXMin: p.scatterXMin,

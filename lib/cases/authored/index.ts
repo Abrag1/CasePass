@@ -51,6 +51,7 @@ import * as dardenCircleBubble from "./darden_2023_2024_circle_bubble";
 import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
 import * as johnsonAcesDeliveryService from "./johnson_2020_2021_aces_delivery_service";
 import * as johnsonAfricanCallCenter from "./johnson_2020_2021_african_call_center";
+import * as johnsonAmericanAirlines from "./johnson_2020_2021_american_airlines";
 import * as rossSixPaqPeFirm from "./ross_2019_6paq_p_e_firm";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
 import * as sternPeSoda from "./stern_2015_2016_a_pe_and_a_soda";
@@ -104,6 +105,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   dardenRobotsInc,
   johnsonAcesDeliveryService,
   johnsonAfricanCallCenter,
+  johnsonAmericanAirlines,
   rossSixPaqPeFirm,
   sloanBrainteaser,
   sternPeSoda,
