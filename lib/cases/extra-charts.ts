@@ -227,6 +227,10 @@ export interface ComboChartData extends Partial<ComboPanel> {
   xLabelRotate?: number; // degrees, e.g. 45 (labels read upwards to the right, ending at their tick)
   xLabelEvery?: number; // draw only every n-th category label (dense axes)
   serif?: boolean; // serif font for all chart text
+  fontScale?: number; // multiplier for tick texts, category labels and axis titles (default 1)
+  plotAspect?: number; // plot height as a share of the chart width (default about 0.34)
+  legendNoWrap?: boolean; // keep the legend on one row
+  lightBaseline?: boolean; // with axisStyle "none": the zero line is a normal light gridline
   legend?: "topRight" | "right" | "bottom" | "none"; // default "bottom" when series are named
   footnote?: string;
   footnoteBold?: boolean; // serif bold footnote in the ink colour (as printed under some exhibits)

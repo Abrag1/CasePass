@@ -6,6 +6,7 @@
 // "confirmed" once the owner has reviewed them (scripts/confirm-case.mjs).
 import type { CasePage } from "../content";
 import * as johnsonBenjaminCarpet from "./johnson_2020_2021_benjamin_carpet";
+import * as johnsonCampaignSwag from "./johnson_2020_2021_campaign_swag";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
@@ -64,6 +65,7 @@ import * as yale7Eleven2024 from "./yale_ygcc_2024_7_eleven";
 
 const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePage[] }[] = [
   johnsonBenjaminCarpet,
+  johnsonCampaignSwag,
   // REGISTER-ENTRIES
   boothApacheHelicopter,
   boothArmyHotel,
