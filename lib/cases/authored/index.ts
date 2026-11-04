@@ -18,6 +18,7 @@ import * as johnsonErpSystems from "./johnson_2020_2021_erp_systems";
 import * as johnsonFinTastic from "./johnson_2020_2021_fin_tastic";
 import * as johnsonIceCreamTruck from "./johnson_2020_2021_ice_cream_truck";
 import * as johnsonIphat from "./johnson_2020_2021_iphat";
+import * as johnson2122Iphat from "./johnson_2021_2022_iphat";
 import * as johnsonMunderDifflin from "./johnson_2020_2021_munder_difflin";
 import * as johnsonPatientOperatedMachines from "./johnson_2020_2021_patient_operated_machines";
 import * as johnsonPayco from "./johnson_2020_2021_payco";
@@ -114,6 +115,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonFinTastic,
   johnsonIceCreamTruck,
   johnsonIphat,
+  johnson2122Iphat,
   johnsonMunderDifflin,
   johnsonPatientOperatedMachines,
   johnsonPayco,
