@@ -75,6 +75,7 @@ import * as dardenRobotsInc from "./darden_2023_2024_robots_inc";
 import * as johnsonAcesDeliveryService from "./johnson_2020_2021_aces_delivery_service";
 import * as johnsonAfricanCallCenter from "./johnson_2020_2021_african_call_center";
 import * as johnsonAmericanAirlines from "./johnson_2020_2021_american_airlines";
+import * as johnson2122AmericanAirlines from "./johnson_2021_2022_american_airlines";
 import * as johnsonAutoEmissions from "./johnson_2020_2021_auto_emissions";
 import * as johnsonBankLoanOperations from "./johnson_2020_2021_bank_loan_operations";
 import * as johnsonBigWheel from "./johnson_2020_2021_big_wheel";
@@ -155,6 +156,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonAcesDeliveryService,
   johnsonAfricanCallCenter,
   johnsonAmericanAirlines,
+  johnson2122AmericanAirlines,
   johnsonAutoEmissions,
   johnsonBankLoanOperations,
   johnsonBigWheel,
