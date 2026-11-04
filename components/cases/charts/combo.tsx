@@ -9,6 +9,41 @@ import { ExhibitFrame, chartInk } from "./chart-kit";
 const SERIF = 'Cambria, "Times New Roman", Times, serif';
 const TICK_GREY = "#7f7f7f";
 
+// Monotone cubic (Fritsch-Carlson) path through the points: smooth, never overshoots the data.
+function smoothPath(pts: [number, number][]): string {
+  const n = pts.length;
+  if (n < 3) return pts.map((p, i) => `${i ? "L" : "M"} ${p[0]} ${p[1]}`).join(" ");
+  const dx: number[] = [];
+  const m: number[] = [];
+  for (let i = 0; i < n - 1; i++) {
+    dx.push(pts[i + 1][0] - pts[i][0]);
+    m.push((pts[i + 1][1] - pts[i][1]) / (pts[i + 1][0] - pts[i][0] || 1));
+  }
+  const t: number[] = [m[0]];
+  for (let i = 1; i < n - 1; i++) t.push(m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2);
+  t.push(m[n - 2]);
+  for (let i = 0; i < n - 1; i++) {
+    if (m[i] === 0) {
+      t[i] = 0;
+      t[i + 1] = 0;
+      continue;
+    }
+    const a = t[i] / m[i];
+    const b = t[i + 1] / m[i];
+    const h = Math.hypot(a, b);
+    if (h > 3) {
+      t[i] = (3 * a * m[i]) / h;
+      t[i + 1] = (3 * b * m[i]) / h;
+    }
+  }
+  let d = `M ${pts[0][0]} ${pts[0][1]}`;
+  for (let i = 0; i < n - 1; i++) {
+    const h = dx[i] / 3;
+    d += ` C ${pts[i][0] + h} ${pts[i][1] + t[i] * h} ${pts[i + 1][0] - h} ${pts[i + 1][1] - t[i + 1] * h} ${pts[i + 1][0]} ${pts[i + 1][1]}`;
+  }
+  return d;
+}
+
 function Marker({ kind, x, y, size, fill, stroke }: { kind: NonNullable<ComboLine["marker"]>; x: number; y: number; size: number; fill: string; stroke: string }) {
   const h = size / 2;
   if (kind === "circle") return <circle cx={x} cy={y} r={h} fill={fill} stroke={stroke} strokeWidth={1.2} />;
@@ -276,13 +311,22 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
         {p.lines?.map((l, li) => {
           const segs: string[] = [];
           let cur = "";
+          let pts: [number, number][] = [];
+          const flush = () => {
+            if (l.smooth) {
+              if (pts.length) segs.push(smoothPath(pts));
+            } else if (cur) segs.push(cur);
+            cur = "";
+            pts = [];
+          };
           l.values.forEach((v, i) => {
-            if (v == null) {
-              if (cur) segs.push(cur);
-              cur = "";
-            } else cur += `${cur ? " L" : "M"} ${cx(i)} ${yOf(l)(v)}`;
+            if (v == null) flush();
+            else {
+              cur += `${cur ? " L" : "M"} ${cx(i)} ${yOf(l)(v)}`;
+              pts.push([cx(i), yOf(l)(v)]);
+            }
           });
-          if (cur) segs.push(cur);
+          flush();
           return (
             <g key={`l${li}`}>
               {segs.map((d, i) => (

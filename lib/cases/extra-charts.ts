@@ -183,6 +183,7 @@ export interface ComboLine {
   markerColor?: string; // fill (default: the line colour)
   markerSize?: number; // marker size in SVG units (default 9)
   dashed?: boolean; // dashed line
+  smooth?: boolean; // monotone smooth curve through the points instead of straight segments
   onAxis2?: boolean; // plot against the secondary (right) Y axis
   valueLabels?: boolean; // value printed at each point
   valueSuffix?: string; // e.g. "%"

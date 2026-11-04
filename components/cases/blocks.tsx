@@ -1431,15 +1431,17 @@ function HarveyBall({ fill, dark, label }: { fill: number; dark?: boolean; label
 }
 
 // Black cell borders from a string of letters t/r/b/l.
-function bordersOf(b?: string): React.CSSProperties {
+function bordersOf(b?: string, color?: string): React.CSSProperties {
   if (!b) return {};
-  const line = "1.5px solid #111111";
+  const line = color ? `1px solid ${color}` : "1.5px solid #111111";
   return { ...(b.includes("t") ? { borderTop: line } : {}), ...(b.includes("r") ? { borderRight: line } : {}), ...(b.includes("b") ? { borderBottom: line } : {}), ...(b.includes("l") ? { borderLeft: line } : {}) };
 }
 
 function DataGrid({
-  title, footnote, cols, headers, rows, dark, first, serif, bigTitle,
+  title, footnote, cols, headers, rows, dark, first, serif, bigTitle, boldTitle, fontSize,
 }: {
+  boldTitle?: boolean;
+  fontSize?: number;
   serif?: boolean;
   bigTitle?: boolean;
   title?: string;
@@ -1458,11 +1460,11 @@ function DataGrid({
   return (
     <div style={first ? undefined : { marginTop: 22 }}>
       {title && (
-        <div style={bigTitle ? { fontSize: 30, fontWeight: 700, fontFamily: '"Times New Roman", Georgia, serif', color: dark ? "#b7c2ba" : "#595959", marginBottom: 18, textAlign: "center" } : { fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 14, textAlign: "center" }}>{title}</div>
+        <div style={boldTitle ? { fontSize: 20, fontWeight: 700, color: dark ? "#dbe3dd" : "#111111", marginBottom: 18, textAlign: "center" } : bigTitle ? { fontSize: 30, fontWeight: 700, fontFamily: '"Times New Roman", Georgia, serif', color: dark ? "#b7c2ba" : "#595959", marginBottom: 18, textAlign: "center" } : { fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 14, textAlign: "center" }}>{title}</div>
       )}
-      <div style={{ display: "grid", gridTemplateColumns: cols, gap: 0, fontSize: 12.5, minWidth: 280, maxWidth: maxW, margin: "0 auto", fontFamily: serif ? '"Times New Roman", Georgia, serif' : undefined }}>
+      <div style={{ display: "grid", gridTemplateColumns: cols, gap: 0, fontSize: fontSize ?? 12.5, minWidth: 280, maxWidth: maxW, margin: "0 auto", fontFamily: serif ? '"Times New Roman", Georgia, serif' : undefined }}>
         {headers.map((h, i) => (
-          <div key={i} style={{ fontWeight: 600, color: h.fg ?? head, background: h.bg, padding: "5px 4px", textAlign: h.align, ...(serif ? { fontWeight: 700, fontSize: 14, display: "flex", alignItems: "flex-end", justifyContent: "center" } : {}), ...bordersOf(h.borders) }}>{h.v}</div>
+          <div key={i} style={{ fontWeight: 600, color: h.fg ?? head, background: h.bg, padding: "5px 4px", textAlign: h.align, ...(serif ? { fontWeight: 700, fontSize: 14, display: "flex", alignItems: "flex-end", justifyContent: "center" } : {}), ...(h.span ? { gridColumn: `span ${h.span}` } : {}), ...bordersOf(h.borders, h.borderColor) }}>{h.v}</div>
         ))}
         {rows.map((row, i) => (
           <div key={i} style={{ display: "contents" }}>
@@ -1473,7 +1475,7 @@ function DataGrid({
                   padding: "8px 4px",
                   background: c.bg,
                   borderTop: border,
-                  ...bordersOf(c.borders),
+                  ...bordersOf(c.borders, c.borderColor),
                   textAlign: c.align,
                   fontWeight: c.w,
                   color: dark ? "#dbe3dd" : c.fg,
@@ -1520,10 +1522,17 @@ export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
           ))}
         </div>
       )}
+      {page.dataTableSideBySide && page.dataTableTitle && (
+        <div style={{ fontSize: page.dataTableTitleBold ? 20 : 12, fontWeight: page.dataTableTitleBold ? 700 : 600, color: dark ? "#dbe3dd" : page.dataTableTitleBold ? "#111111" : "#5b615c", marginBottom: 18, textAlign: "center" }}>{page.dataTableTitle}</div>
+      )}
+      <div style={page.dataTableSideBySide ? { display: "flex", flexWrap: "wrap", gap: 28, alignItems: "flex-start" } : undefined}>
+        <div style={page.dataTableSideBySide ? { flex: "1 1 280px", minWidth: 0 } : undefined}>
       <DataGrid
-        title={page.dataTableTitle}
+        title={page.dataTableSideBySide ? undefined : page.dataTableTitle}
         serif={page.dataTableSerif}
         bigTitle={page.dataTableTitleBig}
+        boldTitle={page.dataTableTitleBold}
+        fontSize={page.dataTableFontSize}
         footnote={page.dataTableFootnote}
         cols={page.dataTableCols ?? ""}
         headers={page.dataTableHeaders}
@@ -1531,9 +1540,13 @@ export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
         dark={dark}
         first
       />
+        </div>
       {page.dataTableMore?.map((t, i) => (
-        <DataGrid key={i} title={t.title} footnote={t.footnote} cols={t.cols} headers={t.headers} rows={t.rows} dark={dark} first={false} />
+        <div key={i} style={page.dataTableSideBySide ? { flex: "1 1 280px", minWidth: 0 } : undefined}>
+          <DataGrid title={t.title} footnote={t.footnote} cols={t.cols} headers={t.headers} rows={t.rows} dark={dark} first={!!page.dataTableSideBySide} fontSize={page.dataTableFontSize} />
+        </div>
       ))}
+      </div>
     </ExhibitFrame>
   );
 }

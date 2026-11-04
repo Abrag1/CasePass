@@ -83,6 +83,8 @@ export interface DataTableHeader {
   fg?: string;
   // Optional black cell borders, any of the letters t, r, b, l (e.g. "tl")
   borders?: string;
+  borderColor?: string; // colour of the `borders` lines (default black)
+  span?: number; // header cell spanning this many columns (colspan)
 }
 export interface DataTableCell {
   v: string;
@@ -99,6 +101,7 @@ export interface DataTableCell {
   borders?: string;
   // Currency style: a leading "$" stays at the left edge of the cell and the number sits to its right
   split?: boolean;
+  borderColor?: string; // colour of the `borders` lines (default black)
 }
 export interface DataTableRow {
   cells: DataTableCell[];
@@ -485,6 +488,9 @@ export interface CasePage {
   illustrationAlt?: string;
   factPanels?: FactPanel[];
   dataTableTitle?: string;
+  dataTableSideBySide?: boolean; // draw the main table and `dataTableMore` side by side instead of stacked
+  dataTableTitleBold?: boolean; // bold black sans-serif centred title
+  dataTableFontSize?: number; // cell text size in px (default 12.5)
   dataTableSerif?: boolean; // serif cell text, bold bottom-aligned header cells
   dataTableTitleBig?: boolean; // large bold grey serif title
   dataTableFootnote?: string;
@@ -1757,6 +1763,9 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       illustrationAlt: p.illustrationAlt,
       factPanels: p.factPanels,
       dataTableTitle: p.dataTableTitle,
+      dataTableSideBySide: p.dataTableSideBySide,
+      dataTableTitleBold: p.dataTableTitleBold,
+      dataTableFontSize: p.dataTableFontSize,
       dataTableSerif: p.dataTableSerif,
       dataTableTitleBig: p.dataTableTitleBig,
       dataTableFootnote: p.dataTableFootnote,
