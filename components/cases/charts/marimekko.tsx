@@ -55,14 +55,15 @@ export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boo
     return { x0, x1, w: x1 - x0, cx: (x0 + x1) / 2 };
   });
 
-  const labelFit = cols.map((c, i) => fitText(c.label, geo[i].w - 10, 15, 10));
+  const labelFit = cols.map((c, i) => (data.plainSlices ? { lines: [c.label], size: 13 } : fitText(c.label, geo[i].w - 10, 15, 10)));
   const labelH = Math.max(...labelFit.map((f) => f.lines.length * (f.size + 3))) + 6;
   const subFit = cols.map((c, i) => (c.sub ? fitText(c.sub, geo[i].w - 10, 15, 10) : null));
-  const hasSub = subFit.some(Boolean);
+  const hasSub = subFit.some(Boolean) && !data.topSub;
   const subH = hasSub ? Math.max(...subFit.map((f) => (f ? f.lines.length * (f.size + 3) : 0))) + 10 : 0;
   const above = !!data.labelsAbove;
 
-  const top = above ? labelH + 8 : 12;
+  const topSub = !!data.topSub;
+  const top = above ? labelH + 8 : topSub ? 28 : 12;
   const bottom = top + plotH;
   const y = (pct: number) => bottom - (pct / 100) * plotH;
   let below = 8; // running offset under the axis
@@ -74,7 +75,7 @@ export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boo
   const height = xTitleY + (data.xTitle ? 10 : -6);
 
   const ticks: number[] = [];
-  for (let t = 0; t <= 100.0001; t += yStep) ticks.push(t);
+  if (!data.rowLabels) for (let t = 0; t <= 100.0001; t += yStep) ticks.push(t);
 
   const nSeries = data.series.length;
 
@@ -104,6 +105,23 @@ export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boo
             </text>
           )}
 
+          {data.rowLabels &&
+            (() => {
+              const c0 = cols[0];
+              const sum0 = c0.slices.reduce((s, x) => s + Math.max(0, x.value), 0) || 1;
+              let cum0 = 0;
+              return data.rowLabels.map((rl, si) => {
+                const pct = (Math.max(0, c0.slices[si]?.value ?? 0) / sum0) * 100;
+                const mid = y(100 - cum0 - pct / 2);
+                cum0 += pct;
+                return (
+                  <text key={`r${si}`} x={left - 8} y={mid} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
+                    {rl}
+                  </text>
+                );
+              });
+            })()}
+
           {/* Columns */}
           {cols.map((c, ci) => {
             const g = geo[ci];
@@ -120,14 +138,14 @@ export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boo
                   const y2 = y(100 - cum);
                   const h = y2 - y1;
                   const color = data.series[si]?.color ?? "#cccccc";
-                  const fs = Math.min(14, h - 4, Math.max(9, g.w / 5));
+                  const fs = data.plainSlices ? 13 : Math.min(14, h - 4, Math.max(9, g.w / 5));
                   const txt = `${Math.round(pct * 10) / 10}%`;
                   const fits = fs >= 9 && txt.length * fs * CHAR_W <= g.w - 4;
                   return (
                     <g key={si}>
-                      <rect x={g.x0} y={y1} width={g.w} height={h} fill={color} stroke={frame} strokeWidth={0.8} />
+                      <rect x={g.x0} y={y1} width={g.w} height={h} fill={color} stroke={data.plainSlices ? "#ffffff" : frame} strokeWidth={0.8} />
                       {showValues && fits && (
-                        <text x={g.cx} y={(y1 + y2) / 2} textAnchor="middle" dominantBaseline="middle" fontSize={fs} fontWeight={700} fill={textOn(color)}>
+                        <text x={g.cx} y={(y1 + y2) / 2} textAnchor="middle" dominantBaseline="middle" fontSize={fs} fontWeight={data.plainSlices ? 400 : 700} fill={textOn(color)}>
                           {txt}
                         </text>
                       )}
@@ -145,7 +163,7 @@ export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boo
             const f = labelFit[ci];
             const baseY = above ? top - 8 - (f.lines.length - 1) * (f.size + 3) : labelsBelowY + f.size + 2;
             return (
-              <text key={`l${ci}`} textAnchor="middle" fontSize={f.size} fontWeight={600} fill={ink.text}>
+              <text key={`l${ci}`} textAnchor="middle" fontSize={f.size} fontWeight={data.plainSlices ? 400 : 600} fill={ink.text}>
                 {f.lines.map((ln, li) => (
                   <tspan key={li} x={geo[ci].cx} y={baseY + li * (f.size + 3)}>
                     {ln}
@@ -154,6 +172,15 @@ export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boo
               </text>
             );
           })}
+
+          {topSub &&
+            cols.map((c, ci) =>
+              c.sub ? (
+                <text key={`t${ci}`} x={geo[ci].cx} y={top - 9} textAnchor="middle" fontSize={13} fill={ink.text}>
+                  {c.sub}
+                </text>
+              ) : null,
+            )}
 
           {/* Row of per-column notes (e.g. CAGR) */}
           {hasSub && (
@@ -186,7 +213,7 @@ export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boo
           )}
         </svg>
 
-        {data.series.length > 0 && (
+        {data.series.length > 0 && !data.noLegend && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: "0 0 auto", maxWidth: 200 }}>
             {data.series.map((s, i) => (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: ink.text, lineHeight: 1.3 }}>

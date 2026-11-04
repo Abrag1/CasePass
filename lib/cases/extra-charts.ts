@@ -48,6 +48,11 @@ export interface MarimekkoData {
   noGrid?: boolean; // hide the horizontal gridlines
   yStep?: number; // Y tick step in % (default 10)
   yTickSuffix?: string; // default "%" unless a yLabel is given, then ""
+  // Source-style options (defaults keep the original behaviour).
+  topSub?: boolean; // draw each column's `sub` text above the column (labels stay under it)
+  rowLabels?: string[]; // one label per series, left of the plot at the vertical middle of the first column's slice (replaces the Y ticks)
+  noLegend?: boolean; // hide the legend (when the source has none)
+  plainSlices?: boolean; // white slice separators and regular-weight value labels instead of a dark outline and bold labels
 }
 
 // Horizontal (grouped) bars with value labels.
