@@ -45,8 +45,10 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
   const ticks2: number[] = [];
   if (hasY2) for (let t = y2Min; t <= y2Max + 1e-9; t += y2Step) ticks2.push(Math.round(t * 1e6) / 1e6);
   const tick2Text = (t: number) => `${data.y2TickPrefix ?? ""}${t}${data.y2TickSuffix ?? ""}`;
-  const y2TickW = hasY2 ? Math.max(...ticks2.map((t) => tick2Text(t).length)) * 9 * fs : 0;
-  const rightM = hasY2 ? y2TickW + 26 : on ? 44 : 24;
+  const tick2At = (t: number, i: number) => data.y2TickLabels?.[i] ?? tick2Text(t);
+  const bold = !!data.axisBold;
+  const y2TickW = hasY2 ? Math.max(...ticks2.map((t, i) => tick2At(t, i).length)) * 9 * fs : 0;
+  const rightM = hasY2 ? y2TickW + 26 + (data.y2Label ? 28 * fs : 0) : on ? 44 : 24;
   const panelGap = multi ? 36 : 0;
   const plotW = (W - titleM - rightM - panels.length * tickM - (panels.length - 1) * panelGap) / panels.length;
   const plotH = data.plotAspect ? Math.round(W * data.plotAspect) : 340;
@@ -75,6 +77,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
   type Entry = { name: string; color: string; line?: ComboLine; tick?: boolean };
   const entries: Entry[] = [];
   for (const p of panels) {
+    for (const sr of p.stack?.series ?? []) if (!entries.some((e) => e.name === sr.name)) entries.push({ name: sr.name, color: sr.color });
     if (p.bars?.name && !entries.some((e) => e.name === p.bars!.name)) entries.push({ name: p.bars.name, color: p.bars.color });
     if (p.bars?.tickName && !entries.some((e) => e.name === p.bars!.tickName)) entries.push({ name: p.bars.tickName, color: p.bars.tickColor ?? TICK_GREY, tick: true });
     for (const l of p.lines ?? []) if (!entries.some((e) => e.name === l.name)) entries.push({ name: l.name, color: l.color, line: l });
@@ -92,6 +95,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
         justifyContent: legendPos === "topRight" ? "flex-end" : multi ? "flex-start" : "center",
         gap: "6px 20px",
         fontFamily: font,
+        fontWeight: bold ? 700 : undefined,
         fontSize: 13,
         color: ink.text,
         marginTop: legendPos === "bottom" ? 10 : 0,
@@ -148,6 +152,21 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
             </text>
           </g>
         ))}
+        {hasY2 && data.y2Label && (
+          <text
+            transform={`translate(${x0 + plotW + y2TickW + 36 * fs} ${top + plotH / 2}) rotate(-90)`}
+            textAnchor="middle"
+            fontSize={Math.min(15 * fs, (plotH * 0.95) / (Math.max(...data.y2Label.split("\n").map((l) => l.length)) * 0.5))}
+            fontWeight={data.axisTitleBold || bold ? 700 : 400}
+            fill={ink.text}
+          >
+            {data.y2Label.split("\n").map((ln, li, arr) => (
+              <tspan key={li} x={0} y={(li - (arr.length - 1) / 2) * 15 * fs * 1.2}>
+                {ln}
+              </tspan>
+            ))}
+          </text>
+        )}
         {hasY2 && (
           <g>
             <line x1={x0 + plotW} x2={x0 + plotW} y1={y(yMax)} y2={base} stroke={ink.axis} strokeWidth={1.2} />
@@ -155,7 +174,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
               <g key={`t2${i}`}>
                 <line x1={x0 + plotW} x2={x0 + plotW + 5} y1={yOn2(t)} y2={yOn2(t)} stroke={ink.axis} strokeWidth={1.2} />
                 <text x={x0 + plotW + 10} y={yOn2(t)} textAnchor="start" dominantBaseline="middle" fontSize={14 * fs} fill={ink.text}>
-                  {tick2Text(t)}
+                  {tick2At(t, i)}
                 </text>
               </g>
             ))}
@@ -185,7 +204,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
           );
         })}
         {p.xTitle && (
-          <text x={x0 + plotW / 2} y={base + labH + 22 * fs} textAnchor="middle" fontSize={15 * fs} fontWeight={data.axisTitleBold ? 700 : 400} fill={ink.text}>
+          <text x={x0 + plotW / 2} y={base + labH + 22 * fs} textAnchor="middle" fontSize={15 * fs} fontWeight={data.axisTitleBold || bold ? 700 : 400} fill={ink.text}>
             {p.xTitle}
           </text>
         )}
@@ -205,6 +224,33 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
         })}
         {/* columns */}
         {p.bars?.values.map((v, i) => <rect key={`b${i}`} x={cx(i) - barW / 2} y={y(v)} width={barW} height={Math.max(0, base - y(v))} fill={p.bars!.colors?.[i] ?? p.bars!.color} />)}
+        {/* stacked columns */}
+        {p.stack &&
+          p.categories.map((_, i) => {
+            const st = p.stack!;
+            const total = st.series.reduce((sum, sr) => sum + sr.values[i], 0) || 1;
+            const bw = slot * (st.widthRatio ?? 0.55);
+            let cum = 0;
+            return (
+              <g key={`st${i}`}>
+                {st.series.map((sr, si) => {
+                  const h = st.percent ? (sr.values[i] / total) * (yMax - yMin) : sr.values[i];
+                  const y1 = y(yMin + cum + h);
+                  const y0 = y(yMin + cum);
+                  cum += h;
+                  const fsz = (st.labelSize ?? 14) * fs;
+                  return (
+                    <g key={si}>
+                      <rect x={cx(i) - bw / 2} y={y1} width={bw} height={y0 - y1} fill={sr.color} />
+                      <text x={cx(i)} y={(y0 + y1) / 2} textAnchor="middle" dominantBaseline="central" fontSize={fsz} fontWeight={(sr.labelBold ?? st.labelBold) ? 700 : 400} fill={sr.labelColor ?? "#ffffff"}>
+                        {sr.labels?.[i] ?? sr.values[i]}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })}
         {/* horizontal reference lines (over the columns) */}
         {p.refLines?.map((r, i) => (
           <g key={`r${i}`}>
@@ -312,7 +358,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
   };
 
   const svg = (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: 980, display: "block", margin: "0 auto", fontFamily: font }} role="img" aria-label={data.title ?? "Chart"}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: 980, display: "block", margin: "0 auto", fontFamily: font, fontWeight: bold ? 700 : undefined }} role="img" aria-label={data.title ?? "Chart"}>
       {titleLines.map((l, i) => (
         <text
           key={i}
@@ -329,7 +375,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
         </text>
       ))}
       {data.yLabel && (
-        <text transform={`translate(16 ${top + plotH / 2}) rotate(-90)`} textAnchor="middle" fontSize={15 * fs} fontWeight={data.axisTitleBold ? 700 : 400} fill={ink.text}>
+        <text transform={`translate(16 ${top + plotH / 2}) rotate(-90)`} textAnchor="middle" fontSize={15 * fs} fontWeight={data.axisTitleBold || bold ? 700 : 400} fill={ink.text}>
           {data.yLabel}
         </text>
       )}

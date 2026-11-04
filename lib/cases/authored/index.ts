@@ -9,6 +9,7 @@ import * as johnsonBenjaminCarpet from "./johnson_2020_2021_benjamin_carpet";
 import * as johnsonCampaignSwag from "./johnson_2020_2021_campaign_swag";
 import * as johnsonCellPhone from "./johnson_2020_2021_cell_phone_manufacturer";
 import * as johnsonCpgAcquisition from "./johnson_2020_2021_cpg_acquisition";
+import * as johnsonCroger from "./johnson_2020_2021_croger";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
@@ -70,6 +71,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonCampaignSwag,
   johnsonCellPhone,
   johnsonCpgAcquisition,
+  johnsonCroger,
   // REGISTER-ENTRIES
   boothApacheHelicopter,
   boothArmyHotel,

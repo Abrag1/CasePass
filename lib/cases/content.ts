@@ -81,6 +81,8 @@ export interface DataTableHeader {
   // Optional fill and text colour for the header cell (default: plain grey text)
   bg?: string;
   fg?: string;
+  // Optional black cell borders, any of the letters t, r, b, l (e.g. "tl")
+  borders?: string;
 }
 export interface DataTableCell {
   v: string;
@@ -93,6 +95,10 @@ export interface DataTableCell {
   harvey?: number;
   // Optional cell fill colour
   bg?: string;
+  // Optional black cell borders, any of the letters t, r, b, l (e.g. "tl")
+  borders?: string;
+  // Currency style: a leading "$" stays at the left edge of the cell and the number sits to its right
+  split?: boolean;
 }
 export interface DataTableRow {
   cells: DataTableCell[];
@@ -479,6 +485,8 @@ export interface CasePage {
   illustrationAlt?: string;
   factPanels?: FactPanel[];
   dataTableTitle?: string;
+  dataTableSerif?: boolean; // serif cell text, bold bottom-aligned header cells
+  dataTableTitleBig?: boolean; // large bold grey serif title
   dataTableFootnote?: string;
   dataTableCols?: string;
   dataTableHeaders?: DataTableHeader[];
@@ -1749,6 +1757,8 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       illustrationAlt: p.illustrationAlt,
       factPanels: p.factPanels,
       dataTableTitle: p.dataTableTitle,
+      dataTableSerif: p.dataTableSerif,
+      dataTableTitleBig: p.dataTableTitleBig,
       dataTableFootnote: p.dataTableFootnote,
       dataTableCols: p.dataTableCols,
       dataTableHeaders: p.dataTableHeaders,

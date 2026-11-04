@@ -204,7 +204,17 @@ export interface ComboBars {
   tickColor?: string; // default grey
   tickName?: string; // legend entry for the ticks
 }
+// Stacked columns on the same Y axis: `series` are listed bottom first; with `percent` every column is scaled to the
+// full axis height (100%-stacked) and `labels` give the printed text of each segment (default: the value).
+export interface ComboStack {
+  series: { name: string; color: string; values: number[]; labels?: string[]; labelColor?: string; labelBold?: boolean }[];
+  percent?: boolean;
+  widthRatio?: number; // column width as a share of the category slot (default 0.55)
+  labelSize?: number; // in-segment label size (SVG units, default 14)
+  labelBold?: boolean;
+}
 export interface ComboPanel {
+  stack?: ComboStack;
   categories: string[]; // a newline inside a label splits it into lines
   bars?: ComboBars;
   lines?: ComboLine[];
@@ -237,6 +247,9 @@ export interface ComboChartData extends Partial<ComboPanel> {
   yLabel?: string; // rotated axis title at the left
   y2Min?: number; // secondary (right) Y axis; drawn when y2Max is set
   y2Max?: number;
+  y2Label?: string; // rotated title beside the right axis, reading bottom to top (a newline splits lines)
+  y2TickLabels?: string[]; // custom text per right-axis tick, bottom to top
+  axisBold?: boolean; // bold tick labels, category labels, legend entries and axis titles
   y2Step?: number;
   y2TickPrefix?: string;
   y2TickSuffix?: string;
