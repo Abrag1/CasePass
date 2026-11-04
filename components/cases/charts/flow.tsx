@@ -108,11 +108,13 @@ export function FlowChart({ data, dark }: { data: FlowData; dark?: boolean }) {
       );
     }
 
-    const pad = 8;
+    const pad = nd.padX ?? 8;
     let size = size0;
     let lines: string[] = [];
     const lg = nd.lineGap ?? 1.25;
-    if (nd.text) {
+    if (nd.text && nd.noWrap) {
+      lines = nd.text.split("\n").map((l) => l.replace(/ {2,}/g, (m) => "\u00a0".repeat(m.length)));
+    } else if (nd.text) {
       for (let k = 0; k < 14; k++) {
         lines = wrap(nd.text, nd.w - 2 * pad, size, serif, nd.bold);
         if (lines.length * size * lg <= nd.h - 4 || size <= 8) break;
@@ -122,11 +124,12 @@ export function FlowChart({ data, dark }: { data: FlowData; dark?: boolean }) {
     const left = nd.align === "left";
     const tx = left ? nd.x + pad : nd.x + nd.w / 2;
     const total = (lines.length - 1) * size * lg;
-    const cy = nd.y + nd.h / 2;
+    const top = nd.valign === "top";
+    const firstY = top ? nd.y + (nd.padTop ?? 10) + (size * lg) / 2 : nd.y + nd.h / 2 - total / 2;
     const textEl = nd.text ? (
       <text textAnchor={left ? "start" : "middle"} fontSize={size} fontFamily={font} fontWeight={nd.bold ? 700 : 400} fontStyle={nd.italic ? "italic" : undefined} fill={textColor}>
         {lines.map((ln, li) => (
-          <tspan key={li} x={tx} y={cy - total / 2 + li * size * lg} dominantBaseline="central">
+          <tspan key={li} x={tx} y={firstY + li * size * lg} dominantBaseline="central">
             {ln}
           </tspan>
         ))}
@@ -147,7 +150,7 @@ export function FlowChart({ data, dark }: { data: FlowData; dark?: boolean }) {
     }
     return (
       <g key={i} filter={filter}>
-        <rect x={nd.x} y={nd.y} width={nd.w} height={nd.h} fill={fill} stroke={nd.stroke === "none" ? "none" : stroke} strokeWidth={sw} rx={isTag ? 2 : 0} />
+        <rect x={nd.x} y={nd.y} width={nd.w} height={nd.h} fill={fill} fillOpacity={nd.fillOpacity} stroke={nd.stroke === "none" ? "none" : stroke} strokeWidth={sw} rx={nd.radius ?? (isTag ? 2 : 0)} />
         {textEl}
       </g>
     );

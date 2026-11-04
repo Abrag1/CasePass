@@ -139,6 +139,13 @@ export interface FlowNode {
   serif?: boolean;
   align?: "left" | "center" | "right";
   lineGap?: number; // line spacing as a multiple of the font size (default 1.25)
+  // Optional additions (defaults keep the original behaviour):
+  radius?: number; // rounded corners (canvas units) for box / tag nodes
+  fillOpacity?: number; // 0-1 opacity of the fill (a box drawn over another lets it show through)
+  valign?: "top" | "middle"; // vertical text position inside a box (default middle)
+  padTop?: number; // with valign "top": space above the first line (canvas units, default 10)
+  padX?: number; // left/right text padding (canvas units, default 8)
+  noWrap?: boolean; // use the text lines exactly as given (a newline splits; leading spaces are kept as indent), no auto-wrap or shrink
   shadow?: boolean;
   headLen?: number;
   headH?: number;
