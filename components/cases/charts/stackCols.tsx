@@ -5,6 +5,7 @@
 import type { StackColsData } from "@/lib/cases/extra-charts";
 import { ExhibitFrame, chartInk } from "./chart-kit";
 
+const SERIF = 'Cambria, "Times New Roman", Times, serif';
 const CHAR_W = 0.58; // average glyph width as a share of the font size
 
 function textOn(hex: string) {
@@ -27,15 +28,16 @@ function wrap(text: string, perLine: number) {
 }
 
 // Largest font (max..min) at which the wrapped text fits the box.
-function fit(text: string, w: number, h: number, max: number, min: number) {
+function fit(text: string, w: number, h: number, max: number, min: number, breaks?: boolean) {
+  const wrapAll = (per: number) => (breaks ? text.split("\n").flatMap((part) => wrap(part, per)) : wrap(text, per));
   for (let fs = max; fs >= min; fs -= 0.5) {
     const per = Math.max(1, Math.floor(w / (fs * CHAR_W)));
-    const lines = wrap(text, per);
+    const lines = wrapAll(per);
     const longest = Math.max(...lines.map((l) => l.length), 1);
     if (longest * fs * CHAR_W <= w && lines.length * fs * 1.15 <= h) return { lines, fs };
   }
   const per = Math.max(1, Math.floor(w / (min * CHAR_W)));
-  return { lines: wrap(text, per), fs: min };
+  return { lines: wrapAll(per), fs: min };
 }
 
 export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boolean }) {
@@ -82,7 +84,7 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   const base = top + plotH;
 
   // X labels (wrapped to the slot width, shared height).
-  const xfit = data.panels.map((p) => p.columns.map((c) => fit(c.label, slot - 8, 200, 18, 11)));
+  const xfit = data.panels.map((p) => p.columns.map((c) => fit(c.label, slot - 8, 200, 18, 11, data.labelBreaks)));
   const xLines = Math.max(1, ...xfit.flat().map((f) => f.lines.length));
   const xH = xLines * 24 + 14;
   let H = base + xH;
@@ -93,7 +95,7 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
 
   return (
     <ExhibitFrame dark={dark} title={data.titleStyle ? data.title : undefined} titleStyle={data.titleStyle}>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: Math.max(760, W * 1.1), display: "block", margin: "0 auto" }} role="img" aria-label={data.title ?? "Stacked columns"}>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: Math.max(760, W * 1.1), display: "block", margin: "0 auto", fontFamily: data.serif ? SERIF : undefined }} role="img" aria-label={data.title ?? "Stacked columns"}>
         {data.frame && <rect x={1} y={1} width={W - 2} height={H - 2} fill="none" stroke="#b5b5b5" strokeWidth={2} />}
         {titleLines.map((l, i) =>
           data.titleBold ? (
@@ -173,14 +175,21 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
                   <line key={`g${ti}`} x1={axisX} x2={x0 + pw[pi] - 20} y1={y(t)} y2={y(t)} stroke="#c8c8c8" strokeWidth={1.2} />
                 ))}
               {/* axes */}
-              <line x1={axisX} x2={axisX} y1={y(p.yMax)} y2={base} stroke={ink.text} strokeWidth={1.6} />
-              <line x1={axisX} x2={x0 + pw[pi] - 20} y1={base} y2={base} stroke={ink.text} strokeWidth={1.6} />
+              {!data.plainAxes && <line x1={axisX} x2={axisX} y1={y(p.yMax)} y2={base} stroke={ink.text} strokeWidth={1.6} />}
+              <line x1={axisX} x2={x0 + pw[pi] - 20} y1={base} y2={base} stroke={data.plainAxes ? "#c8c8c8" : ink.text} strokeWidth={data.plainAxes ? 1.2 : 1.6} />
+              {data.xBand &&
+                p.columns.map((_, ci) => (
+                  <g key={`xb${ci}`}>
+                    <line x1={axisX + ci * slot} x2={axisX + ci * slot} y1={base} y2={base + xH} stroke="#c8c8c8" strokeWidth={1.2} />
+                    {ci === p.columns.length - 1 && <line x1={axisX + (ci + 1) * slot} x2={axisX + (ci + 1) * slot} y1={base} y2={base + xH} stroke="#c8c8c8" strokeWidth={1.2} />}
+                  </g>
+                ))}
               {ticks.map((t, ti) => {
                 const isTop = ti === ticks.length - 1;
                 const txt = isTop && p.topLabel ? p.topLabel : (p.yTickLabels?.[ti] ?? `${p.yTickPrefix ?? ""}${t}${p.yTickSuffix ?? ""}`);
                 return (
                   <g key={ti}>
-                    <line x1={axisX - 6} x2={axisX} y1={y(t)} y2={y(t)} stroke={ink.text} strokeWidth={1.6} />
+                    {!data.plainAxes && <line x1={axisX - 6} x2={axisX} y1={y(t)} y2={y(t)} stroke={ink.text} strokeWidth={1.6} />}
                     <text x={axisX - 10} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={17} fill={ink.text}>
                       {txt}
                     </text>
@@ -212,14 +221,14 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
                       const y2 = y(cum);
                       cum += sg.value;
                       const h = y2 - y1;
-                      const f = sg.label ? fit(sg.label, barW - 10, h - 3, 19, 8) : null;
+                      const f = sg.label ? fit(sg.label, barW - 10, h - 3, 19, data.minLabelFont ?? 8) : null;
                       const tc = sg.textColor ?? textOn(sg.color);
                       const lh = f ? f.fs * 1.15 : 0;
                       return (
                         <g key={si}>
                           <rect x={cx0} y={y1} width={barW} height={h} fill={sg.color} stroke={border} strokeWidth={border ? 1.6 : 0} />
                           {f && (
-                            <text textAnchor="middle" fontSize={f.fs} fill={tc}>
+                            <text textAnchor="middle" fontSize={f.fs} fontWeight={data.boldLabels ? 700 : undefined} fill={tc}>
                               {f.lines.map((ln, li) => (
                                 <tspan key={li} x={cx0 + barW / 2} y={(y1 + y2) / 2 - ((f.lines.length - 1) * lh) / 2 + li * lh + f.fs * 0.35}>
                                   {ln}

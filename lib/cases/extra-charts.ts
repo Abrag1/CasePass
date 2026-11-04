@@ -208,6 +208,9 @@ export interface ComboBars {
   colors?: string[]; // per-bar colours (override `color`)
   valueLabels?: boolean; // value printed above each bar
   valueSuffix?: string; // appended to each value label, e.g. "%"
+  valuePrefix?: string; // prepended to each value label, e.g. "$"
+  bases?: number[]; // floating (waterfall) columns: each column spans bases[i] to bases[i] + values[i]; labels sit above the top
+  labelOffset?: number; // gap between the column top and its value label in SVG units (default 8)
   widthRatio?: number; // column width as a share of the category slot (default: 60%, at most 60 units)
   ticks?: (number | null)[]; // short dashed tick across each bar at this level (e.g. last year's value)
   tickColor?: string; // default grey
@@ -287,6 +290,7 @@ export interface ComboChartData extends Partial<ComboPanel> {
   fontScale?: number; // multiplier for tick texts, category labels and axis titles (default 1)
   plotAspect?: number; // plot height as a share of the chart width (default about 0.34)
   legendNoWrap?: boolean; // keep the legend on one row
+  baselineOnly?: boolean; // with axisStyle "none" and no gridlines: still draw a light baseline at the axis minimum
   lightBaseline?: boolean; // with axisStyle "none": the zero line is a normal light gridline
   legend?: "topRight" | "right" | "bottom" | "inside" | "none"; // "inside": top right corner of the plot; // default "bottom" when series are named
   footnote?: string;
@@ -330,6 +334,12 @@ export interface StackColsData {
   connectorColor?: string; // default: the ink colour
   segBorder?: string | false; // segment border colour (default dark); false = none
   barWidth?: number; // column width in SVG units (default 170)
+  serif?: boolean; // serif font for all chart text
+  labelBreaks?: boolean; // a newline in a column label starts a new line
+  plainAxes?: boolean; // no Y axis line or tick marks; light grey baseline (tick texts and gridlines stay)
+  xBand?: boolean; // grey cell borders around the column labels, one cell per column
+  minLabelFont?: number; // smallest segment-label font (default 8); labels of thin segments may overflow them
+  boldLabels?: boolean; // bold segment labels
   gridlines?: boolean; // light grey horizontal gridlines at every tick (default none)
   frame?: boolean; // thin grey border around the whole chart area (default none)
   titleBold?: boolean; // title bold, underlined and centred over the panels (default plain, left)

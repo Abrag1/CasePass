@@ -172,6 +172,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
     return (
       <g key={`p${pi}`}>
         {data.yGrid && ticks.slice(noAxis ? 0 : 1).map((t, i) => <line key={`g${i}`} x1={x0} x2={x0 + plotW} y1={y(t)} y2={y(t)} stroke={noAxis && !data.lightBaseline && t === yMin ? "#c8c8c8" : ink.grid} strokeWidth={noAxis && !data.lightBaseline && t === yMin ? 2 : 1.2} />)}
+        {noAxis && data.baselineOnly && !data.yGrid && <line x1={x0} x2={x0 + plotW} y1={base} y2={base} stroke="#c8c8c8" strokeWidth={1.4} />}
         {/* axes */}
         {!noAxis && <line x1={x0} x2={x0} y1={arrows ? top - 14 : y(yMax)} y2={base} stroke={ink.axis} strokeWidth={1.6} />}
         {!noAxis && <line x1={x0} x2={x0 + plotW + (arrows ? 14 : 0)} y1={base} y2={base} stroke={ink.axis} strokeWidth={1.6} />}
@@ -260,7 +261,12 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
           );
         })}
         {/* columns */}
-        {p.bars?.values.map((v, i) => <rect key={`b${i}`} x={cx(i) - barW / 2} y={y(v)} width={barW} height={Math.max(0, base - y(v))} fill={p.bars!.colors?.[i] ?? p.bars!.color} />)}
+        {p.bars?.values.map((v, i) => {
+          const b0 = p.bars!.bases?.[i];
+          const top0 = b0 != null ? y(b0 + v) : y(v);
+          const bottom0 = b0 != null ? y(b0) : base;
+          return <rect key={`b${i}`} x={cx(i) - barW / 2} y={top0} width={barW} height={Math.max(0, bottom0 - top0)} fill={p.bars!.colors?.[i] ?? p.bars!.color} />;
+        })}
         {/* clustered columns */}
         {p.clusters?.map((cl, ci, all) => {
           const gw = slot * (p.clusterWidthRatio ?? 0.8);
@@ -352,8 +358,8 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
         )}
         {p.bars?.valueLabels &&
           p.bars.values.map((v, i) => (
-            <text key={`vl${i}`} x={cx(i)} y={(() => { const t = p.bars!.ticks?.[i]; return (t != null && t >= v && t - v <= (yMax - yMin) * 0.05 ? y(t) : y(v)) - 8; })()} textAnchor="middle" fontSize={14 * fs} fill={ink.text}>
-              {v}{p.bars!.valueSuffix ?? ""}
+            <text key={`vl${i}`} x={cx(i)} y={(() => { const t = p.bars!.ticks?.[i]; const b0 = p.bars!.bases?.[i]; const gap = p.bars!.labelOffset ?? 8; if (b0 != null) return y(b0 + v) - gap; return (t != null && t >= v && t - v <= (yMax - yMin) * 0.05 ? y(t) : y(v)) - gap; })()} textAnchor="middle" fontSize={14 * fs} fill={ink.text}>
+              {p.bars!.valuePrefix ?? ""}{v}{p.bars!.valueSuffix ?? ""}
             </text>
           ))}
         {/* lines */}
