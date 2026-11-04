@@ -19,6 +19,7 @@ import * as johnsonFinTastic from "./johnson_2020_2021_fin_tastic";
 import * as johnsonIceCreamTruck from "./johnson_2020_2021_ice_cream_truck";
 import * as johnsonIphat from "./johnson_2020_2021_iphat";
 import * as johnsonMunderDifflin from "./johnson_2020_2021_munder_difflin";
+import * as johnsonPatientOperatedMachines from "./johnson_2020_2021_patient_operated_machines";
 // REGISTER-IMPORTS
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
@@ -90,6 +91,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonIceCreamTruck,
   johnsonIphat,
   johnsonMunderDifflin,
+  johnsonPatientOperatedMachines,
   // REGISTER-ENTRIES
   boothApacheHelicopter,
   boothArmyHotel,
