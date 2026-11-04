@@ -306,7 +306,15 @@ export function InfoSectionsBox({ label, sections }: { label?: string; sections:
               <span style={{ width: 20, height: 20, flex: "0 0 20px", borderRadius: "50%", background: "#eef0ec", color: "#5b615c", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
                 {st.n}
               </span>
-              <span style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b" }}>{st.text}</span>
+              <span style={{ fontSize: 13.5, lineHeight: 1.55, color: "#3a3f3b" }}>
+                <Rich text={st.text} />
+                {st.sub?.map((sb, k) => (
+                  <span key={k} style={{ display: "flex", gap: 8, fontSize: 13, paddingLeft: 4, paddingTop: 4 }}>
+                    <span style={{ color: "#8a8f8a" }}>–</span>
+                    <span><Rich text={sb} /></span>
+                  </span>
+                ))}
+              </span>
             </div>
           ))}
         </div>
@@ -1438,8 +1446,10 @@ function bordersOf(b?: string, color?: string): React.CSSProperties {
 }
 
 function DataGrid({
-  title, footnote, cols, headers, rows, dark, first, serif, bigTitle, boldTitle, fontSize,
+  title, footnote, cols, headers, rows, dark, first, serif, bigTitle, boldTitle, fontSize, titleRules, footnoteLeft,
 }: {
+  titleRules?: string;
+  footnoteLeft?: boolean;
   boldTitle?: boolean;
   fontSize?: number;
   serif?: boolean;
@@ -1459,8 +1469,16 @@ function DataGrid({
   const maxW = dark ? undefined : headers.length > 6 ? 820 : 560;
   return (
     <div style={first ? undefined : { marginTop: 22 }}>
-      {title && (
+      {title && titleRules ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 16, maxWidth: maxW, margin: "0 auto 14px" }}>
+          <div style={{ flex: 1, height: 3, background: titleRules }} />
+          <div style={{ fontSize: 15, fontWeight: 700, color: dark ? "#dbe3dd" : "#111111", textAlign: "center" }}>{title}</div>
+          <div style={{ flex: 1, height: 3, background: titleRules }} />
+        </div>
+      ) : (
+        title && (
         <div style={boldTitle ? { fontSize: 20, fontWeight: 700, color: dark ? "#dbe3dd" : "#111111", marginBottom: 18, textAlign: "center" } : bigTitle ? { fontSize: 30, fontWeight: 700, fontFamily: '"Times New Roman", Georgia, serif', color: dark ? "#b7c2ba" : "#595959", marginBottom: 18, textAlign: "center" } : { fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 14, textAlign: "center" }}>{title}</div>
+        )
       )}
       <div style={{ display: "grid", gridTemplateColumns: cols, gap: 0, fontSize: fontSize ?? 12.5, minWidth: 280, maxWidth: maxW, margin: "0 auto", fontFamily: serif ? '"Times New Roman", Georgia, serif' : undefined }}>
         {headers.map((h, i) => (
@@ -1502,7 +1520,7 @@ function DataGrid({
         ))}
       </div>
       {footnote && (
-        <div style={{ fontSize: 11, color: head, textAlign: "right", whiteSpace: "pre-line", maxWidth: maxW, margin: "12px auto 0" }}>{footnote}</div>
+        <div style={{ fontSize: 11, color: head, textAlign: footnoteLeft ? "left" : "right", whiteSpace: "pre-line", maxWidth: maxW, margin: "12px auto 0" }}>{footnote}</div>
       )}
     </div>
   );
@@ -1534,6 +1552,8 @@ export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
         boldTitle={page.dataTableTitleBold}
         fontSize={page.dataTableFontSize}
         footnote={page.dataTableFootnote}
+        titleRules={page.dataTableTitleRules}
+        footnoteLeft={page.dataTableFootnoteLeft}
         cols={page.dataTableCols ?? ""}
         headers={page.dataTableHeaders}
         rows={page.dataTableRows}
@@ -1543,7 +1563,7 @@ export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
         </div>
       {page.dataTableMore?.map((t, i) => (
         <div key={i} style={page.dataTableSideBySide ? { flex: "1 1 280px", minWidth: 0 } : undefined}>
-          <DataGrid title={t.title} footnote={t.footnote} cols={t.cols} headers={t.headers} rows={t.rows} dark={dark} first={!!page.dataTableSideBySide} fontSize={page.dataTableFontSize} />
+          <DataGrid title={t.title} footnote={t.footnote} cols={t.cols} headers={t.headers} rows={t.rows} dark={dark} first={!!page.dataTableSideBySide} fontSize={page.dataTableFontSize} titleRules={page.dataTableTitleRules} footnoteLeft={page.dataTableFootnoteLeft} />
         </div>
       ))}
       </div>
@@ -1607,8 +1627,25 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <TreeDiagram page={page} dark={dark} />
       <Illustration page={page} dark={dark} />
       <SegmentTable page={page} dark={dark} />
-      <DataTable page={page} dark={dark} />
-      <ExtraCharts charts={page.extraCharts} dark={dark} />
+      {page.exhibitTitle && (
+        <div style={{ fontSize: 22, fontWeight: 600, color: dark ? "#dbe3dd" : "#1f2421", margin: "4px 4px 14px", textAlign: "center", fontFamily: 'Cambria, "Times New Roman", Times, serif' }}>{page.exhibitTitle}</div>
+      )}
+      {page.exhibitColumns && page.extraCharts?.length ? (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "flex-start" }}>
+          <div style={{ flex: `${page.exhibitColumns[0]} 1 320px`, minWidth: 0 }}>
+            <ExtraCharts charts={page.extraCharts.slice(0, 1)} dark={dark} />
+          </div>
+          <div style={{ flex: `${page.exhibitColumns[1]} 1 280px`, minWidth: 0 }}>
+            <DataTable page={page} dark={dark} />
+            <ExtraCharts charts={page.extraCharts.slice(1)} dark={dark} />
+          </div>
+        </div>
+      ) : (
+        <>
+          <DataTable page={page} dark={dark} />
+          <ExtraCharts charts={page.extraCharts} dark={dark} />
+        </>
+      )}
     </>
   );
 }

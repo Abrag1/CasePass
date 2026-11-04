@@ -279,7 +279,8 @@ export interface InfoGroup {
 }
 export interface InfoStep {
   n: string;
-  text: string;
+  text: string; // **bold** lead-ins are supported
+  sub?: string[]; // bullets nested under the step
 }
 export interface InfoSection {
   label?: string;
@@ -311,7 +312,7 @@ export interface CalcTableData {
 }
 
 // Chart title drawn centred, bold, underlined and larger (as in some casebook charts).
-export type ChartTitleStyle = "centered-underlined";
+export type ChartTitleStyle = "centered-underlined" | "centered-bold"; // "centered-bold": centred bold black (no underline)
 
 export interface CasePage {
   n: string;
@@ -494,6 +495,8 @@ export interface CasePage {
   dataTableSerif?: boolean; // serif cell text, bold bottom-aligned header cells
   dataTableTitleBig?: boolean; // large bold grey serif title
   dataTableFootnote?: string;
+  dataTableTitleRules?: string; // colour: draw rules on both sides of each table title
+  dataTableFootnoteLeft?: boolean; // footnotes bottom-left instead of right
   dataTableCols?: string;
   dataTableHeaders?: DataTableHeader[];
   dataTableRows?: DataTableRow[];
@@ -505,6 +508,10 @@ export interface CasePage {
   segmentTable?: SegmentBlock[];
   // Newer data-driven exhibit types (multi-pie, Marimekko, horizontal bars, bell curves, flow, combo); see lib/cases/extra-charts.ts
   extraCharts?: ExtraChart[];
+  // Side-by-side layout: the first extra chart fills the left column; the data table and the remaining extra charts stack in the right one.
+  // Values are the flex ratios [left, right]. `exhibitTitle` is a plain large title above the exhibit.
+  exhibitColumns?: [number, number];
+  exhibitTitle?: string;
 
   // Interviewer cheat sheet (kind: 'cheat')
   cheatRows?: CheatRow[];
@@ -1773,9 +1780,13 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       dataTableHeaders: p.dataTableHeaders,
       dataTableRows: p.dataTableRows,
       dataTableMore: p.dataTableMore,
+      dataTableTitleRules: p.dataTableTitleRules,
+      dataTableFootnoteLeft: p.dataTableFootnoteLeft,
       dataTableIntro: p.dataTableIntro,
       segmentTitle: p.segmentTitle,
       segmentTable: p.segmentTable,
       extraCharts: p.extraCharts,
+      exhibitColumns: p.exhibitColumns,
+      exhibitTitle: p.exhibitTitle,
     }));
 }

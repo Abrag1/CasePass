@@ -90,7 +90,8 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
   const titleLines = data.title ? data.title.split("\n") : [];
   const titleFs = data.titleSize ?? 20;
   const titleH = titleLines.length ? titleLines.length * titleFs * 1.3 + 16 : 0;
-  const top = titleH + 20;
+  const headingH = panels.some((p) => p.heading) ? 26 : 0;
+  const top = titleH + 20 + headingH;
   const base = top + plotH;
   const y = (v: number) => base - ((v - yMin) / (yMax - yMin)) * plotH;
   const yOn2 = (v: number) => base - ((v - y2Min) / (y2Max - y2Min)) * plotH;
@@ -106,7 +107,8 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
   const rad = (rot * Math.PI) / 180;
   const labH = rot ? Math.sin(rad) * longest * labFs * 0.52 + 24 : Math.max(...allLines.map((l) => l.length)) * labFs * 1.2 + 14;
   const xTitleH = panels.some((p) => p.xTitle) ? 32 * fs : 0;
-  const H = base + labH + xTitleH + 12;
+  const clusterLegendH = panels.some((p) => p.clusterLegend) ? 30 : 0;
+  const H = base + labH + xTitleH + 12 + clusterLegendH;
 
   // Legend entries: columns, lines and per-bar ticks.
   type Entry = { name: string; color: string; line?: ComboLine; tick?: boolean };
@@ -259,6 +261,53 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
         })}
         {/* columns */}
         {p.bars?.values.map((v, i) => <rect key={`b${i}`} x={cx(i) - barW / 2} y={y(v)} width={barW} height={Math.max(0, base - y(v))} fill={p.bars!.colors?.[i] ?? p.bars!.color} />)}
+        {/* clustered columns */}
+        {p.clusters?.map((cl, ci, all) => {
+          const gw = slot * (p.clusterWidthRatio ?? 0.8);
+          const bw = gw / all.length;
+          return (
+            <g key={`cl${ci}`}>
+              {cl.values.map((v, i) => {
+                const bx = cx(i) - gw / 2 + ci * bw;
+                return (
+                  <g key={i}>
+                    <rect x={bx} y={y(v)} width={bw} height={Math.max(0, base - y(v))} fill={cl.color} />
+                    {cl.valueLabels && (
+                      <text x={bx + bw / 2} y={y(v) + 15 * fs} textAnchor="middle" fontSize={11 * fs} fontWeight={700} fill={cl.labelColor ?? "#ffffff"}>
+                        {(cl.valuePrefix ?? "") + v.toLocaleString("en-US")}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+            </g>
+          );
+        })}
+        {p.heading && (
+          <text x={x0 + plotW / 2} y={top - 12} textAnchor="middle" fontSize={15 * fs} fontWeight={700} fill={ink.text}>
+            {p.heading}
+          </text>
+        )}
+        {p.clusterLegend && p.clusters && (
+          <g transform={`translate(${x0 + plotW / 2 - p.clusters.reduce((sum, c) => sum + c.name.length * 8 + 34, 0) / 2} ${base + labH + xTitleH + 8})`}>
+            {(() => {
+              let off = 0;
+              return p.clusters.map((c, i) => {
+                const w = c.name.length * 8 + 34;
+                const el = (
+                  <g key={i} transform={`translate(${off} 0)`}>
+                    <rect x={0} y={2} width={11} height={11} fill={c.color} />
+                    <text x={16} y={11.5} fontSize={13 * fs} fill={ink.text}>
+                      {c.name}
+                    </text>
+                  </g>
+                );
+                off += w;
+                return el;
+              });
+            })()}
+          </g>
+        )}
         {/* stacked columns */}
         {p.stack &&
           p.categories.map((_, i) => {

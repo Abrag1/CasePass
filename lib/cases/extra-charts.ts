@@ -51,6 +51,7 @@ export interface MarimekkoData {
 export interface HBarsData {
   kind: "hBars";
   title?: string;
+  titleStyle?: "centered-underlined" | "centered-bold";
   series?: ExtraSwatch[]; // one per value in a group; legend drawn when more than one
   // `valueTexts` overrides the printed label per bar (when the source mixes decimals, e.g. "99%" and "0.6%");
   // `colors` overrides the series colour per bar.
@@ -66,6 +67,12 @@ export interface HBarsData {
   grid?: boolean; // vertical gridlines at the axis ticks
   outline?: boolean; // thin outline around each bar (and legend swatch)
   footnoteLines?: { bold?: string; text: string }[]; // footnote lines with an optional bold lead-in, drawn before `footnote`
+  insideLabels?: boolean; // value labels inside the bar end (white on dark bars, dark on light ones) instead of after it
+  tickPrefix?: string; // prefix for the value-axis tick texts, e.g. "$"
+  zeroLabel?: string; // text for the zero tick, e.g. "$-"
+  axisBold?: boolean; // small bold value-axis tick texts
+  plotWidth?: number; // width of the bar area in SVG units (default 330); smaller makes the text larger when the chart is narrow
+  legendBottom?: boolean; // legend centred under the bars instead of above them
 }
 
 // Two or more normal-distribution curves with vertical markers and call-out boxes.
@@ -162,6 +169,7 @@ export interface FlowArrow {
 export interface FlowData {
   kind: "flow";
   title?: string;
+  titleStyle?: "centered-underlined" | "centered-bold";
   style?: "chevron" | "box"; // look of `steps`
   steps?: { title: string; bullets?: string[]; color?: string }[];
   columns?: number; // steps per row (default: all in one row, at most 4)
@@ -214,7 +222,21 @@ export interface ComboStack {
   labelSize?: number; // in-segment label size (SVG units, default 14)
   labelBold?: boolean;
 }
+// Clustered (grouped) columns: several series side by side inside each category slot, optional value labels
+// inside the top of each column.
+export interface ComboCluster {
+  name: string;
+  color: string;
+  values: number[];
+  valueLabels?: boolean; // print "<valuePrefix><value with thousands separators>" inside the column top
+  valuePrefix?: string;
+  labelColor?: string; // default white
+}
 export interface ComboPanel {
+  clusters?: ComboCluster[];
+  clusterWidthRatio?: number; // width of a whole cluster as a share of the category slot (default 0.8)
+  clusterLegend?: boolean; // small legend of the clusters under this panel's category labels
+  heading?: string; // bold small heading above this panel
   stack?: ComboStack;
   categories: string[]; // a newline inside a label splits it into lines
   bars?: ComboBars;
@@ -300,6 +322,7 @@ export interface StackColsPanel {
 }
 export interface StackColsData {
   kind: "stackCols";
+  titleStyle?: "centered-underlined" | "centered-bold"; // draw `title` in the frame header in this style instead of inside the chart
   title?: string; // chart title above the panels (a newline splits lines)
   panels: StackColsPanel[];
   legend?: ExtraSwatch[];

@@ -157,7 +157,7 @@ export function FlowChart({ data, dark }: { data: FlowData; dark?: boolean }) {
   };
 
   return (
-    <ExhibitFrame dark={dark} title={data.title}>
+    <ExhibitFrame dark={dark} title={data.title} titleStyle={data.titleStyle}>
       <svg viewBox={`0 0 ${W} ${height.toFixed(1)}`} style={{ width: "100%", maxWidth: W * 1.25, display: "block", margin: "0 auto", overflow: "visible" }} role="img" aria-label={data.title ?? "Flow diagram"}>
         <defs>
           <filter id={`fs${uid}`} x="-10%" y="-10%" width="125%" height="135%">

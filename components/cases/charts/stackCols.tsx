@@ -60,7 +60,7 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   const panelsW = acc;
 
   // Header band: chart title (left) and the legend (top right).
-  const titleLines = data.title ? data.title.split("\n") : [];
+  const titleLines = data.title && !data.titleStyle ? data.title.split("\n") : [];
   const titleFs = 21;
   const titleH = titleLines.length ? titleLines.length * 27 + 6 : 0;
   const titleW = Math.max(0, ...titleLines.map((l) => l.length * titleFs * 0.5)) + leftM;
@@ -92,7 +92,7 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   H += 8;
 
   return (
-    <ExhibitFrame dark={dark}>
+    <ExhibitFrame dark={dark} title={data.titleStyle ? data.title : undefined} titleStyle={data.titleStyle}>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: Math.max(760, W * 1.1), display: "block", margin: "0 auto" }} role="img" aria-label={data.title ?? "Stacked columns"}>
         {data.frame && <rect x={1} y={1} width={W - 2} height={H - 2} fill="none" stroke="#b5b5b5" strokeWidth={2} />}
         {titleLines.map((l, i) =>

@@ -15,7 +15,9 @@ export function ExhibitFrame({ dark, title, titleStyle, children }: { dark?: boo
         overflowX: "auto",
       }}
     >
-      {title && titleStyle === "centered-underlined" ? (
+      {title && titleStyle === "centered-bold" ? (
+        <div style={{ fontSize: 16, fontWeight: 700, textAlign: "center", color: dark ? "#dbe3dd" : "#111111", marginBottom: 16 }}>{title}</div>
+      ) : title && titleStyle === "centered-underlined" ? (
         <div style={{ fontSize: 20, fontWeight: 700, textAlign: "center", textDecoration: "underline", color: dark ? "#dbe3dd" : "#1f2421", marginBottom: 16 }}>{title}</div>
       ) : (
         title && <div style={{ fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 16 }}>{title}</div>

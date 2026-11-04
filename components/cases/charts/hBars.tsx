@@ -21,6 +21,12 @@ function wrapLabel(text: string, maxChars: number): string[] {
   return out;
 }
 
+function isLight(hex: string) {
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) return false;
+  const c = parseInt(hex.slice(1), 16);
+  return (0.299 * (c >> 16) + 0.587 * ((c >> 8) & 255) + 0.114 * (c & 255)) / 255 > 0.62;
+}
+
 function isVeryDark(hex: string) {
   if (!/^#[0-9a-f]{6}$/i.test(hex)) return false;
   const c = parseInt(hex.slice(1), 16);
@@ -36,6 +42,7 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
   const suffix = data.valueSuffix ?? "";
   const decimals = data.valueDecimals;
   const frame = dark ? "#8a958d" : "#3a3f3b";
+  const tickFmt = (t: number) => (t === 0 && data.zeroLabel ? data.zeroLabel : (data.tickPrefix ?? "") + (data.tickPrefix ? t.toLocaleString("en-US", decimals !== undefined ? { minimumFractionDigits: decimals, maximumFractionDigits: decimals } : undefined) : decimals !== undefined ? t.toFixed(decimals) : String(Number(t.toFixed(2)))) + suffix);
   const fmt = (v: number) => (decimals !== undefined ? v.toFixed(decimals) : String(Number(v.toFixed(2)))) + suffix;
 
   const fsLabel = 14;
@@ -44,7 +51,7 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
   const labelLines = groups.map((g) => wrapLabel(g.label, maxChars));
   const longestLine = Math.max(1, ...labelLines.flat().map((l) => l.length));
   const labelW = Math.max(90, Math.min(220, Math.ceil(longestLine * fsLabel * CHAR_W) + 24));
-  const plotW = 330;
+  const plotW = data.plotWidth ?? 330;
   const texts = groups.map((g) => g.values.map((v, i) => g.valueTexts?.[i] ?? fmt(v)));
   const longestVal = Math.max(...texts.flat().map((t) => t.length), 1);
   const valueRoom = Math.ceil(longestVal * fsValue * CHAR_W) + 14;
@@ -69,26 +76,29 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
 
   const tops = bands.map((_, i) => top + bands.slice(0, i).reduce((s, b) => s + b, 0));
 
-  return (
-    <ExhibitFrame dark={dark} title={data.title}>
-      {swatches.length > 1 && (
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "6px 18px", marginBottom: 10 }}>
+  const legendEl =
+    swatches.length > 1 ? (
+        <div style={{ display: "flex", justifyContent: data.legendBottom ? "center" : "flex-end", ...(data.legendBottom ? { marginTop: 10, flexWrap: "nowrap", gap: 5 } : { flexWrap: "wrap", gap: "6px 18px", marginBottom: 10 }) }}>
           {swatches.map((s, i) => (
-            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: ink.text }}>
+            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: data.legendBottom ? 9.5 : 13, whiteSpace: "nowrap", color: ink.text }}>
               <span style={{ width: 12, height: 12, background: s.color, border: data.outline || dark ? `1px solid ${frame}` : "none", display: "inline-block" }} />
               {s.name}
             </span>
           ))}
         </div>
-      )}
+    ) : null;
+
+  return (
+    <ExhibitFrame dark={dark} title={data.title} titleStyle={data.titleStyle}>
+      {swatches.length > 1 && !data.legendBottom && legendEl}
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: Math.max(W, 420) * 1.25, display: "block", margin: "0 auto" }} role="img" aria-label={data.title ?? "Horizontal bar chart"}>
         {/* Value axis: gridlines, ticks and labels */}
         {ticks.map((t) => (
           <g key={t}>
             {data.grid && t > 0 && <line x1={x(t)} x2={x(t)} y1={top} y2={bottomOfBars} stroke={ink.grid} strokeWidth={1} />}
             <line x1={x(t)} x2={x(t)} y1={bottomOfBars} y2={bottomOfBars + 4} stroke={ink.axis} strokeWidth={1} />
-            <text x={x(t)} y={bottomOfBars + 17} textAnchor="middle" fontSize={12} fill={ink.axis}>
-              {fmt(t)}
+            <text x={x(t)} y={bottomOfBars + 17} textAnchor="middle" fontSize={data.axisBold ? 10 : 12} fontWeight={data.axisBold ? 700 : undefined} fill={data.axisBold ? ink.text : ink.axis}>
+              {tickFmt(t)}
             </text>
           </g>
         ))}
@@ -125,9 +135,22 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
                 return (
                   <g key={si}>
                     {w > 0.4 && <rect x={labelW} y={by} width={w} height={barH} fill={color} stroke={outline ? frame : "none"} strokeWidth={0.8} />}
-                    <text x={labelW + Math.max(w, 0) + 6} y={by + barH / 2} dominantBaseline="middle" fontSize={fsValue} fill={ink.text}>
-                      {texts[gi][si]}
-                    </text>
+                    {(() => {
+                      const room = texts[gi][si].length * fsValue * CHAR_W + 12;
+                      const inside = data.insideLabels && w >= room;
+                      return (
+                        <text
+                          x={inside ? labelW + w - 6 : labelW + Math.max(w, 0) + 6}
+                          y={by + barH / 2}
+                          textAnchor={inside ? "end" : "start"}
+                          dominantBaseline="middle"
+                          fontSize={fsValue}
+                          fill={inside ? (isLight(color) ? "#1f2421" : "#ffffff") : ink.text}
+                        >
+                          {texts[gi][si]}
+                        </text>
+                      );
+                    })()}
                   </g>
                 );
               })}
@@ -135,6 +158,7 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
           );
         })}
       </svg>
+      {swatches.length > 1 && data.legendBottom && legendEl}
       {(data.footnoteLines?.length || data.footnote) && (
         <div style={{ fontSize: 12, color: ink.axis, marginTop: 12, lineHeight: 1.45 }}>
           {data.footnoteLines?.map((f, i) => (
