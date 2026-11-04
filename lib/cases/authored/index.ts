@@ -53,6 +53,7 @@ import * as johnsonAcesDeliveryService from "./johnson_2020_2021_aces_delivery_s
 import * as johnsonAfricanCallCenter from "./johnson_2020_2021_african_call_center";
 import * as johnsonAmericanAirlines from "./johnson_2020_2021_american_airlines";
 import * as johnsonAutoEmissions from "./johnson_2020_2021_auto_emissions";
+import * as johnsonBankLoanOperations from "./johnson_2020_2021_bank_loan_operations";
 import * as rossSixPaqPeFirm from "./ross_2019_6paq_p_e_firm";
 import * as sloanBrainteaser from "./sloan_2015_a_classic_brainteaser";
 import * as sternPeSoda from "./stern_2015_2016_a_pe_and_a_soda";
@@ -108,6 +109,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnsonAfricanCallCenter,
   johnsonAmericanAirlines,
   johnsonAutoEmissions,
+  johnsonBankLoanOperations,
   rossSixPaqPeFirm,
   sloanBrainteaser,
   sternPeSoda,
