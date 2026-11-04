@@ -1,0 +1,280 @@
+import type { CasePage } from "../content";
+
+export const CASE_ID = "03ed1226-5c10-4ea4-9626-a42bbbbee730";
+
+const PROMPT =
+  "Our client, Croger, is a national grocery retailer that has seen declining profit margins within its frozen food section over the past 4 years. The CEO has brought you in to diagnose and recommend a course of action.";
+
+export const CASE_META = {
+  review: "auto",
+  case_type: "Profitability",
+  synopsis:
+    "A national grocery retailer has seen declining profit margins in its frozen food section over the past 4 years. Diagnose the cause and recommend a course of action.",
+  full_prompt: PROMPT,
+  tags: ["interviewee-led", "profitability", "exhibit-heavy", "light-math", "brainstorming"],
+};
+
+const RED_BG = "#b11b1b";
+const HD = (v: string, align: "left" | "center" = "center", borders = "tb") => ({ v, align, bg: RED_BG, fg: "#ffffff", borders });
+const INK = "#1f2421";
+const cell = (v: string, align: "left" | "center" | "right" = "left", w = 400, borders?: string, split?: boolean) => ({ v, align, w, fg: INK, borders, split });
+// Source borders: outline, a line left of each year column, and a line under each category group.
+const bd = (j: number, bottom: boolean) => (j === 0 || j >= 2 ? "l" : "") + (j === 5 ? "r" : "") + (bottom ? "b" : "");
+const money = (v: string, j: number, bottom: boolean) => cell("$ " + v, "center", 400, bd(j + 2, bottom), true);
+const catRows = (name: string, rev: string[], cogs: string[]) => [
+  { cells: [cell(name, "left", 700, bd(0, false)), cell("Revenues", "left", 400, bd(1, false)), ...rev.map((v, j) => money(v, j, false))] },
+  { cells: [cell("", "left", 400, bd(0, true)), cell("COGS", "left", 400, bd(1, true)), ...cogs.map((v, j) => money(v, j, true))] },
+];
+
+export const PAGES: CasePage[] = [
+  {
+    n: "01",
+    label: "Candidate prompt",
+    title: "Case Prompt",
+    kind: "ready",
+    body: PROMPT,
+    note: "Behavioral Case Question (spend 15 minutes on): Tell me about a time you adopted a teammate's opinion which was different from yours?",
+    infoBoxLabel: "Interviewer Guidance",
+    infoSections: [
+      {
+        label: "Case Overview [Interviewee-led]",
+        paragraphs: [
+          "Profitability case. Structure should be focused on Profitability, Company, Products, Value Chain, and Market.",
+          "Note: This case is designed to get the interviewee to think about profitability problems from a high level. For this case, math is not as important as the logic behind their thinking.",
+        ],
+      },
+      {
+        label: "Case Information",
+        groups: [
+          { heading: "Goal:", items: ["Find what's causing margin % decline", "Recommend a solution"] },
+          {
+            heading: "Business Model:",
+            items: ["We are a retailer. We buy products from manufacturers and sell them to end-consumers"],
+          },
+          { heading: "Frozen Food Gross Margin:", items: ["2018 = 27%"] },
+          { heading: "Competition:", items: ["Not a concern for this case"] },
+          { heading: "All Store Sales", items: ["Not a concern for this case"] },
+        ],
+      },
+      {
+        label: "Case Flow Guide",
+        lines: [
+          "Part 1: Top-Line Frozen Food Sales",
+          "Part 2: Frozen Category Sales",
+          "Part 3: Ice Cream Sales",
+          "Part 4: Potential Solutions / Risks (Brainstorming)",
+          "Part 5: Recommendation",
+        ],
+      },
+    ],
+  },
+  {
+    n: "02",
+    label: "Question 1: Top-Line Frozen Food Sales",
+    title: "Question 1",
+    kind: "qa",
+    qText:
+      "**Question 1: (After interviewee walks through structure and talks about revenues and costs, show Exhibit 1). What do you think is going on here?**",
+    extraCharts: [
+      {
+        kind: "combo",
+        title: "Exhibit 1. Frozen Food Sales",
+        titleBold: true,
+        titleSerif: true,
+        titleAlign: "center",
+        titleSize: 48,
+        axisBold: true,
+        serif: true,
+        categories: ["2015", "2016", "2017", "2018"],
+        lines: [
+          { name: "Revenues", color: "#b01b1b", width: 6, values: [370, 410, 460, 520] },
+          { name: "Gross Margin", color: "#4f4f57", width: 6, values: [140, 140, 140, 140] },
+        ],
+        yMin: 0,
+        yMax: 600,
+        yStep: 100,
+        yTickLabels: ["$-", "$100", "$200", "$300", "$400", "$500", "$600"],
+        axisStyle: "none",
+        lightBaseline: true,
+        yGrid: true,
+        xPlacement: "between",
+        legend: "bottom",
+        fontScale: 1.3,
+        plotAspect: 0.4,
+      },
+    ],
+    guidanceLabel: "Approach / Analysis",
+    guidanceLines: [
+      "**Key insights**",
+      "  Steady sales growth - over 10% YoY - therefore not a revenue issue",
+      "  High COGS growth - almost double sales growth YoY - therefore definitely a cost issue",
+      "  Gross Margin decreased from 38% to 27%",
+      "**Note:**",
+      "  This should be a very quick slide",
+      "  Interviewee should estimate the numbers and quickly determine this is a cost issue.",
+    ],
+  },
+  {
+    n: "03",
+    label: "Question 2: Frozen Category Sales",
+    title: "Question 2",
+    kind: "qa",
+    qText:
+      "**Question 2: (After interviewee identifies the cost issue and asks for category or product sales, show Exhibit 2). We were able to pick up some top line data on category sales within our frozen food isles. What insights can you give me?**",
+    dataTableTitle: "Exhibit 2. Frozen Food Category Sales",
+    dataTableSerif: true,
+    dataTableTitleBig: true,
+    dataTableFootnote: "Note: Numbers in Millions",
+    dataTableCols: "1.5fr 1fr 1fr 1fr 1fr 1fr",
+    dataTableHeaders: [HD("", "center", "tbl"), HD(""), HD("2015", "center", "tbl"), HD("2016", "center", "tbl"), HD("2017", "center", "tbl"), HD("2018", "center", "tblr")],
+    dataTableRows: [
+      ...catRows("Pizza", ["70", "80", "100", "110"], ["35", "40", "50", "55"]),
+      ...catRows("Novelties", ["70", "80", "90", "100"], ["56", "64", "72", "80"]),
+      ...catRows("Ice Cream", ["130", "150", "160", "180"], ["59", "86", "113", "145"]),
+      ...catRows("Other", ["100", "100", "110", "130"], ["80", "80", "85", "100"]),
+      { cells: [0, 1, 2, 3, 4, 5].map((j) => cell("", "center", 400, bd(j, true))) },
+      ...catRows("Total Frozen Food", ["370", "410", "460", "520"], ["230", "270", "320", "380"]),
+    ],
+    guidanceLabel: "Approach / Analysis",
+    guidanceLines: [
+      "**Key insights**",
+      "  Pizza is not the issue - no change in margin over the past 4 years (50% margin each year)",
+      "  Novelties are not the issue - no change in margin over the past 4 years (20% margin each year)",
+      "  Other is not the issue - increase in margin over the past 4 years (20% to 23%)",
+      "  Ice Cream is the issue - margin declined from over 50% to under 20% over the past 4 years",
+      "**Note:**",
+      "  Since we identified this is a cost issue and not a revenue issue, the interviewee should focus on with gross margin or changes in COGS for each of the categories. For this case, its best to focus on margin.",
+      "  Interviewee should not assume that increases in revenue = increases in units sold",
+      "**(Optional) Math Exercise: If interviewee does not talk about margins, ask him/her to estimate gross margins for each category in 2015 and 2018.**",
+      "  Answers above",
+    ],
+  },
+  {
+    n: "04",
+    label: "Question 3 and 4: Ice Cream Sales / Consumer Insights",
+    title: "Question 3",
+    kind: "qa",
+    qText:
+      "**Question 3: (After interviewee identifies ice cream's decreasing margin and asks for any ice cream product information, show Exhibits 3&4). We don't have brand cost information at this time, but we have some sales information on the types of ice cream products we sell. What do you take away from this information?**",
+    extraCharts: [
+      {
+        kind: "combo",
+        title: "Exhibit 3. Ice Cream\nSales",
+        serif: true,
+        titleBold: true,
+        titleSerif: true,
+        titleAlign: "center",
+        titleSize: 30,
+        categories: ["2015", "2016", "2017", "2018"],
+        stack: {
+          percent: true,
+          widthRatio: 0.55,
+          labelBold: true,
+          labelSize: 14,
+          series: [
+            { name: "Other Brands", color: "#b01b1b", values: [39, 45, 48, 54], labels: ["$39", "$45", "$48", "$54"] },
+            { name: "Private Label Generic", color: "#4a4a52", values: [65, 60, 48, 36], labels: ["$65", "$60", "$48", "$36"] },
+            { name: "Premium Organic Brands", color: "#a59f92", values: [26, 45, 64, 90], labels: ["$26", "$45", "$64", "$90"] },
+          ],
+        },
+        lines: [{ name: "Total Sales ($ Millions)", color: "#f19a9e", width: 5, onAxis2: true, values: [130, 150, 160, 180] }],
+        yMin: 0,
+        yMax: 100,
+        yStep: 10,
+        yTickSuffix: "%",
+        yLabel: "Brand Breakdown (%)",
+        y2Min: 0,
+        y2Max: 200,
+        y2Step: 20,
+        y2TickPrefix: "$",
+        y2Label: "Total Ice Cream Sales ($ Millions)",
+        y2TickLabels: ["$-", "$20", "$40", "$60", "$80", "$100", "$120", "$140", "$160", "$180", "$200"],
+        axisBold: true,
+        axisTitleBold: true,
+        axisStyle: "none",
+        lightBaseline: true,
+        legend: "bottom",
+        fontScale: 1.25,
+        plotAspect: 0.46,
+      },
+      {
+        kind: "combo",
+        title: "Exhibit 4. Ice Cream\nUnits Sold",
+        serif: true,
+        titleBold: true,
+        titleSerif: true,
+        titleAlign: "center",
+        titleSize: 30,
+        categories: ["2015", "2016", "2017", "2018"],
+        stack: {
+          percent: true,
+          widthRatio: 0.55,
+          labelBold: true,
+          labelSize: 14,
+          series: [
+            { name: "Other Brands", color: "#b01b1b", values: [10, 11, 12, 13], labels: ["10", "11", "12", "13"] },
+            { name: "Private Label Generic", color: "#4a4a52", values: [32, 28, 22, 16], labels: ["32", "28", "22", "16"] },
+            { name: "Premium Organic Brands", color: "#a59f92", values: [4, 6, 8, 10], labels: ["4", "6", "8", "10"], labelBold: false },
+          ],
+        },
+        lines: [{ name: "Total Sales (Million Units)", color: "#f19a9e", width: 5, onAxis2: true, values: [46, 45, 42, 39] }],
+        yMin: 0,
+        yMax: 100,
+        yStep: 10,
+        yTickSuffix: "%",
+        yLabel: "Brand Breakdown (%)",
+        y2Min: 34,
+        y2Max: 48,
+        y2Step: 2,
+        y2TickPrefix: "",
+        y2Label: "Total Ice Cream Units Sold (Millions of\nPints)",
+        axisBold: true,
+        axisTitleBold: true,
+        axisStyle: "none",
+        lightBaseline: true,
+        legend: "bottom",
+        fontScale: 1.25,
+        plotAspect: 0.46,
+      },
+    ],
+    guidanceLabel: "Approach / Analysis",
+    guidanceLines: [
+      "**Key insights**",
+      "  Premium Organic Ice Cream brands increased from 20% to 50% of ice cream revenues, with unit sales over doubling over the past 4 years.",
+      "  Croger's Private Label Generic Ice Cream declined from 50% to 20% of ice cream revenues, with unit sold cut in half over the past 4 years.",
+      "  Other Ice Cream brands remained static at 30% of ice cream revenues.",
+      "  Since 2015, overall ice cream revenues increased by almost 40%, while the number of units sold decreased by 15%.",
+      "  Therefore, low margin Premium Organic brands are cannibalizing Croger's high margin Private Label brands",
+      "**Note:**",
+      "  Private Label usually has a higher gross margin than Premium brands.",
+      "**Question 4: What consumer insights do you suspect from this?**",
+      "  Overall ice cream unit sales are decreasing",
+      "  Premium organic brands are selling more than generic brands for this product",
+      "  People are willing to pay more for premium quality brands",
+    ],
+  },
+  {
+    n: "05",
+    label: "Question 5 and 6: Potential Solutions / Recommendation",
+    title: "Question 5",
+    kind: "qa",
+    qText:
+      "**Question 5: (After interviewee has identified low margin Premium Organic brands are cannibalizing the high margin Private Label brands). What are some potential solutions for Croger to increase its gross margin and associated risks?**",
+    guidanceLabel: "Approach / Analysis",
+    guidanceLines: [
+      "**Here are a few options:**",
+      "Produce a private label ice cream to directly compete with Premium brands' ice creams",
+      "  Risks: could be costly to add or transform operations, might not have capital",
+      "Change placement of ice cream products within Frozen isles",
+      "  Risks: Premium brands might pull out of store, might reduce overall ice cream sales further",
+      "Run promotions on Private Label ice cream",
+      "  Risks might not drive sales, could be costly",
+      "Do customer research within a few stores to understand how to cross sell private label ice cream with other products and then test pilot marketing campaign in a specific location",
+      "  Risks: costly to implement, customer adoption might not work",
+      "Markup Premium brands further to generate higher margins",
+      "  Risks: might reduce sales of Premium brand ice creams, Premium brands might not allow it",
+      "**Question 6: CEO just walked in. What's your recommendation?**",
+      "**Note:** Interviewee should relate all key insights from the exhibits to the recommendation",
+    ],
+  },
+];
