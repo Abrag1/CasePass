@@ -38,7 +38,15 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
   const yTickW = Math.max(...ticks.map((t, i) => tickText(t, i).length)) * 9 * fs;
   const tickM = Math.max(48, yTickW + 20); // room for tick texts left of each plot
   const titleM = data.yLabel ? 28 * fs : 0;
-  const rightM = on ? 44 : 24;
+  const hasY2 = data.y2Max != null;
+  const y2Min = data.y2Min ?? 0;
+  const y2Max = data.y2Max ?? 1;
+  const y2Step = data.y2Step ?? (y2Max - y2Min) / 5;
+  const ticks2: number[] = [];
+  if (hasY2) for (let t = y2Min; t <= y2Max + 1e-9; t += y2Step) ticks2.push(Math.round(t * 1e6) / 1e6);
+  const tick2Text = (t: number) => `${data.y2TickPrefix ?? ""}${t}${data.y2TickSuffix ?? ""}`;
+  const y2TickW = hasY2 ? Math.max(...ticks2.map((t) => tick2Text(t).length)) * 9 * fs : 0;
+  const rightM = hasY2 ? y2TickW + 26 : on ? 44 : 24;
   const panelGap = multi ? 36 : 0;
   const plotW = (W - titleM - rightM - panels.length * tickM - (panels.length - 1) * panelGap) / panels.length;
   const plotH = data.plotAspect ? Math.round(W * data.plotAspect) : 340;
@@ -48,6 +56,8 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
   const top = titleH + 20;
   const base = top + plotH;
   const y = (v: number) => base - ((v - yMin) / (yMax - yMin)) * plotH;
+  const yOn2 = (v: number) => base - ((v - y2Min) / (y2Max - y2Min)) * plotH;
+  const yOf = (l: ComboLine) => (l.onAxis2 && hasY2 ? yOn2 : y);
   const firstX0 = titleM + tickM;
 
   // X labels (shared height across panels)
@@ -70,6 +80,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
     for (const l of p.lines ?? []) if (!entries.some((e) => e.name === l.name)) entries.push({ name: l.name, color: l.color, line: l });
   }
   const legendPos = data.legend ?? "bottom";
+  const insideLegend = legendPos === "inside";
   const showLegend = legendPos !== "none" && entries.some((s) => s.name);
   const legend = showLegend ? (
     <div
@@ -85,6 +96,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
         color: ink.text,
         marginTop: legendPos === "bottom" ? 10 : 0,
         marginBottom: legendPos === "topRight" ? 8 : 0,
+        ...(data.legendBox ? { border: "1px solid #bfbfbf", padding: "6px 12px", background: dark ? "#262c28" : "#fff" } : {}),
         paddingLeft: legendPos === "bottom" && multi ? `${(firstX0 / W) * 100}%` : 0,
       }}
     >
@@ -115,7 +127,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
     const cx = (i: number) => (on ? x0 + i * slot : x0 + (i + 0.5) * slot);
     const px = (i: number) => (on ? x0 + i * slot : x0 + (i + 0.5) * slot);
     const labLines = p.categories.map((c) => c.split("\n"));
-    const barW = p.bars ? Math.min(60, slot * 0.6) : 0;
+    const barW = p.bars ? (p.bars.widthRatio ? slot * p.bars.widthRatio : Math.min(60, slot * 0.6)) : 0;
     return (
       <g key={`p${pi}`}>
         {data.yGrid && ticks.slice(noAxis ? 0 : 1).map((t, i) => <line key={`g${i}`} x1={x0} x2={x0 + plotW} y1={y(t)} y2={y(t)} stroke={noAxis && !data.lightBaseline && t === yMin ? "#c8c8c8" : ink.grid} strokeWidth={noAxis && !data.lightBaseline && t === yMin ? 2 : 1.2} />)}
@@ -136,6 +148,19 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
             </text>
           </g>
         ))}
+        {hasY2 && (
+          <g>
+            <line x1={x0 + plotW} x2={x0 + plotW} y1={y(yMax)} y2={base} stroke={ink.axis} strokeWidth={1.2} />
+            {ticks2.map((t, i) => (
+              <g key={`t2${i}`}>
+                <line x1={x0 + plotW} x2={x0 + plotW + 5} y1={yOn2(t)} y2={yOn2(t)} stroke={ink.axis} strokeWidth={1.2} />
+                <text x={x0 + plotW + 10} y={yOn2(t)} textAnchor="start" dominantBaseline="middle" fontSize={14 * fs} fill={ink.text}>
+                  {tick2Text(t)}
+                </text>
+              </g>
+            ))}
+          </g>
+        )}
         {/* category ticks and labels */}
         {p.categories.map((c, i) => {
           const x = cx(i);
@@ -197,8 +222,8 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
         )}
         {p.bars?.valueLabels &&
           p.bars.values.map((v, i) => (
-            <text key={`vl${i}`} x={cx(i)} y={(() => { const t = p.bars!.ticks?.[i]; return (t != null && t >= v && t - v <= (yMax - yMin) * 0.05 ? y(t) : y(v)) - 8; })()} textAnchor="middle" fontSize={14} fill={ink.text}>
-              {v}
+            <text key={`vl${i}`} x={cx(i)} y={(() => { const t = p.bars!.ticks?.[i]; return (t != null && t >= v && t - v <= (yMax - yMin) * 0.05 ? y(t) : y(v)) - 8; })()} textAnchor="middle" fontSize={14 * fs} fill={ink.text}>
+              {v}{p.bars!.valueSuffix ?? ""}
             </text>
           ))}
         {/* lines */}
@@ -209,7 +234,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
             if (v == null) {
               if (cur) segs.push(cur);
               cur = "";
-            } else cur += `${cur ? " L" : "M"} ${cx(i)} ${y(v)}`;
+            } else cur += `${cur ? " L" : "M"} ${cx(i)} ${yOf(l)(v)}`;
           });
           if (cur) segs.push(cur);
           return (
@@ -217,10 +242,41 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
               {segs.map((d, i) => (
                 <path key={i} d={d} fill="none" stroke={l.color} strokeWidth={l.width ?? 3} strokeLinejoin="round" strokeLinecap="round" strokeDasharray={l.dashed ? "8 5" : undefined} />
               ))}
-              {l.marker && l.values.map((v, i) => (v == null ? null : <Marker key={i} kind={l.marker!} x={cx(i)} y={y(v)} size={l.markerSize ?? 9} fill={l.markerColor ?? l.color} stroke={l.color} />))}
+              {l.valueLabels &&
+              l.values.map((v, i) => {
+                if (v == null) return null;
+                const below = l.labelPos?.[i] === "below";
+                return (
+                  <text key={`vl${i}`} x={cx(i)} y={yOf(l)(v) + (below ? 22 * fs : -11)} textAnchor="middle" fontSize={15 * fs} fill={l.labelColors?.[i] ?? l.labelColor ?? "#595959"}>
+                    {v}
+                    {l.valueSuffix ?? ""}
+                  </text>
+                );
+              })}
+            {l.marker && l.values.map((v, i) => (v == null ? null : <Marker key={i} kind={l.marker!} x={cx(i)} y={yOf(l)(v)} size={l.markerSize ?? 9} fill={l.markerColor ?? l.color} stroke={l.color} />))}
             </g>
           );
         })}
+        {insideLegend && pi === panels.length - 1 && showLegend && (
+          <g>
+            <rect x={x0 + plotW - 126} y={top + 4} width={118} height={entries.length * 20 + 8} fill={dark ? "#262c20" : "#fff"} stroke={data.legendBox ? "#bfbfbf" : "none"} strokeWidth={1.2} />
+            {entries.map((e, i) => {
+              const ly = top + 4 + (i + 0.5) * 20 + 6;
+              return (
+                <g key={`il${i}`}>
+                  {e.line ? (
+                    <line x1={x0 + plotW - 116} x2={x0 + plotW - 92} y1={ly} y2={ly} stroke={e.color} strokeWidth={Math.min(e.line.width ?? 3, 4)} />
+                  ) : (
+                    <rect x={x0 + plotW - 116} y={ly - 4} width={22} height={8} fill={e.color} />
+                  )}
+                  <text x={x0 + plotW - 87} y={ly} dominantBaseline="middle" fontSize={12} fill={ink.text}>
+                    {e.name}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+        )}
         {/* free text */}
         {p.texts?.map((t, i) => (
           <text key={`x${i}`} x={px(t.x)} y={y(t.y)} textAnchor={t.anchor ?? "middle"} fontSize={t.size ?? 14} fontWeight={t.bold ? 700 : 400} fill={t.color ?? ink.text}>

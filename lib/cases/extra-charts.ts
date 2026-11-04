@@ -176,6 +176,12 @@ export interface ComboLine {
   markerColor?: string; // fill (default: the line colour)
   markerSize?: number; // marker size in SVG units (default 9)
   dashed?: boolean; // dashed line
+  onAxis2?: boolean; // plot against the secondary (right) Y axis
+  valueLabels?: boolean; // value printed at each point
+  valueSuffix?: string; // e.g. "%"
+  labelColor?: string; // default grey
+  labelColors?: (string | null)[]; // per-point colour (e.g. white over a column)
+  labelPos?: ("above" | "below" | null)[]; // per-point side (default above)
 }
 // Everything that belongs to one plot area. With `panels`, each panel is drawn side by side sharing the Y scale
 // of the chart; without, the same fields on the chart itself describe a single panel.
@@ -185,6 +191,8 @@ export interface ComboBars {
   values: number[];
   colors?: string[]; // per-bar colours (override `color`)
   valueLabels?: boolean; // value printed above each bar
+  valueSuffix?: string; // appended to each value label, e.g. "%"
+  widthRatio?: number; // column width as a share of the category slot (default: 60%, at most 60 units)
   ticks?: (number | null)[]; // short dashed tick across each bar at this level (e.g. last year's value)
   tickColor?: string; // default grey
   tickName?: string; // legend entry for the ticks
@@ -220,6 +228,12 @@ export interface ComboChartData extends Partial<ComboPanel> {
   yTickPrefix?: string;
   yTickSuffix?: string; // e.g. "%"
   yLabel?: string; // rotated axis title at the left
+  y2Min?: number; // secondary (right) Y axis; drawn when y2Max is set
+  y2Max?: number;
+  y2Step?: number;
+  y2TickPrefix?: string;
+  y2TickSuffix?: string;
+  legendBox?: boolean; // border around the legend
   axisTitleBold?: boolean;
   yGrid?: boolean; // light horizontal gridlines at every tick
   axisStyle?: "plain" | "arrows" | "none"; // arrowheads at the end of both axes / "none": no axis lines or tick marks (gridlines and tick texts only)
@@ -231,7 +245,7 @@ export interface ComboChartData extends Partial<ComboPanel> {
   plotAspect?: number; // plot height as a share of the chart width (default about 0.34)
   legendNoWrap?: boolean; // keep the legend on one row
   lightBaseline?: boolean; // with axisStyle "none": the zero line is a normal light gridline
-  legend?: "topRight" | "right" | "bottom" | "none"; // default "bottom" when series are named
+  legend?: "topRight" | "right" | "bottom" | "inside" | "none"; // "inside": top right corner of the plot; // default "bottom" when series are named
   footnote?: string;
   footnoteBold?: boolean; // serif bold footnote in the ink colour (as printed under some exhibits)
 }
