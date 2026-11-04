@@ -8,3 +8,5 @@ Minor: plot area slightly more compact than the source. Metadata is the converte
 Shared renderer additions (optional, off by default): axisBarYTickPrefix, axisBarTitleCentered, axisBarValueInk, axisBarAxisLines.
 
 Update 2026-11: the source Case Flow Guide panel was added to the case overview verbatim (audit of live Johnson cases).
+
+Update 2026-11: p.36 Exhibit Summary bullets moved from calcLines into a guidance group (same fix as the 2021-2022 version).
