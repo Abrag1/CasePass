@@ -32,13 +32,13 @@ function textOn(hex: string) {
   return lum < 0.55 ? "#ffffff" : "#222222";
 }
 
-export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boolean }) {
+function MarimekkoPlot({ data, dark }: { data: MarimekkoData; dark?: boolean }) {
   const ink = chartInk(dark);
   const cols = data.columns;
   const totalW = cols.reduce((s, c) => s + Math.max(0, c.width), 0);
   if (!cols.length || totalW <= 0) return null;
 
-  const left = 78;
+  const left = data.leftPad ?? 78;
   const plotW = 520;
   const plotH = 300;
   const right = left + plotW;
@@ -63,7 +63,8 @@ export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boo
   const above = !!data.labelsAbove;
 
   const topSub = !!data.topSub;
-  const top = above ? labelH + 8 : topSub ? 28 : 12;
+  const ptitle = data.panelTitle ? 24 : 0;
+  const top = (above ? labelH + 8 : topSub ? 28 : 12) + ptitle;
   const bottom = top + plotH;
   const y = (pct: number) => bottom - (pct / 100) * plotH;
   let below = 8; // running offset under the axis
@@ -78,141 +79,170 @@ export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boo
   if (!data.rowLabels) for (let t = 0; t <= 100.0001; t += yStep) ticks.push(t);
 
   const nSeries = data.series.length;
+  const boxes = !!data.labelBoxes;
 
   return (
-    <ExhibitFrame dark={dark} title={data.title}>
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "14px 22px" }}>
-        <svg
-          viewBox={`0 0 ${right + 14} ${height}`}
-          style={{ flex: "1 1 420px", minWidth: 0, maxWidth: 720, display: "block" }}
-          role="img"
-          aria-label={data.title ?? "Marimekko chart"}
-        >
-          {/* Y axis */}
-          {ticks.map((t) => (
-            <g key={t}>
-              {!data.noGrid && t > 0 && t < 100 && <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />}
-              <line x1={left - 4} x2={left} y1={y(t)} y2={y(t)} stroke={ink.axis} strokeWidth={1} />
-              <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
-                {t}
-                {suffix}
+    <svg
+      viewBox={`0 0 ${right + 14} ${height}`}
+      style={{ flex: data.panelTitle ? "1 1 260px" : "1 1 420px", minWidth: 0, maxWidth: 720, display: "block" }}
+      role="img"
+      aria-label={data.title ?? "Marimekko chart"}
+    >
+      {data.panelTitle && (
+        <text x={left + plotW / 2} y={16} textAnchor="middle" fontSize={15} fontWeight={700} fill={ink.text}>
+          {data.panelTitle}
+        </text>
+      )}
+      {/* Y axis */}
+      {ticks.map((t) => (
+        <g key={t}>
+          {!data.noGrid && t > 0 && t < 100 && <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />}
+          <line x1={left - 4} x2={left} y1={y(t)} y2={y(t)} stroke={ink.axis} strokeWidth={1} />
+          <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
+            {t}
+            {suffix}
+          </text>
+        </g>
+      ))}
+      {data.yLabel && (
+        <text transform={`translate(16 ${top + plotH / 2}) rotate(-90)`} textAnchor="middle" fontSize={14} fontWeight={700} fill={ink.text}>
+          {data.yLabel}
+        </text>
+      )}
+
+      {data.rowLabels &&
+        (() => {
+          const c0 = cols[0];
+          const sum0 = c0.slices.reduce((s, x) => s + Math.max(0, x.value), 0) || 1;
+          let cum0 = 0;
+          return data.rowLabels.map((rl, si) => {
+            const pct = (Math.max(0, c0.slices[si]?.value ?? 0) / sum0) * 100;
+            const mid = y(100 - cum0 - pct / 2);
+            cum0 += pct;
+            return (
+              <text key={`r${si}`} x={left - 8} y={mid} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
+                {rl}
               </text>
-            </g>
-          ))}
-          {data.yLabel && (
-            <text transform={`translate(16 ${top + plotH / 2}) rotate(-90)`} textAnchor="middle" fontSize={14} fontWeight={700} fill={ink.text}>
-              {data.yLabel}
+            );
+          });
+        })()}
+
+      {/* Columns */}
+      {cols.map((c, ci) => {
+        const g = geo[ci];
+        const sum = c.slices.reduce((s, x) => s + Math.max(0, x.value), 0) || 1;
+        let cum = 0;
+        return (
+          <g key={ci}>
+            {c.slices.slice(0, nSeries).map((sl, si) => {
+              const v = Math.max(0, sl.value);
+              if (v <= 0) return null;
+              const pct = (v / sum) * 100;
+              const y1 = y(100 - cum);
+              cum += pct;
+              const y2 = y(100 - cum);
+              const h = y2 - y1;
+              const color = data.series[si]?.color ?? "#cccccc";
+              const fs = data.plainSlices ? 13 : Math.min(14, h - 4, Math.max(9, g.w / 5));
+              const txt = `${Math.round(pct * 10) / 10}%`;
+              const fits = fs >= 9 && txt.length * fs * CHAR_W <= g.w - 4;
+              return (
+                <g key={si}>
+                  <rect x={g.x0} y={y1} width={g.w} height={h} fill={color} stroke={data.plainSlices ? "#ffffff" : frame} strokeWidth={0.8} />
+                  {showValues && fits && boxes && h < 18 && (
+                    <rect x={g.cx - (txt.length * fs * CHAR_W) / 2 - 3} y={(y1 + y2) / 2 - fs / 2 - 1} width={txt.length * fs * CHAR_W + 6} height={fs + 2} fill="#ffffff" />
+                  )}
+                  {showValues && fits && (
+                    <text x={g.cx} y={(y1 + y2) / 2} textAnchor="middle" dominantBaseline="middle" fontSize={fs} fontWeight={data.plainSlices ? 400 : 700} fill={boxes && h < 18 ? "#222222" : textOn(color)}>
+                      {txt}
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          </g>
+        );
+      })}
+      <line x1={left} x2={left} y1={top} y2={bottom} stroke={frame} strokeWidth={1.2} />
+      <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={frame} strokeWidth={1.2} />
+
+      {/* Column labels (above or under) */}
+      {cols.map((c, ci) => {
+        const f = labelFit[ci];
+        const baseY = above ? top - 8 - (f.lines.length - 1) * (f.size + 3) : labelsBelowY + f.size + 2;
+        return (
+          <text key={`l${ci}`} textAnchor="middle" fontSize={f.size} fontWeight={data.plainSlices ? 400 : 600} fill={ink.text}>
+            {f.lines.map((ln, li) => (
+              <tspan key={li} x={geo[ci].cx} y={baseY + li * (f.size + 3)}>
+                {ln}
+              </tspan>
+            ))}
+          </text>
+        );
+      })}
+
+      {topSub &&
+        cols.map((c, ci) =>
+          c.sub ? (
+            <text key={`t${ci}`} x={geo[ci].cx} y={top - 9} textAnchor="middle" fontSize={13} fill={ink.text}>
+              {c.sub}
+            </text>
+          ) : null,
+        )}
+
+      {/* Row of per-column notes (e.g. CAGR) */}
+      {hasSub && (
+        <g>
+          {data.subLabel && (
+            <text x={left - 8} y={subY + 17} textAnchor="end" fontSize={14} fontWeight={700} fill={ink.text}>
+              {data.subLabel}
             </text>
           )}
-
-          {data.rowLabels &&
-            (() => {
-              const c0 = cols[0];
-              const sum0 = c0.slices.reduce((s, x) => s + Math.max(0, x.value), 0) || 1;
-              let cum0 = 0;
-              return data.rowLabels.map((rl, si) => {
-                const pct = (Math.max(0, c0.slices[si]?.value ?? 0) / sum0) * 100;
-                const mid = y(100 - cum0 - pct / 2);
-                cum0 += pct;
-                return (
-                  <text key={`r${si}`} x={left - 8} y={mid} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
-                    {rl}
-                  </text>
-                );
-              });
-            })()}
-
-          {/* Columns */}
           {cols.map((c, ci) => {
-            const g = geo[ci];
-            const sum = c.slices.reduce((s, x) => s + Math.max(0, x.value), 0) || 1;
-            let cum = 0;
+            const f = subFit[ci];
+            if (!f) return null;
             return (
-              <g key={ci}>
-                {c.slices.slice(0, nSeries).map((sl, si) => {
-                  const v = Math.max(0, sl.value);
-                  if (v <= 0) return null;
-                  const pct = (v / sum) * 100;
-                  const y1 = y(100 - cum);
-                  cum += pct;
-                  const y2 = y(100 - cum);
-                  const h = y2 - y1;
-                  const color = data.series[si]?.color ?? "#cccccc";
-                  const fs = data.plainSlices ? 13 : Math.min(14, h - 4, Math.max(9, g.w / 5));
-                  const txt = `${Math.round(pct * 10) / 10}%`;
-                  const fits = fs >= 9 && txt.length * fs * CHAR_W <= g.w - 4;
-                  return (
-                    <g key={si}>
-                      <rect x={g.x0} y={y1} width={g.w} height={h} fill={color} stroke={data.plainSlices ? "#ffffff" : frame} strokeWidth={0.8} />
-                      {showValues && fits && (
-                        <text x={g.cx} y={(y1 + y2) / 2} textAnchor="middle" dominantBaseline="middle" fontSize={fs} fontWeight={data.plainSlices ? 400 : 700} fill={textOn(color)}>
-                          {txt}
-                        </text>
-                      )}
-                    </g>
-                  );
-                })}
-              </g>
-            );
-          })}
-          <line x1={left} x2={left} y1={top} y2={bottom} stroke={frame} strokeWidth={1.2} />
-          <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={frame} strokeWidth={1.2} />
-
-          {/* Column labels (above or under) */}
-          {cols.map((c, ci) => {
-            const f = labelFit[ci];
-            const baseY = above ? top - 8 - (f.lines.length - 1) * (f.size + 3) : labelsBelowY + f.size + 2;
-            return (
-              <text key={`l${ci}`} textAnchor="middle" fontSize={f.size} fontWeight={data.plainSlices ? 400 : 600} fill={ink.text}>
+              <text key={`s${ci}`} textAnchor="middle" fontSize={f.size} fill={ink.text}>
                 {f.lines.map((ln, li) => (
-                  <tspan key={li} x={geo[ci].cx} y={baseY + li * (f.size + 3)}>
+                  <tspan key={li} x={geo[ci].cx} y={subY + 17 + li * (f.size + 3)}>
                     {ln}
                   </tspan>
                 ))}
               </text>
             );
           })}
+        </g>
+      )}
 
-          {topSub &&
-            cols.map((c, ci) =>
-              c.sub ? (
-                <text key={`t${ci}`} x={geo[ci].cx} y={top - 9} textAnchor="middle" fontSize={13} fill={ink.text}>
-                  {c.sub}
-                </text>
-              ) : null,
-            )}
+      {data.xTitle && (
+        <text x={left + plotW / 2} y={xTitleY} textAnchor="middle" fontSize={15} fontWeight={700} fill={ink.text}>
+          {data.xTitle}
+        </text>
+      )}
+    </svg>
+  );
+}
 
-          {/* Row of per-column notes (e.g. CAGR) */}
-          {hasSub && (
-            <g>
-              {data.subLabel && (
-                <text x={left - 8} y={subY + 17} textAnchor="end" fontSize={14} fontWeight={700} fill={ink.text}>
-                  {data.subLabel}
-                </text>
-              )}
-              {cols.map((c, ci) => {
-                const f = subFit[ci];
-                if (!f) return null;
-                return (
-                  <text key={`s${ci}`} textAnchor="middle" fontSize={f.size} fill={ink.text}>
-                    {f.lines.map((ln, li) => (
-                      <tspan key={li} x={geo[ci].cx} y={subY + 17 + li * (f.size + 3)}>
-                        {ln}
-                      </tspan>
-                    ))}
-                  </text>
-                );
-              })}
-            </g>
-          )}
-
-          {data.xTitle && (
-            <text x={left + plotW / 2} y={xTitleY} textAnchor="middle" fontSize={15} fontWeight={700} fill={ink.text}>
-              {data.xTitle}
-            </text>
-          )}
-        </svg>
-
+export function MarimekkoChart({ data, dark }: { data: MarimekkoData; dark?: boolean }) {
+  const ink = chartInk(dark);
+  const frame = dark ? "#8a958d" : "#3a3f3b";
+  const frameTitle = data.titleCentered ? "centered-bold" : undefined;
+  if (data.panels?.length) {
+    return (
+      <ExhibitFrame dark={dark} title={data.title} titleStyle={frameTitle}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "center", gap: "14px 22px" }}>
+          {data.panels.map((p, i) => (
+            <MarimekkoPlot key={i} data={{ ...data, ...p, panels: undefined }} dark={dark} />
+          ))}
+        </div>
+        {data.footnote && <div style={{ fontSize: 12, color: ink.axis, marginTop: 12 }}>{data.footnote}</div>}
+      </ExhibitFrame>
+    );
+  }
+  return (
+    <ExhibitFrame dark={dark} title={data.title} titleStyle={frameTitle}>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: "14px 22px" }}>
+        <MarimekkoPlot data={data} dark={dark} />
         {data.series.length > 0 && !data.noLegend && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, flex: "0 0 auto", maxWidth: 200 }}>
             {data.series.map((s, i) => (

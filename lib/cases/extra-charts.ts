@@ -52,6 +52,12 @@ export interface MarimekkoData {
   topSub?: boolean; // draw each column's `sub` text above the column (labels stay under it)
   rowLabels?: string[]; // one label per series, left of the plot at the vertical middle of the first column's slice (replaces the Y ticks)
   noLegend?: boolean; // hide the legend (when the source has none)
+  panelTitle?: string; // bold title drawn above this plot (used by each entry of `panels`)
+  labelBoxes?: boolean; // value labels on slices thinner than 18px sit in a white box
+  titleCentered?: boolean; // frame title centred and bold
+  // Several plots in ONE frame, side by side. Each entry overrides the chart fields (columns, series, rowLabels, panelTitle...); the rest are shared.
+  panels?: Partial<Omit<MarimekkoData, "kind" | "panels">>[];
+  leftPad?: number; // width left of the plot in chart units (default 78); widen for long row labels
   plainSlices?: boolean; // white slice separators and regular-weight value labels instead of a dark outline and bold labels
 }
 
