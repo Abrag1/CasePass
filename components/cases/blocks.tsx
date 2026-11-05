@@ -670,7 +670,7 @@ const SERIF_FACE = 'Cambria, "Times New Roman", Times, serif';
 
 export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   if (!page.axisBarGroups || !page.axisBarSeries) return null;
-  const ink = chartInk(dark);
+  const ink = { ...chartInk(dark), bold: dark ? "#dbe3dd" : "#000000" };
   const yMax = page.axisBarYMax ?? 10;
   const yStep = page.axisBarYStep ?? 5;
   const left = 54;
@@ -686,7 +686,8 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   const m = page.axisBarSeries.length;
   const band = plotW / n;
   const barW = Math.min(34, (band * 0.7) / m);
-  const gap = 8;
+  const touching = !!page.axisBarTouching;
+  const gap = touching ? 0 : 8;
   const clusterW = m * barW + (m - 1) * gap;
   const rotX = page.axisBarRotateLabels ? 36 : 0;
   const topPad = page.axisBarInnerTitle ? 34 : 0;
@@ -696,8 +697,23 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
   const serifTitleH = serifTitle.length ? serifTitle.length * 25 + 14 : 0;
   return (
     <ExhibitFrame dark={dark} title={centeredTitle ? undefined : page.axisBarTitle}>
-      <svg viewBox={`0 0 520 ${330 + rotX + topPad + serifTitleH}`} style={{ width: "100%", maxWidth: 560, display: "block", margin: "0 auto", fontFamily: serif ? SERIF_FACE : undefined }}>
-        {serifTitle.map((ln, i) => (
+      <svg viewBox={`0 0 520 ${(touching ? 300 : 330) + rotX + topPad + serifTitleH}`} style={{ width: "100%", maxWidth: touching ? 680 : 560, display: "block", margin: "0 auto", fontFamily: serif ? SERIF_FACE : undefined }}>
+        {touching && serifTitle.map((ln, i) => {
+          const cut = i > 0 ? ln.indexOf(" (") : -1;
+          return (
+            <text key={`st${i}`} x={260} y={22 + i * 25} textAnchor="middle" fontSize={i === 0 ? 17 : 13} fontWeight={700} textDecoration={i === 0 ? "underline" : undefined} fill={ink.bold}>
+              {cut > 0 ? (
+                <>
+                  {ln.slice(0, cut)}
+                  <tspan fontWeight={400}>{ln.slice(cut)}</tspan>
+                </>
+              ) : (
+                ln
+              )}
+            </text>
+          );
+        })}
+        {!touching && serifTitle.map((ln, i) => (
           <text key={`st${i}`} x={(left + right) / 2} y={22 + i * 25} textAnchor="middle" fontSize={serif ? 21 : 19} fontWeight={serif ? 700 : 400} fill={ink.text}>
             {ln}
           </text>
@@ -711,14 +727,14 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
         {page.axisBarNoYAxis && <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={ink.axis} strokeWidth={1} />}
         {page.axisBarAxisLines && (
           <>
-            <line x1={left} x2={left} y1={top} y2={bottom} stroke={ink.axis} strokeWidth={1} />
-            <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={ink.axis} strokeWidth={1} />
+            <line x1={left} x2={left} y1={top} y2={bottom} stroke={touching ? ink.bold : ink.axis} strokeWidth={touching ? 1.5 : 1} />
+            <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={touching ? ink.bold : ink.axis} strokeWidth={touching ? 1.5 : 1} />
           </>
         )}
         {(page.axisBarNoYAxis ? [] : ticks).map((t) => (
           <g key={t}>
             {!page.axisBarNoGrid && <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />}
-            <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
+            <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={touching ? 15 : 13} fontWeight={touching ? 700 : undefined} fill={touching ? ink.bold : ink.axis}>
               {page.axisBarYTickPrefix ?? ""}{fmtTick(t)}{page.axisBarYTickSuffix ?? ""}
             </text>
           </g>
@@ -733,11 +749,11 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           return (
             <g key={gi}>
               {g.values.map((v, si) => (
-                <rect key={si} x={x0 + si * (barW + gap)} y={y(v)} width={barW} height={bottom - y(v)} fill={page.axisBarSeries![si].color} />
+                <rect key={si} x={x0 + si * (barW + gap)} y={y(v)} width={barW} height={bottom - y(v)} fill={page.axisBarSeries![si].color} stroke={touching ? "#000000" : undefined} strokeWidth={touching ? 0.8 : undefined} />
               ))}
               {page.axisBarValueLabels && page.axisBarLabelsAbove &&
                 g.values.map((v, si) => (
-                  <text key={`va${si}`} x={x0 + si * (barW + gap) + barW / 2} y={y(v) - 5} textAnchor="middle" fontSize={12} fill={page.axisBarValueInk ? ink.text : page.axisBarSeries![si].color === "#f4cccc" ? "#e6a8a8" : page.axisBarSeries![si].color}>
+                  <text key={`va${si}`} x={x0 + si * (barW + gap) + barW / 2} y={y(v) - 5} textAnchor="middle" fontSize={12} fontWeight={touching ? 700 : undefined} fill={page.axisBarValueInk ? ink.text : page.axisBarSeries![si].color === "#f4cccc" ? "#e6a8a8" : page.axisBarSeries![si].color}>
                     {fmtTick(v)}{page.axisBarYTickSuffix ?? ""}
                   </text>
                 ))}
@@ -747,7 +763,7 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
                     {fmtTick(v)}{page.axisBarYTickSuffix ?? ""}
                   </text>
                 ))}
-              <text x={left + band * gi + band / 2} y={bottom + 20} textAnchor={page.axisBarRotateLabels ? "end" : "middle"} transform={page.axisBarRotateLabels ? `rotate(-35 ${left + band * gi + band / 2} ${bottom + 20})` : undefined} fontSize={page.axisBarLabelsAbove ? 12 : 14} fill={ink.axis}>
+              <text x={left + band * gi + band / 2} y={bottom + 20} textAnchor={page.axisBarRotateLabels ? "end" : "middle"} transform={page.axisBarRotateLabels ? `rotate(-35 ${left + band * gi + band / 2} ${bottom + 20})` : undefined} fontSize={touching ? 12.5 : page.axisBarLabelsAbove ? 12 : 14} fontWeight={touching ? 700 : undefined} fill={touching ? ink.bold : ink.axis}>
                 {g.label.split("\n").map((ln, k) => (
                   <tspan key={k} x={left + band * gi + band / 2} dy={k === 0 ? 0 : 14}>
                     {ln}
@@ -763,8 +779,8 @@ export function AxisBars({ page, dark }: { page: CasePage; dark?: boolean }) {
           if (page.axisBarNoLegend) return null;
           return page.axisBarSeries.map((s, i) => (
             <g key={i} transform={page.axisBarLegendTopLeft ? `translate(${left + 10} ${34 + i * 20})` : legendRight ? `translate(${right + 12} ${120 + i * 22})` : `translate(${startX + i * itemW} ${308 + rotX})`}>
-              <rect width={10} height={10} y={-5} fill={s.color} />
-              <text x={16} dominantBaseline="middle" fontSize={14} fill={ink.axis}>
+              <rect width={touching ? 14 : 10} height={touching ? 14 : 10} y={touching ? -7 : -5} fill={s.color} stroke={touching ? "#000000" : undefined} strokeWidth={touching ? 1 : undefined} />
+              <text x={touching ? 20 : 16} dominantBaseline="middle" fontSize={14} fontWeight={touching ? 700 : undefined} fill={touching ? ink.bold : ink.axis}>
                 {s.name}
               </text>
             </g>

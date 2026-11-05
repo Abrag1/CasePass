@@ -493,6 +493,7 @@ export interface CasePage {
   axisBarValueInk?: boolean; // value labels above the bars in the ink colour instead of the series colour
   axisBarNoYAxis?: boolean; // hide the Y tick texts and axis; only a thin baseline under the bars
   axisBarAxisLines?: boolean; // thin Y-axis line and baseline under the bars
+  axisBarTouching?: boolean; // bars of a group touch and carry a thin black outline; value labels and tick texts bold black (off by default)
   axisBarSerif?: boolean; // serif face, bold centred title drawn in the chart (lines split on a newline), serif axis and legend text
   // Optional title style for the colBar* / axisStack* exhibits (default: small, left, plain)
   colBarTitleStyle?: ChartTitleStyle;

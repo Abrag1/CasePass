@@ -420,4 +420,15 @@ export interface BubbleData {
   legend?: { text: string; box: [number, number, number, number] }; // x, y, w, h of the bordered box
 }
 
-export type ExtraChart = BubbleData | StackColsData | MultiPieData | MarimekkoData | HBarsData | BellCurveData | FlowData | ComboChartData;
+// Stacked area chart (filled bands between categories). `series` are listed bottom first; values are each band's own
+// height (the stack is cumulated by the renderer). The legend lists the series in the same order, one per line.
+export interface StackAreaData {
+  kind: "stackArea";
+  title?: string; // bold, centred, underlined above the chart
+  categories: string[]; // X labels, evenly spaced from the Y axis to the right end
+  series: { name: string; color: string; values: number[] }[];
+  yMax: number;
+  yStep: number;
+}
+
+export type ExtraChart = StackAreaData | BubbleData | StackColsData | MultiPieData | MarimekkoData | HBarsData | BellCurveData | FlowData | ComboChartData;
