@@ -361,6 +361,13 @@ export interface StackColsData {
   frame?: boolean; // thin grey border around the whole chart area (default none)
   titleBold?: boolean; // title bold, underlined and centred over the panels (default plain, left)
   footnote?: string;
+  yTitle?: string; // rotated axis title at the left of the first panel
+  xTitle?: string; // bold axis title centred under the first panel's column labels
+  legendTitle?: string; // text above the "right" legend entries
+  legendAlignTop?: boolean; // "right" legend starts at the top of the plot instead of being vertically centred
+  zeroLabels?: boolean; // a zero-value segment with a label is drawn as a small filled box carrying the label at the top of the bar
+  topRows?: { label: string; cells: string[] }[]; // plain text rows above the plot: a row label at the left and one text aligned over each column of the first panel
+  sideTable?: { headers: string[]; rows: string[][]; colWidths: number[]; headerBg: string; headerFg: string; rowBgs: string[] }; // small table at the right, under the "right" legend (newline in a header splits lines)
 }
 
 export type ExtraChart = StackColsData | MultiPieData | MarimekkoData | HBarsData | BellCurveData | FlowData | ComboChartData;

@@ -7,7 +7,7 @@
 // handoff design system): Say-next (blue), Guidance (dashed), Calc (gray),
 // Answer (green). Keep their label casing/weight consistent.
 
-import { pageHasExhibit, type CalcTableData, type CasePage, type ChartTitleStyle, type InfoSection, type TreeNode } from "@/lib/cases/content";
+import { pageHasExhibit, type CalcSheet, type CalcTableData, type SheetTable, type CasePage, type ChartTitleStyle, type InfoSection, type TreeNode } from "@/lib/cases/content";
 import { Presentable, type ShareControl } from "@/components/interview/Presenter";
 import { ExhibitFrame, chartInk } from "@/components/cases/charts/chart-kit";
 import { ExtraCharts } from "@/components/cases/charts";
@@ -165,6 +165,51 @@ export function CalcTableBox({ note, table }: { note?: string; table: CalcTableD
           ));
         })}
       </div>
+    </div>
+  );
+}
+
+function SheetTableView({ t }: { t: SheetTable }) {
+  const cell = (c: { v: string; color?: string; bold?: boolean; align?: "left" | "center" }, k: string, head = false) => (
+    <div key={k} style={{ border: "1px solid #000", margin: "0 -1px -1px 0", padding: "3px 6px", fontSize: 13, textAlign: c.align ?? "center", color: c.color ?? "#000", fontWeight: c.bold || head ? 400 : 400, background: "#fff" }}>
+      {c.v}
+    </div>
+  );
+  return (
+    <div>
+      <div style={{ background: "#000", color: "#fff", textAlign: "center", fontSize: 13, padding: "3px 6px" }}>{t.title}</div>
+      <div style={{ display: "grid", gridTemplateColumns: t.cols }}>
+        {t.headers.map((h, i) => cell(h, `h${i}`, true))}
+        {t.rows.flatMap((r, ri) => r.map((c, ci) => cell(c, `${ri}-${ci}`)))}
+      </div>
+    </div>
+  );
+}
+
+// Spreadsheet-style working: tables side by side, then a table with the formulas to its right.
+export function CalcSheetBox({ sheet, label }: { sheet: CalcSheet; label?: string }) {
+  const line = (ln: string, i: number) => {
+    const sub = ln.startsWith("  ");
+    const top = ln.startsWith("- ");
+    return (
+      <div key={i} style={{ display: "flex", gap: 8, padding: "2px 0", paddingLeft: sub ? 22 : 0, fontSize: 13.5, color: "#1f2421" }}>
+        {(top || sub) && <span>{sub ? "–" : "•"}</span>}
+        <span>{top ? ln.slice(2) : ln.trim()}</span>
+      </div>
+    );
+  };
+  return (
+    <div style={{ background: "#fafbf9", border: "1px solid #e6e7e3", borderRadius: 10, padding: "16px 18px", marginBottom: 14, overflowX: "auto" }}>
+      <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#8a8f8a", fontWeight: 700, marginBottom: 12 }}>{label ?? "Analysis"}</div>
+      <div style={{ display: "flex", gap: 24, alignItems: "flex-start", minWidth: 560 }}>
+        <div style={{ flex: 3 }}><SheetTableView t={sheet.top[0]} /></div>
+        {sheet.top[1] && <div style={{ flex: 1 }}><SheetTableView t={sheet.top[1]} /></div>}
+      </div>
+      <div style={{ display: "flex", gap: 24, alignItems: "flex-start", marginTop: 18, minWidth: 560 }}>
+        <div style={{ flex: 1 }}><SheetTableView t={sheet.bottom} /></div>
+        <div style={{ flex: 2.4 }}>{sheet.bottomLines.map(line)}</div>
+      </div>
+      {sheet.footerLines && <div style={{ marginTop: 18 }}>{sheet.footerLines.map(line)}</div>}
     </div>
   );
 }
@@ -1824,6 +1869,11 @@ function InterviewerBlocks({
       {page.guidanceLines && (
         <PresentWrap presentable={presentable} title={page.title} label={page.guidanceLabel ?? "Guidance"}>
           <GuidanceBox label={page.guidanceLabel} lines={page.guidanceLines} />
+        </PresentWrap>
+      )}
+      {page.calcSheet && (
+        <PresentWrap presentable={presentable} title={page.title} label={page.calcSheet.label ?? "Analysis"}>
+          <CalcSheetBox sheet={page.calcSheet} label={page.calcSheet.label} />
         </PresentWrap>
       )}
       {page.calcTable && page.calcAfterGuidance && (

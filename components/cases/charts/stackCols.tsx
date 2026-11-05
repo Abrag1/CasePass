@@ -45,7 +45,7 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   if (!data.panels.length) return null;
   const barW = data.barWidth ?? 170;
   const slot = barW + 44;
-  const leftM = 84;
+  const leftM = 84 + (data.yTitle ? 34 : 0);
   const gap = 36;
   const plotH = 330;
   const border = data.segBorder === false ? undefined : (data.segBorder ?? (dark ? "#0d100e" : "#111111"));
@@ -73,14 +73,19 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   const legRows = (data.legend ?? []).map((l) => l.name.split("\n"));
   const legTopH = legendTop ? legRows.reduce((s, r) => s + r.length * 19 + 8, 0) : 0;
   const legTopW = legendTop ? Math.max(...legRows.flat().map((l) => l.length * legFs * 0.52)) + 28 : 0;
-  const legRightW = legendRight ? Math.max(...legRows.flat().map((l) => l.length * legFs * 0.52)) + 50 : 0;
+  const st = data.sideTable;
+  const stW = st ? st.colWidths.reduce((a, b) => a + b, 0) : 0;
+  const legRightW = legendRight ? Math.max(Math.max(...legRows.flat().map((l) => l.length * legFs * 0.52)) + 50, stW + 30, data.legendTitle ? data.legendTitle.length * 17 * 0.55 + 30 : 0) : 0;
   const W = Math.max(panelsW + legRightW, legendTop ? titleW + legTopW + 24 : 0);
 
   const hasTitles = data.panels.some((p) => p.title);
   const pTitleH = hasTitles ? 46 : 0;
   const pSubH = Math.max(0, ...data.panels.map((p) => (p.subtitle ? p.subtitle.split("\n").length * 25 + 6 : 0)));
   const headerH = Math.max(titleH, legTopH);
-  const top = headerH + pTitleH + pSubH + 34; // 34: room for the total labels above the tallest column
+  const topRows = data.topRows ?? [];
+  const topRowHs = topRows.map((r) => Math.max(1, r.label.split("\n").length) * 24 + 16);
+  const topRowsH = topRowHs.reduce((a, b) => a + b, 0);
+  const top = headerH + topRowsH + pTitleH + pSubH + 34; // 34: room for the total labels above the tallest column
   const base = top + plotH;
 
   // X labels (wrapped to the slot width, shared height).
@@ -88,9 +93,16 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   const xLines = Math.max(1, ...xfit.flat().map((f) => f.lines.length));
   const xH = xLines * 24 + 14;
   let H = base + xH;
+  const xTitleY = H + 28;
+  if (data.xTitle) H += 40;
   const legBottomRows = legendBottom ? (data.legend ?? []) : [];
   const legBottomY = H + 6;
   if (legendBottom) H += 34;
+  const legRightTitleH = legendRight && data.legendTitle ? 34 : 0;
+  const legRightTotal = legRows.reduce((sum, r) => sum + r.length * 19 + 12, 0) + legRightTitleH;
+  const legRightY0 = data.legendAlignTop ? top : top + (plotH - legRightTotal) / 2;
+  const stY = legRightY0 + legRightTotal + 40;
+  if (st) H = Math.max(H, stY + 62 + st.rows.length * 46 + 8);
   H += 8;
 
   return (
@@ -130,24 +142,93 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
 
         {legendRight &&
           (() => {
-            const total = legRows.reduce((sum, r) => sum + r.length * 19 + 12, 0);
-            let yy = top + (plotH - total) / 2;
-            return (data.legend ?? []).map((l, i) => {
-              const rows = legRows[i];
-              const y0 = yy;
-              yy += rows.length * 19 + 12;
-              return (
-                <g key={i}>
-                  <rect x={panelsW + 24} y={y0 + 2} width={15} height={15} fill={l.color} stroke={border ?? ink.axis} strokeWidth={1} />
-                  {rows.map((r, k) => (
-                    <text key={k} x={panelsW + 46} y={y0 + 14 + k * 19} fontSize={legFs} fill={ink.text}>
-                      {r}
-                    </text>
-                  ))}
-                </g>
-              );
-            });
+            let yy = legRightY0 + legRightTitleH;
+            return (
+              <>
+                {data.legendTitle && (
+                  <text x={panelsW + 24} y={legRightY0 + 20} fontSize={17} fill={ink.text}>
+                    {data.legendTitle}
+                  </text>
+                )}
+                {(data.legend ?? []).map((l, i) => {
+                  const rows = legRows[i];
+                  const y0 = yy;
+                  yy += rows.length * 19 + 12;
+                  return (
+                    <g key={i}>
+                      <rect x={panelsW + 24} y={y0 + 2} width={15} height={15} fill={l.color} stroke={border ?? ink.axis} strokeWidth={1} />
+                      {rows.map((r, k) => (
+                        <text key={k} x={panelsW + 46} y={y0 + 14 + k * 19} fontSize={legFs} fill={ink.text}>
+                          {r}
+                        </text>
+                      ))}
+                    </g>
+                  );
+                })}
+              </>
+            );
           })()}
+
+        {st &&
+          (() => {
+            const x = panelsW + 24;
+            const colX0 = st.colWidths.map((_, i) => st.colWidths.slice(0, i).reduce((a, b) => a + b, 0));
+            return (
+              <g>
+                {st.headers.map((h, i) => (
+                  <g key={`h${i}`}>
+                    <rect x={x + colX0[i]} y={stY} width={st.colWidths[i]} height={62} fill={st.headerBg} stroke="#ffffff" strokeWidth={2} />
+                    {h.split("\n").map((ln, k, arr) => (
+                      <text key={k} x={x + colX0[i] + 10} y={stY + 31 + (k - (arr.length - 1) / 2) * 21 + 6} fontSize={18} fontWeight={700} fill={st.headerFg}>
+                        {ln}
+                      </text>
+                    ))}
+                  </g>
+                ))}
+                {st.rows.map((r, ri) =>
+                  r.map((v, ci) => (
+                    <g key={`${ri}-${ci}`}>
+                      <rect x={x + colX0[ci]} y={stY + 62 + ri * 46} width={st.colWidths[ci]} height={46} fill={st.rowBgs[ri % st.rowBgs.length]} stroke="#ffffff" strokeWidth={2} />
+                      <text x={x + colX0[ci] + 10} y={stY + 62 + ri * 46 + 29} fontSize={19} fill={ink.text}>
+                        {v}
+                      </text>
+                    </g>
+                  )),
+                )}
+              </g>
+            );
+          })()}
+
+        {topRows.map((r, ri) => {
+          const y0 = headerH + topRowHs.slice(0, ri).reduce((a, b) => a + b, 0);
+          const mid = y0 + topRowHs[ri] / 2;
+          const lab = r.label.split("\n");
+          return (
+            <g key={`tr${ri}`}>
+              {lab.map((ln, k) => (
+                <text key={k} x={4} y={mid + (k - (lab.length - 1) / 2) * 24 + 6} fontSize={18} fill={ink.text}>
+                  {ln}
+                </text>
+              ))}
+              {r.cells.map((v, ci) => (
+                <text key={ci} x={leftM + 22 + ci * slot + barW / 2} y={mid + 6} textAnchor="middle" fontSize={18} fill={ink.text}>
+                  {v}
+                </text>
+              ))}
+            </g>
+          );
+        })}
+
+        {data.yTitle && (
+          <text transform={`rotate(-90 20 ${top + plotH / 2})`} x={20} y={top + plotH / 2 + 7} textAnchor="middle" fontSize={21} fill={ink.text}>
+            {data.yTitle}
+          </text>
+        )}
+        {data.xTitle && (
+          <text x={leftM + (pw[0] - leftM - 20) / 2} y={xTitleY} textAnchor="middle" fontSize={20} fontWeight={700} fill={ink.text}>
+            {data.xTitle}
+          </text>
+        )}
 
         {data.panels.map((p, pi) => {
           const x0 = px[pi];
@@ -221,12 +302,21 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
                       const y2 = y(cum);
                       cum += sg.value;
                       const h = y2 - y1;
-                      const f = sg.label ? fit(sg.label, barW - 10, h - 3, 19, data.minLabelFont ?? 8) : null;
+                      const zeroBox = !!data.zeroLabels && sg.value === 0 && !!sg.label;
+                      const f = sg.label && !zeroBox ? fit(sg.label, barW - 10, h - 3, 19, data.minLabelFont ?? 8) : null;
                       const tc = sg.textColor ?? textOn(sg.color);
                       const lh = f ? f.fs * 1.15 : 0;
                       return (
                         <g key={si}>
                           <rect x={cx0} y={y1} width={barW} height={h} fill={sg.color} stroke={border} strokeWidth={border ? 1.6 : 0} />
+                          {zeroBox && (
+                            <>
+                              <rect x={cx0 + barW / 2 - 28} y={y1} width={56} height={22} fill={sg.color} />
+                              <text x={cx0 + barW / 2} y={y1 + 17} textAnchor="middle" fontSize={17} fill={sg.textColor ?? textOn(sg.color)}>
+                                {sg.label}
+                              </text>
+                            </>
+                          )}
                           {f && (
                             <text textAnchor="middle" fontSize={f.fs} fontWeight={data.boldLabels ? 700 : undefined} fill={tc}>
                               {f.lines.map((ln, li) => (

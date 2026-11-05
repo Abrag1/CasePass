@@ -315,6 +315,27 @@ export interface CalcTableData {
   rowStyles?: { bold?: boolean; indent?: number }[];
 }
 
+// Spreadsheet-style working (black title bar, boxed cells), used by `calcSheet`.
+export interface SheetCell {
+  v: string;
+  color?: string; // text colour, e.g. red negatives
+  bold?: boolean;
+  align?: "left" | "center";
+}
+export interface SheetTable {
+  title: string;
+  cols: string; // CSS grid-template-columns
+  headers: SheetCell[];
+  rows: SheetCell[][];
+}
+export interface CalcSheet {
+  label?: string;
+  top: SheetTable[]; // drawn side by side in one row
+  bottom: SheetTable; // drawn under them, with `bottomLines` to its right
+  bottomLines: string[]; // "- " = bullet, leading two spaces = sub-bullet, otherwise plain
+  footerLines?: string[]; // bullets under the tables
+}
+
 // Chart title drawn centred, bold, underlined and larger (as in some casebook charts).
 export type ChartTitleStyle = "centered-underlined" | "centered-bold"; // "centered-bold": centred bold black (no underline)
 
@@ -353,6 +374,7 @@ export interface CasePage {
   // final row as a total.
   // `title` replaces the "Calculation walkthrough" label; `headers` may be empty (no header row).
   calcTable?: CalcTableData;
+  calcSheet?: CalcSheet; // spreadsheet-style working shown after the guidance box
   calcAfterGuidance?: boolean; // draw `calcTable` after `guidanceLines` instead of before
   // Further tables shown after `calcTable`, in order (for slides that print several tables).
   calcTables?: CalcTableData[];
