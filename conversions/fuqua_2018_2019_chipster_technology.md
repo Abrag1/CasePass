@@ -1,0 +1,10 @@
+VERDICT: PASS
+
+# Chipster Technology (Duke Fuqua 2018-2019, pp. 112-121)
+
+Independent verifier: 0 CRITICAL, 0 MAJOR (its literal FAIL was only the script's MECHANICAL flag; orchestrator override below). Page range confirmed from the page images: the catalog/queue range 111-132 is wrong at both ends; p.111 is the previous case (Mapflix Nollywood recommendation) and pp.122-132 are the next case (Activist Action); the real case is pp.112-121. Five sections, none guidance-only. Exhibit #1 benchmark table and Exhibit #2 cost matrix (pp.115, 117) match cell for cell (header, alternating rows, title, footnote). Guidance verbatim and nested; behavioral questions in the prompt note; typos printed in the source ("what is are", "then its peers", "90 second") preserved.
+
+verify-case.mjs: 0 lint, 0 additions; MECHANICAL: FAIL on 53 omissions (61.2%), documented orchestrator override: every omission on pp.111 and 122-132 is another case's text (the queue page range is wrong); the cover (p.112) and behavioral questions (p.113) are carried in the prompt note and tags; exhibit-slide omissions on pp.116-118 are layout artefacts (text present). The only real omission is the p.121 "Evaluation Criteria" rubric (Average/Good/Excellent), dropped as furniture per SKILL.md section 5 (owner may want it kept as guidance in the Recommendation section). tsc and eslint clean.
+
+Source errors kept verbatim (verified as printed): p.118 "4 Hubs * 30M = 160M" (should be 120M); printed Emerging total 940M is itself inconsistent (the printed components sum to 830M, 790M with 120M hubs); the maths uses benchmark counts (4 hubs/11 satellites) rather than Chipster's 8/22; printed "$410M of Savings" not reproducible (about $933M using Chipster's counts); "50% of 10k in Mature market" copy-paste error in the Emerging line. Mature spend 480+100+160+330 = 1,070M is correct.
+Minor: the prompt note joins the two behavioral questions and adds a full stop after "life". case_type "Operations" and the tags are converter choices.
