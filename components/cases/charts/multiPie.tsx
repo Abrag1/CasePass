@@ -202,7 +202,7 @@ export function MultiPieChart({ data, dark }: { data: MultiPieData; dark?: boole
                 return (
                   <g key={ci}>
                     {titleLinesOf[ri * cols + ci].length > 0 && (
-                      <text textAnchor="middle" fontSize={titleFs} fontWeight={700} fill={ink.text} fontFamily={data.sliceNames ? SERIF : undefined}>
+                      <text textAnchor="middle" fontSize={data.plainTitles ? titleFs + 4 : titleFs} fontWeight={data.plainTitles ? 400 : 700} fill={data.plainTitles ? ink.axis : ink.text} fontFamily={data.sliceNames ? SERIF : undefined}>
                         {titleLinesOf[ri * cols + ci].map((ln, li) => (
                           <tspan key={li} x={cx} y={top + 14 + li * 19}>
                             {ln}

@@ -53,6 +53,7 @@ import * as johnson2122Toothpaste from "./johnson_2021_2022_toothpaste_manufactu
 import * as johnson2122WirelessCo from "./johnson_2021_2022_wireless_co";
 import * as fuquaShouldWeDropLonelyLodge from "./fuqua_2018_2019_should_we_drop_lonely_lodge";
 import * as fuquaMapflixNollywood from "./fuqua_2018_2019_mapflix_nollywood";
+import * as fuquaResistance from "./fuqua_2018_2019_resistance";
 // REGISTER-IMPORTS
 import * as fuquaHealthySpending from "./fuqua_2018_2019_healthy_spending";
 import * as fuquaChemicalImbalance from "./fuqua_2018_2019_chemical_imbalance";
@@ -169,6 +170,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnson2122WirelessCo,
   fuquaShouldWeDropLonelyLodge,
   fuquaMapflixNollywood,
+  fuquaResistance,
   // REGISTER-ENTRIES
   fuquaHealthySpending,
   fuquaChemicalImbalance,

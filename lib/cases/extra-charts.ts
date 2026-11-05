@@ -8,8 +8,14 @@ export interface ExtraSwatch {
 }
 
 // Several pies in one frame (a row, or a grid with row/column labels).
+export interface ExtraInfoBox {
+  title: string;
+  lines: string[]; // one bullet per entry
+}
+
 export interface MultiPieData {
   kind: "multiPie";
+  infoBox?: ExtraInfoBox; // grey "Additional information" box with bullets drawn under the chart
   title?: string;
   columns?: number; // pies per row (default: all in one row)
   colLabels?: string[];
@@ -19,6 +25,7 @@ export interface MultiPieData {
   // One label per row, drawn in the gap between the two pies of that row (a newline splits lines; the first line is bold).
   rowCenters?: string[];
   centerBox?: boolean; // draw each rowCenters entry inside a bordered box
+  plainTitles?: boolean; // pie titles in larger regular grey text instead of bold
   radius?: number; // pie radius in SVG units (default chosen from the layout)
   noRowDivider?: boolean; // no dashed line between rows of a grid
   sliceNames?: boolean; // print the slice name (e.g. "Yes") above its percentage, in a serif face
@@ -262,6 +269,8 @@ export interface ComboCluster {
   valueLabels?: boolean; // print "<valuePrefix><value with thousands separators>" inside the column top
   valuePrefix?: string;
   labelColor?: string; // default white
+  labelsAbove?: boolean; // print the value above the column in regular grey text instead of inside its top
+  valueSuffix?: string; // appended to the value label, e.g. "%"
 }
 export interface ComboPanel {
   clusters?: ComboCluster[];
@@ -289,6 +298,7 @@ export interface ComboPanel {
 }
 export interface ComboChartData extends Partial<ComboPanel> {
   kind: "combo";
+  infoBox?: ExtraInfoBox; // grey "Additional information" box with bullets drawn under the chart
   title?: string; // a newline splits lines
   titleBold?: boolean;
   titleUnderline?: boolean;
