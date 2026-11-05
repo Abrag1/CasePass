@@ -78,7 +78,7 @@ export function FlowChart({ data, dark }: { data: FlowData; dark?: boolean }) {
   for (const ar of data.arrows ?? []) arrows.push({ ...ar, points: ar.points.map(([x, y]) => [x * W, y * height] as [number, number]) });
   if (!nodes.length && !arrows.length) return null;
 
-  const resolve = (c: string | undefined, fallback: string) => (c === "bg" ? ink.sliceStroke : c ?? fallback);
+  const resolve = (c: string | undefined, fallback: string) => (c === "bg" ? ink.sliceStroke : c === "black" ? (dark ? ink.text : "#000000") : c ?? fallback);
 
   const renderNode = (nd: N, i: number) => {
     const shape = nd.shape ?? "box";
@@ -88,7 +88,7 @@ export function FlowChart({ data, dark }: { data: FlowData; dark?: boolean }) {
     const size0 = nd.size ?? 13;
     const stroke = resolve(nd.stroke, isTag ? "#729acb" : ink.axis);
     const sw = nd.strokeWidth ?? (isTag ? 3 : 1.5);
-    const textColor = nd.color ?? ink.text;
+    const textColor = resolve(nd.color, ink.text);
     const filter = nd.shadow ? `url(#fs${uid})` : undefined;
     const fillId = nd.fill && nd.fill2 ? `url(#g${uid}-${i})` : undefined;
     const fill = fillId ?? resolve(nd.fill, "none");
@@ -105,6 +105,35 @@ export function FlowChart({ data, dark }: { data: FlowData; dark?: boolean }) {
             </tspan>
           ))}
         </text>
+      );
+    }
+
+    if (shape === "icon") {
+      const col = resolve(nd.color, ink.text);
+      if (nd.icon === "truck")
+        return (
+          <svg key={i} x={nd.x} y={nd.y} width={nd.w} height={nd.h} viewBox="0 0 92 52" preserveAspectRatio="xMidYMid meet">
+            <path d="M0 2 H60 V40 H0 Z" fill={col} />
+            <path d="M0 15 H60 M0 28 H60" stroke={ink.sliceStroke} strokeWidth={2.5} />
+            <path d="M63 12 H77 L92 28 V40 H63 Z" fill={col} />
+            <path d="M69 17 H75 L84 28 H69 Z" fill={ink.sliceStroke} />
+            <circle cx={14} cy={42} r={9} fill={col} stroke={ink.sliceStroke} strokeWidth={2} />
+            <circle cx={14} cy={42} r={3.2} fill={ink.sliceStroke} />
+            <circle cx={74} cy={42} r={9} fill={col} stroke={ink.sliceStroke} strokeWidth={2} />
+            <circle cx={74} cy={42} r={3.2} fill={ink.sliceStroke} />
+          </svg>
+        );
+      return (
+        <svg key={i} x={nd.x} y={nd.y} width={nd.w} height={nd.h} viewBox="0 0 92 70" preserveAspectRatio="xMidYMid meet">
+          <rect x={0} y={62} width={46} height={8} rx={2} fill={col} />
+          <path d="M6 62 V48 Q6 42 11 38 L32 17 L44 28 L28 44 V62 Z" fill={col} />
+          <circle cx={22} cy={36} r={4} fill={ink.sliceStroke} />
+          <path d="M30 20 L50 8" stroke={col} strokeWidth={9} strokeLinecap="butt" />
+          <circle cx={50} cy={8} r={7} fill={col} />
+          <circle cx={50} cy={8} r={3} fill={ink.sliceStroke} />
+          <path d="M54 12 L72 26" stroke={col} strokeWidth={6} />
+          <path d="M66 22 L82 28 L90 28 M82 28 V46 H74" fill="none" stroke={col} strokeWidth={6} strokeLinejoin="miter" />
+        </svg>
       );
     }
 

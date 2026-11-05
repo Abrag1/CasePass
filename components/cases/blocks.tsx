@@ -1670,7 +1670,7 @@ function DataGrid({
                   fontWeight: c.w,
                   color: dark ? "#dbe3dd" : c.fg,
                   display: "flex",
-                  alignItems: "center",
+                  alignItems: c.top ? "flex-start" : "center",
                   gap: 10,
                   justifyContent: c.align === "center" ? "center" : c.align === "right" ? "flex-end" : "flex-start",
                 }}
@@ -1682,6 +1682,15 @@ function DataGrid({
                   <span style={{ display: "flex", justifyContent: "space-between", width: "100%", ...(c.splitPad ? { padding: c.splitPad } : { paddingRight: "26%" }) }}>
                     <span>$</span>
                     <span>{c.v.slice(1).trim()}</span>
+                  </span>
+                ) : c.bullets ? (
+                  <span style={{ display: "block" }}>
+                    {c.v.split("\n").map((ln, li) => (
+                      <span key={li} style={{ display: "flex", gap: 8, textAlign: "left" }}>
+                        <span>•</span>
+                        <span>{ln}</span>
+                      </span>
+                    ))}
                   </span>
                 ) : (
                   c.v

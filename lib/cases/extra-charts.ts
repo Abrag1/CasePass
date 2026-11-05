@@ -176,7 +176,9 @@ export interface FlowNode {
   h?: number;
   // box: rectangle; tag: small bordered label; text: free label (no frame);
   // blockArrow: wide bar of size w x h with an arrow head to its right (headLen / headH, canvas shares).
-  shape?: "box" | "tag" | "text" | "blockArrow";
+  // icon: a small pictogram drawn natively (see `icon`) inside the w x h area.
+  shape?: "box" | "tag" | "text" | "blockArrow" | "icon";
+  icon?: "robot" | "truck"; // with shape "icon": which pictogram (drawn in `color`, default ink)
   fill?: string; // "bg" = the exhibit background (used to cut gaps in a bar)
   fill2?: string; // with fill: vertical gradient from fill (top) to fill2 (bottom)
   stroke?: string;

@@ -105,6 +105,8 @@ export interface DataTableCell {
   rowSpan?: number; // cell spanning this many rows (rowspan); omit the covered cells from the following rows
   indent?: number; // left padding in px (off by default)
   span?: number; // cell spanning this many columns (colspan); omit the covered cells from the row (off by default)
+  bullets?: boolean; // each newline-separated line of `v` is a "•" bullet (off by default)
+  top?: boolean; // cell content aligned to the top instead of the middle (off by default)
   splitPad?: string; // CSS padding of the split "$" cell, e.g. "0 15% 0 20%" (default: right padding 26%)
 }
 export interface DataTableRow {
