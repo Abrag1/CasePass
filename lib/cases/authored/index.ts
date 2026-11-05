@@ -54,6 +54,7 @@ import * as johnson2122WirelessCo from "./johnson_2021_2022_wireless_co";
 import * as fuquaShouldWeDropLonelyLodge from "./fuqua_2018_2019_should_we_drop_lonely_lodge";
 import * as fuquaMapflixNollywood from "./fuqua_2018_2019_mapflix_nollywood";
 import * as fuquaResistance from "./fuqua_2018_2019_resistance";
+import * as fuquaSneakychat from "./fuqua_2018_2019_sneakychat";
 // REGISTER-IMPORTS
 import * as fuquaShiptechWrecked from "./fuqua_2018_2019_shiptech_wrecked";
 import * as fuquaRoyalHealthServices from "./fuqua_2018_2019_royal_health_services";
@@ -174,6 +175,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   fuquaShouldWeDropLonelyLodge,
   fuquaMapflixNollywood,
   fuquaResistance,
+  fuquaSneakychat,
   // REGISTER-ENTRIES
   fuquaShiptechWrecked,
   fuquaRoyalHealthServices,

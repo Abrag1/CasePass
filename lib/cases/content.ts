@@ -104,6 +104,7 @@ export interface DataTableCell {
   borderColor?: string; // colour of the `borders` lines (default black)
   rowSpan?: number; // cell spanning this many rows (rowspan); omit the covered cells from the following rows
   indent?: number; // left padding in px (off by default)
+  span?: number; // cell spanning this many columns (colspan); omit the covered cells from the row (off by default)
   splitPad?: string; // CSS padding of the split "$" cell, e.g. "0 15% 0 20%" (default: right padding 26%)
 }
 export interface DataTableRow {
@@ -331,6 +332,9 @@ export interface CalcTableData {
   colColors?: string[]; // plain: text colour per column, "" or missing = default (off by default)
   rulesAbove?: number[]; // plain: body rows with a black rule above
   boxRows?: [number, number]; // plain: black box around these body rows
+  headerSpans?: { col: number; span: number }[]; // plain: header cell spanning columns (covered header cells are skipped; off by default)
+  ruleSkipCols?: number[]; // plain: columns that get no `rulesAbove` rule (gap columns; off by default)
+  rightCols?: number[]; // plain: columns whose body cells are right-aligned (off by default)
   headerRule?: boolean; // plain: black rule under the header cells except the first
   // plain: cell lines starting "- " are bullets (lines split on newline)
 }

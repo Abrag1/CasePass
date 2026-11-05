@@ -135,10 +135,14 @@ function PlainCalcTable({ table }: { table: CalcTableData }) {
       </div>
       {table.subtitle && <div style={{ fontSize: 16, color: "#1f2421", marginBottom: 6 }}>{table.subtitle}</div>}
       <div style={{ display: "grid", gridTemplateColumns: cols, fontSize: 13.5, minWidth: 460, color: "#1f2421" }}>
-        {table.headers.map((h, i) => (
+        {table.headers.map((h, i) => {
+          const hs = table.headerSpans?.find((x) => x.col === i);
+          if (table.headerSpans?.some((x) => i > x.col && i < x.col + x.span)) return null;
+          return (
           <div
             key={i}
             style={{
+              ...(hs ? { gridColumn: `span ${hs.span}` } : {}),
               padding: "5px 8px",
               fontWeight: 700,
               textAlign: table.headerBg && !table.center ? "left" : "center",
@@ -150,7 +154,8 @@ function PlainCalcTable({ table }: { table: CalcTableData }) {
           >
             {h}
           </div>
-        ))}
+          );
+        })}
         {table.rows.map((row, ri) =>
           row.map((cell, ci) => {
             const sp = table.spans?.find((x) => x.row === ri && x.col === ci);
@@ -168,9 +173,9 @@ function PlainCalcTable({ table }: { table: CalcTableData }) {
                   fontWeight: table.boldRows?.includes(ri) || table.boldCols?.includes(ci) || sp?.bold ? 700 : 400,
                   color: table.colColors?.[ci],
                   ...(sp ? { gridColumn: `span ${sp.span}`, textDecoration: sp.underline ? "underline" : undefined } : {}),
-                  textAlign: table.center && !table.leftCols?.includes(ci) ? "center" : "left",
+                  textAlign: table.rightCols?.includes(ci) ? "right" : table.center && !table.leftCols?.includes(ci) ? "center" : "left",
                   ...(ci === 0 && table.rowStyles?.[ri]?.indent ? { paddingLeft: 8 + table.rowStyles[ri].indent! * 18 } : {}),
-                  borderTop: ruled ? K : undefined,
+                  borderTop: ruled && !table.ruleSkipCols?.includes(ci) ? K : undefined,
                   borderBottom: inBox && ri === box![1] ? K : undefined,
                   borderLeft: inBox && ci === 0 ? K : undefined,
                   borderRight: inBox && ci === last ? K : undefined,
@@ -1654,6 +1659,7 @@ function DataGrid({
                   borderTop: border,
                   ...bordersOf(c.borders, c.borderColor),
                   ...(c.rowSpan ? { gridRow: `span ${c.rowSpan}` } : {}),
+                  ...(c.span ? { gridColumn: `span ${c.span}` } : {}),
                   textAlign: c.align,
                   fontWeight: c.w,
                   color: dark ? "#dbe3dd" : c.fg,
