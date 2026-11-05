@@ -66,13 +66,13 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
   const plotW = data.plotWidth ?? 330;
   const texts = groups.map((g) => g.values.map((v, i) => g.valueTexts?.[i] ?? fmt(v)));
   const longestVal = Math.max(...texts.flat().map((t) => t.length), 1);
-  const valueRoom = Math.ceil(longestVal * fsValue * CHAR_W) + 14;
+  const valueRoom = data.stacked ? 14 : Math.ceil(longestVal * fsValue * CHAR_W) + 14;
   const W = labelW + plotW + valueRoom;
 
-  const barH = nSeries > 1 ? 22 : 30;
+  const barH = data.stacked ? (data.stackBarHeight ?? 34) : nSeries > 1 ? 22 : 30;
   const barGap = 3;
-  const clusterH = nSeries * barH + (nSeries - 1) * barGap;
-  const pad = 22;
+  const clusterH = data.stacked ? barH : nSeries * barH + (nSeries - 1) * barGap;
+  const pad = data.stacked ? (data.stackBandHeight ?? 84) - barH : 22;
   const lineH = fsLabel + 4;
   const bands = groups.map((_, gi) => Math.max(clusterH + pad, labelLines[gi].length * lineH + 14));
   const top = 8;
@@ -109,14 +109,14 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
         {/* Value axis: gridlines, ticks and labels */}
         {ticks.map((t) => (
           <g key={t}>
-            {data.grid && t > 0 && <line x1={x(t)} x2={x(t)} y1={top} y2={bottomOfBars} stroke={ink.grid} strokeWidth={1} />}
-            <line x1={x(t)} x2={x(t)} y1={bottomOfBars} y2={bottomOfBars + 4} stroke={ink.axis} strokeWidth={1} />
+            {data.grid && (t > 0 || data.stacked) && <line x1={x(t)} x2={x(t)} y1={top} y2={bottomOfBars} stroke={ink.grid} strokeWidth={1} />}
+            {!data.stacked && <line x1={x(t)} x2={x(t)} y1={bottomOfBars} y2={bottomOfBars + 4} stroke={ink.axis} strokeWidth={1} />}
             <text x={x(t)} y={bottomOfBars + 17} textAnchor="middle" fontSize={data.axisBold ? 10 : (data.tickFontSize ?? 12)} fontWeight={data.axisBold ? 700 : undefined} fill={data.axisBold ? ink.text : ink.axis}>
               {tickFmt(t)}
             </text>
           </g>
         ))}
-        {hasAxis && <line x1={labelW} x2={x(data.max)} y1={bottomOfBars} y2={bottomOfBars} stroke={frame} strokeWidth={1} />}
+        {hasAxis && !data.stacked && <line x1={labelW} x2={x(data.max)} y1={bottomOfBars} y2={bottomOfBars} stroke={frame} strokeWidth={1} />}
         {data.axisTitle && (
           <text x={data.axisTitleEnd ? x(data.max) : labelW + plotW / 2} y={bottomOfBars + axisH + 14} textAnchor={data.axisTitleEnd ? "end" : "middle"} fontSize={13} fontWeight={700} fill={ink.text}>
             {data.axisTitle}
@@ -141,7 +141,22 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
                   </tspan>
                 ))}
               </text>
-              {g.values.map((v, si) => {
+              {data.stacked
+                ? g.values.map((v, si) => {
+                    const color = g.colors?.[si] ?? swatches[si]?.color ?? "#777777";
+                    const start = g.values.slice(0, si).reduce((a, b) => a + b, 0);
+                    const x0 = x(start);
+                    const w = x(Math.min(start + v, data.max)) - x0; // a segment running past the axis maximum is cut at it
+                    return (
+                      <g key={si}>
+                        {w > 0.4 && <rect x={x0} y={y0} width={w} height={barH} fill={color} stroke={dark && isVeryDark(color) ? frame : "none"} strokeWidth={0.8} />}
+                        <text x={x0 + w / 2} y={y0 + barH / 2} textAnchor="middle" dominantBaseline="middle" fontSize={fsValue} fill={isLight(color) ? "#1f2421" : "#ffffff"}>
+                          {texts[gi][si]}
+                        </text>
+                      </g>
+                    );
+                  })
+                : g.values.map((v, si) => {
                 const color = g.colors?.[si] ?? swatches[si]?.color ?? "#777777";
                 const by = y0 + si * (barH + barGap);
                 const w = x(v) - labelW;

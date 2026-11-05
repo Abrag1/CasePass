@@ -1589,8 +1589,8 @@ function RowIcon({ name, dark }: { name: string; dark?: boolean }) {
 }
 
 // Harvey ball ("sundisc"): a circle filled clockwise from 12 o'clock by `fill` (0-1).
-function HarveyBall({ fill, dark, label }: { fill: number; dark?: boolean; label: string }) {
-  const c = dark ? "#dbe3dd" : "#1f2421";
+function HarveyBall({ fill, dark, label, color, track }: { fill: number; dark?: boolean; label: string; color?: string; track?: string }) {
+  const c = color ?? (dark ? "#dbe3dd" : "#1f2421");
   const r = 10;
   const a = fill * 2 * Math.PI;
   const x = 12 + r * Math.sin(a);
@@ -1598,7 +1598,7 @@ function HarveyBall({ fill, dark, label }: { fill: number; dark?: boolean; label
   const wedge = fill >= 1 ? undefined : `M12 12 L12 2 A${r} ${r} 0 ${fill > 0.5 ? 1 : 0} 1 ${x.toFixed(3)} ${y.toFixed(3)} Z`;
   return (
     <svg width={24} height={24} viewBox="0 0 24 24" role="img" aria-label={label} style={{ display: "block" }}>
-      <circle cx={12} cy={12} r={r} fill={fill >= 1 ? c : "none"} stroke={c} strokeWidth={1.4} />
+      <circle cx={12} cy={12} r={r} fill={fill >= 1 ? c : track ? (dark ? "#3a423d" : track) : "none"} stroke={track ? "none" : c} strokeWidth={1.4} />
       {wedge && <path d={wedge} fill={c} />}
     </svg>
   );
@@ -1677,7 +1677,7 @@ function DataGrid({
               >
                 {c.icon && <RowIcon name={c.icon} dark={dark} />}
                 {c.harvey !== undefined ? (
-                  <HarveyBall fill={c.harvey} dark={dark} label={c.v} />
+                  <HarveyBall fill={c.harvey} dark={dark} label={c.v} color={c.harveyColor} track={c.harveyTrack} />
                 ) : c.split && c.v.startsWith("$") ? (
                   <span style={{ display: "flex", justifyContent: "space-between", width: "100%", ...(c.splitPad ? { padding: c.splitPad } : { paddingRight: "26%" }) }}>
                     <span>$</span>
@@ -1818,11 +1818,11 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
         <>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "flex-start" }}>
             <div style={{ flex: `${page.exhibitColumns[0]} 1 320px`, minWidth: 0 }}>
-              <ExtraCharts charts={page.extraCharts.slice(0, 1)} dark={dark} />
+              <ExtraCharts charts={page.extraCharts.slice(0, page.exhibitLeftCharts ?? 1)} dark={dark} />
             </div>
             <div style={{ flex: `${page.exhibitColumns[1]} 1 280px`, minWidth: 0 }}>
               <DataTable page={page.exhibitMoreBelow ? { ...page, dataTableMore: undefined } : page} dark={dark} />
-              <ExtraCharts charts={page.extraCharts.slice(1)} dark={dark} />
+              <ExtraCharts charts={page.extraCharts.slice(page.exhibitLeftCharts ?? 1)} dark={dark} />
             </div>
           </div>
           {page.exhibitMoreBelow && page.dataTableMore?.[0] && (

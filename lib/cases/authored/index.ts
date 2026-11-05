@@ -58,6 +58,7 @@ import * as fuquaSneakychat from "./fuqua_2018_2019_sneakychat";
 import * as fuquaUtilityCo from "./fuqua_2018_2019_utility_co";
 import * as fuquaBornForBeauty from "./fuqua_2023_2024_born_for_beauty";
 import * as fuquaBumpersRUs from "./fuqua_2023_2024_bumpers_r_us";
+import * as fuquaCakeOrBreak from "./fuqua_2023_2024_cake_or_break";
 // REGISTER-IMPORTS
 import * as fuquaShiptechWrecked from "./fuqua_2018_2019_shiptech_wrecked";
 import * as fuquaRoyalHealthServices from "./fuqua_2018_2019_royal_health_services";
@@ -182,6 +183,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   fuquaUtilityCo,
   fuquaBornForBeauty,
   fuquaBumpersRUs,
+  fuquaCakeOrBreak,
   // REGISTER-ENTRIES
   fuquaShiptechWrecked,
   fuquaRoyalHealthServices,

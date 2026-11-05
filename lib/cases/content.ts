@@ -95,6 +95,8 @@ export interface DataTableCell {
   icon?: string;
   // Optional Harvey-ball fill, 0–1 (rendered instead of text)
   harvey?: number;
+  harveyColor?: string; // fill colour of the Harvey ball (default: theme ink)
+  harveyTrack?: string; // when set, the unfilled part is a solid disc in this colour (no outline); drawn dark in dark mode
   // Optional cell fill colour
   bg?: string;
   // Optional black cell borders, any of the letters t, r, b, l (e.g. "tl")
@@ -574,6 +576,7 @@ export interface CasePage {
   // Values are the flex ratios [left, right]. `exhibitTitle` is a plain large title above the exhibit.
   exhibitColumns?: [number, number];
   exhibitTitle?: string;
+  exhibitLeftCharts?: number; // with exhibitColumns: how many extra charts fill the left column (default 1)
   tablesBelowCharts?: boolean; // draw the data table(s) after the extra charts instead of before them
   exhibitMoreBelow?: boolean; // with exhibitColumns: only the main table goes in the right column; the first `dataTableMore` table is drawn full width below
 

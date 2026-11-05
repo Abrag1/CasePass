@@ -115,6 +115,10 @@ export interface HBarsData {
   axisTitleFontSize?: number; // two-panel layout: axis title size (regular weight)
   panelTitleFontSize?: number; // two-panel layout: panel title size
   noFrame?: boolean; // no bordered card or padding around the chart (for side-by-side panels)
+  // Stacked bars: the values of a group are segments of ONE bar (cumulated from the left), each labelled at its centre; no value-axis line or ticks, gridlines also at 0.
+  stacked?: boolean;
+  stackBarHeight?: number; // stacked bar height (default 34)
+  stackBandHeight?: number; // vertical space per group when stacked (default 84)
 }
 
 // Two or more normal-distribution curves with vertical markers and call-out boxes.
