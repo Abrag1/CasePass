@@ -321,6 +321,8 @@ export interface CalcTableData {
   headerBg?: string; // plain: header fill (white bold text)
   rowBg?: string[]; // plain: fill per body row
   boldRows?: number[]; // plain: whole rows in bold
+  boldCols?: number[]; // plain: whole columns in bold (off by default)
+  colColors?: string[]; // plain: text colour per column, "" or missing = default (off by default)
   rulesAbove?: number[]; // plain: body rows with a black rule above
   boxRows?: [number, number]; // plain: black box around these body rows
   headerRule?: boolean; // plain: black rule under the header cells except the first

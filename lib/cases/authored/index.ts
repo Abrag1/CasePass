@@ -55,6 +55,7 @@ import * as fuquaShouldWeDropLonelyLodge from "./fuqua_2018_2019_should_we_drop_
 import * as fuquaMapflixNollywood from "./fuqua_2018_2019_mapflix_nollywood";
 import * as fuquaResistance from "./fuqua_2018_2019_resistance";
 // REGISTER-IMPORTS
+import * as fuquaRoyalHealthServices from "./fuqua_2018_2019_royal_health_services";
 import * as fuquaHealthySpending from "./fuqua_2018_2019_healthy_spending";
 import * as fuquaChemicalImbalance from "./fuqua_2018_2019_chemical_imbalance";
 import * as fuquaChipsterTechnology from "./fuqua_2018_2019_chipster_technology";
@@ -172,6 +173,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   fuquaMapflixNollywood,
   fuquaResistance,
   // REGISTER-ENTRIES
+  fuquaRoyalHealthServices,
   fuquaHealthySpending,
   fuquaChemicalImbalance,
   fuquaChipsterTechnology,
