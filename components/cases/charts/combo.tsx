@@ -176,7 +176,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
     return (
       <g key={`p${pi}`}>
         {data.yGrid && ticks.slice(noAxis ? 0 : 1).map((t, i) => <line key={`g${i}`} x1={x0} x2={x0 + plotW} y1={y(t)} y2={y(t)} stroke={noAxis && !data.lightBaseline && t === yMin ? "#c8c8c8" : ink.grid} strokeWidth={noAxis && !data.lightBaseline && t === yMin ? 2 : 1.2} />)}
-        {noAxis && data.baselineOnly && !data.yGrid && <line x1={x0} x2={x0 + plotW} y1={base} y2={base} stroke="#c8c8c8" strokeWidth={1.4} />}
+        {noAxis && data.baselineOnly && !data.yGrid && <line x1={x0} x2={x0 + plotW} y1={base} y2={base} stroke={p.baselineColor ?? "#c8c8c8"} strokeWidth={1.4} />}
         {/* axes */}
         {!noAxis && <line x1={x0} x2={x0} y1={arrows ? top - 14 : y(yMax)} y2={base} stroke={ink.axis} strokeWidth={1.6} />}
         {!noAxis && <line x1={x0} x2={x0 + plotW + (arrows ? 14 : 0)} y1={base} y2={base} stroke={ink.axis} strokeWidth={1.6} />}
@@ -366,6 +366,32 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
               {p.bars!.valuePrefix ?? ""}{v}{p.bars!.valueSuffix ?? ""}
             </text>
           ))}
+        {p.bars && p.barBreaks && p.bars.values.map((_, i) => (
+          <g key={`bb${i}`}>
+            {[-7, 7].map((d) => <line key={d} x1={cx(i) - barW / 2 - 12} x2={cx(i) + barW / 2 + 12} y1={base - 22 + d + barW * 0.14} y2={base - 22 + d - barW * 0.14} stroke="#000" strokeWidth={2.2} />)}
+          </g>
+        ))}
+        {p.bars && p.topConnectors && p.bars.values.slice(0, -1).map((v, i) => (
+          <line key={`tc${i}`} x1={cx(i) + barW / 2} x2={cx(i + 1) - barW / 2} y1={y(v)} y2={y(p.bars!.values[i + 1])} stroke={p.topConnectors!.color ?? "#9a9a9a"} strokeWidth={p.topConnectors!.width ?? 0.8} />
+        ))}
+        {p.arrows?.map((a, i) => {
+          const x1 = px(a.from.x), y1 = y(a.from.y), x2 = px(a.to.x), y2 = y(a.to.y);
+          const ang = Math.atan2(y2 - y1, x2 - x1);
+          const hx = (k: number) => x2 - Math.cos(ang + k) * 22;
+          const hy = (k: number) => y2 - Math.sin(ang + k) * 22;
+          return (
+            <g key={`ar${i}`}>
+              <line x1={x1} y1={y1} x2={x2 - Math.cos(ang) * 12} y2={y2 - Math.sin(ang) * 12} stroke="#000" strokeWidth={5} />
+              <polygon points={`${x2},${y2} ${hx(0.4)},${hy(0.4)} ${hx(-0.4)},${hy(-0.4)}`} fill="#000" />
+              {a.label && (
+                <g>
+                  <ellipse cx={(x1 + x2) / 2} cy={(y1 + y2) / 2} rx={56} ry={28} fill="#fff" stroke="#000" strokeWidth={1.2} />
+                  <text x={(x1 + x2) / 2} y={(y1 + y2) / 2} textAnchor="middle" dominantBaseline="central" fontSize={32} fontWeight={700} fill="#000">{a.label}</text>
+                </g>
+              )}
+            </g>
+          );
+        })}
         {/* lines */}
         {p.lines?.map((l, li) => {
           const segs: string[] = [];
@@ -473,7 +499,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
           fontWeight={data.titleBold ? 700 : 400}
           fontFamily={data.titleSerif ? SERIF : font}
           textDecoration={data.titleUnderline ? "underline" : undefined}
-          fill={ink.text}
+          fill={data.titleColor ?? ink.text}
         >
           {l}
         </text>

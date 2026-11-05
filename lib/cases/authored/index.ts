@@ -52,6 +52,7 @@ import * as johnson2122SurgicalRobot from "./johnson_2021_2022_surgical_robot";
 import * as johnson2122Toothpaste from "./johnson_2021_2022_toothpaste_manufacturer";
 import * as johnson2122WirelessCo from "./johnson_2021_2022_wireless_co";
 // REGISTER-IMPORTS
+import * as fuquaHealthySpending from "./fuqua_2018_2019_healthy_spending";
 import * as fuquaChemicalImbalance from "./fuqua_2018_2019_chemical_imbalance";
 import * as fuquaChipsterTechnology from "./fuqua_2018_2019_chipster_technology";
 import * as fuquaCongosDrumming from "./fuqua_2018_2019_congo_s_drumming";
@@ -165,6 +166,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnson2122Toothpaste,
   johnson2122WirelessCo,
   // REGISTER-ENTRIES
+  fuquaHealthySpending,
   fuquaChemicalImbalance,
   fuquaChipsterTechnology,
   fuquaCongosDrumming,

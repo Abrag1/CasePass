@@ -282,6 +282,10 @@ export interface ComboPanel {
   // Boxed text with an optional leader line. `x` (category index, fractional) and `y` (axis value) place the box's
   // top-left corner; `w` is its width in SVG units; `pointer` is the data coordinate the leader line points to.
   callouts?: { text: string; x: number; y: number; w: number; pointer?: { x: number; y: number }; from?: number; size?: number }[]; // `from`: where the leader leaves the box bottom, 0 (left) to 1 (right); default nearest the pointer
+  barBreaks?: boolean; // two short slanted lines across each bar just above the axis (a truncated-axis break mark)
+  topConnectors?: { color?: string; width?: number }; // thin line from each bar's top-right corner to the next bar's top-left corner
+  arrows?: { from: { x: number; y: number }; to: { x: number; y: number }; label?: string }[]; // black arrow with an optional oval label on its line (data coordinates)
+  baselineColor?: string; // colour of the baseline drawn with axisStyle "none" + baselineOnly
 }
 export interface ComboChartData extends Partial<ComboPanel> {
   kind: "combo";
@@ -290,6 +294,7 @@ export interface ComboChartData extends Partial<ComboPanel> {
   titleUnderline?: boolean;
   titleSerif?: boolean;
   titleAlign?: "left" | "center"; // default left
+  titleColor?: string; // title text colour (default: the ink colour)
   titleSize?: number; // SVG units (default 20)
   panels?: ComboPanel[]; // side-by-side panels sharing the Y axis settings (each draws its own tick labels)
   yMin?: number;
