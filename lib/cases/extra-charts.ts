@@ -441,4 +441,33 @@ export interface StackAreaData {
   yStep: number;
 }
 
-export type ExtraChart = StackAreaData | BubbleData | StackColsData | MultiPieData | MarimekkoData | HBarsData | BellCurveData | FlowData | ComboChartData;
+// Stacked columns filled with black-and-white hatch patterns, on a fixed source-style canvas (all positions are source
+// slide pixels). `segs` run bottom first; a segment is `value * unit` tall. Segment names print at the left of the first
+// column, thin dashed connectors join the segment tops of neighbouring columns, labels sit in white boxes.
+export type PatternKind = "dots" | "hatchFine" | "squares" | "hatchWide" | "solid";
+export interface PatternStackSeg {
+  value: number;
+  pattern: PatternKind;
+  label?: string; // printed text (default: the value)
+  labelDx?: number; // horizontal shift of the label from the column centre
+  labelStyle?: "box" | "white"; // "box" (default): black text on a white box; "white": white text, no box
+  name?: string; // series name printed at the left of the first column
+  nameDy?: number; // vertical shift of the name from the segment centre
+  nameLeader?: boolean; // short leader line from the name to the segment
+}
+export interface PatternStackData {
+  kind: "patternStack";
+  title?: string;
+  viewBox: [number, number, number, number]; // x, y, width, height of the drawn area
+  plotLeft: number; // left edge of the first column
+  plotBottom: number; // bottom edge of the columns
+  barWidth: number;
+  pitch: number; // distance between the left edges of neighbouring columns
+  unit: number; // pixels per value unit
+  columns: { label: string; total?: string; segs: PatternStackSeg[]; x?: number; width?: number }[]; // x / width override the left edge / width of one column
+  connectors?: boolean;
+  baselineExtra?: number; // draw a baseline from the first column's left to the last column's right + this
+  caption?: { text: string; x: number; y: number }; // small centred text (baseline y)
+}
+
+export type ExtraChart = PatternStackData | StackAreaData | BubbleData | StackColsData | MultiPieData | MarimekkoData | HBarsData | BellCurveData | FlowData | ComboChartData;

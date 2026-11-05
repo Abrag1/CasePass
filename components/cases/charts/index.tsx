@@ -9,6 +9,7 @@ import { ComboChart } from "./combo";
 import { StackColsChart } from "./stackCols";
 import { BubbleChart } from "./bubble";
 import { StackAreaChart } from "./stackArea";
+import { PatternStackChart } from "./patternStack";
 
 function InfoBox({ box, dark }: { box?: { title: string; lines: string[] }; dark?: boolean }) {
   if (!box) return null;
@@ -51,6 +52,8 @@ export function ExtraCharts({ charts, dark }: { charts?: ExtraChart[]; dark?: bo
             return <BubbleChart key={i} data={c} dark={dark} />;
           case "stackArea":
             return <StackAreaChart key={i} data={c} dark={dark} />;
+          case "patternStack":
+            return <PatternStackChart key={i} data={c} dark={dark} />;
           case "combo":
             return (
               <div key={i}>

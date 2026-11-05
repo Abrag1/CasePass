@@ -143,8 +143,9 @@ function PlainCalcTable({ table }: { table: CalcTableData }) {
               fontWeight: 700,
               textAlign: table.headerBg && !table.center ? "left" : "center",
               background: table.headerBg,
-              color: table.headerBg ? "#ffffff" : "#1f2421",
+              color: table.headerBg ? (table.headerFg ?? "#ffffff") : "#1f2421",
               borderBottom: table.headerRule && i > 0 ? K : undefined,
+              ...(table.cellBorder ? { borderRight: `2px solid ${table.cellBorder}` } : {}),
             }}
           >
             {h}
@@ -152,6 +153,8 @@ function PlainCalcTable({ table }: { table: CalcTableData }) {
         ))}
         {table.rows.map((row, ri) =>
           row.map((cell, ci) => {
+            const sp = table.spans?.find((x) => x.row === ri && x.col === ci);
+            if (table.spans?.some((x) => x.row === ri && ci > x.col && ci < x.col + x.span)) return null;
             const box = table.boxRows;
             const inBox = !!box && ri >= box[0] && ri <= box[1];
             const ruled = table.rulesAbove?.includes(ri) || (inBox && ri === box![0]);
@@ -162,13 +165,16 @@ function PlainCalcTable({ table }: { table: CalcTableData }) {
                   padding: "5px 8px",
                   minHeight: 22,
                   background: table.rowBg?.[ri],
-                  fontWeight: table.boldRows?.includes(ri) || table.boldCols?.includes(ci) ? 700 : 400,
+                  fontWeight: table.boldRows?.includes(ri) || table.boldCols?.includes(ci) || sp?.bold ? 700 : 400,
                   color: table.colColors?.[ci],
-                  textAlign: table.center ? "center" : "left",
+                  ...(sp ? { gridColumn: `span ${sp.span}`, textDecoration: sp.underline ? "underline" : undefined } : {}),
+                  textAlign: table.center && !table.leftCols?.includes(ci) ? "center" : "left",
+                  ...(ci === 0 && table.rowStyles?.[ri]?.indent ? { paddingLeft: 8 + table.rowStyles[ri].indent! * 18 } : {}),
                   borderTop: ruled ? K : undefined,
                   borderBottom: inBox && ri === box![1] ? K : undefined,
                   borderLeft: inBox && ci === 0 ? K : undefined,
                   borderRight: inBox && ci === last ? K : undefined,
+                  ...(table.cellBorder ? { borderRight: `2px solid ${table.cellBorder}`, borderTop: `2px solid ${table.cellBorder}` } : {}),
                 }}
               >
                 {cell.split("\n").map((ln, li) =>
@@ -1470,6 +1476,19 @@ export function TreeDiagram({ page, dark }: { page: CasePage; dark?: boolean }) 
   );
 }
 
+export function MemoExhibit({ page, dark }: { page: CasePage; dark?: boolean }) {
+  if (!page.memoLines) return null;
+  return (
+    <ExhibitFrame dark={dark}>
+      <div style={{ maxWidth: 560, margin: "0 auto", fontSize: 14.5, lineHeight: 1.5, color: dark ? "#dbe3dd" : "#1f2421" }}>
+        {page.memoLines.map((ln, i) => (
+          <div key={i} style={{ minHeight: ln ? undefined : "1.5em" }}>{ln}</div>
+        ))}
+      </div>
+    </ExhibitFrame>
+  );
+}
+
 export function Illustration({ page, dark }: { page: CasePage; dark?: boolean }) {
   if (!page.illustrationSrc) return null;
   const head = dark ? "#eef2ef" : "#1f2421";
@@ -1584,9 +1603,10 @@ function bordersOf(b?: string, color?: string): React.CSSProperties {
 }
 
 function DataGrid({
-  title, footnote, cols, headers, rows, dark, first, serif, bigTitle, boldTitle, fontSize, titleRules, footnoteLeft,
+  title, footnote, cols, headers, rows, dark, first, serif, titleLeft, bigTitle, boldTitle, fontSize, titleRules, footnoteLeft,
 }: {
   titleRules?: string;
+  titleLeft?: boolean;
   footnoteLeft?: boolean;
   boldTitle?: boolean;
   fontSize?: number;
@@ -1615,7 +1635,7 @@ function DataGrid({
         </div>
       ) : (
         title && (
-        <div style={boldTitle ? { fontSize: 20, fontWeight: 700, color: dark ? "#dbe3dd" : "#111111", marginBottom: 18, textAlign: "center" } : bigTitle ? { fontSize: 30, fontWeight: 700, fontFamily: '"Times New Roman", Georgia, serif', color: dark ? "#b7c2ba" : "#595959", marginBottom: 18, textAlign: "center" } : { fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 14, textAlign: "center" }}>{title}</div>
+        <div style={titleLeft ? { fontSize: 14, color: dark ? "#dbe3dd" : "#111111", marginBottom: 8, maxWidth: maxW, margin: "0 auto 8px" } : boldTitle ? { fontSize: 20, fontWeight: 700, color: dark ? "#dbe3dd" : "#111111", marginBottom: 18, textAlign: "center" } : bigTitle ? { fontSize: 30, fontWeight: 700, fontFamily: '"Times New Roman", Georgia, serif', color: dark ? "#b7c2ba" : "#595959", marginBottom: 18, textAlign: "center" } : { fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 14, textAlign: "center" }}>{title}</div>
         )
       )}
       <div style={{ display: "grid", gridTemplateColumns: cols, gap: 0, fontSize: fontSize ?? 12.5, minWidth: 280, maxWidth: maxW, margin: "0 auto", fontFamily: serif ? '"Times New Roman", Georgia, serif' : undefined }}>
@@ -1629,6 +1649,7 @@ function DataGrid({
                 key={j}
                 style={{
                   padding: "8px 4px",
+                  ...(c.indent ? { paddingLeft: c.indent } : {}),
                   background: c.bg,
                   borderTop: border,
                   ...bordersOf(c.borders, c.borderColor),
@@ -1646,7 +1667,7 @@ function DataGrid({
                 {c.harvey !== undefined ? (
                   <HarveyBall fill={c.harvey} dark={dark} label={c.v} />
                 ) : c.split && c.v.startsWith("$") ? (
-                  <span style={{ display: "flex", justifyContent: "space-between", width: "100%", paddingRight: "26%" }}>
+                  <span style={{ display: "flex", justifyContent: "space-between", width: "100%", ...(c.splitPad ? { padding: c.splitPad } : { paddingRight: "26%" }) }}>
                     <span>$</span>
                     <span>{c.v.slice(1).trim()}</span>
                   </span>
@@ -1692,6 +1713,7 @@ export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
         fontSize={page.dataTableFontSize}
         footnote={page.dataTableFootnote}
         titleRules={page.dataTableTitleRules}
+        titleLeft={page.dataTableTitleLeft}
         footnoteLeft={page.dataTableFootnoteLeft}
         cols={page.dataTableCols ?? ""}
         headers={page.dataTableHeaders}
@@ -1765,6 +1787,7 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
       <MultiLines page={page} dark={dark} />
       <TreeDiagram page={page} dark={dark} />
       <Illustration page={page} dark={dark} />
+      <MemoExhibit page={page} dark={dark} />
       <SegmentTable page={page} dark={dark} />
       {page.exhibitTitle && (
         <div style={{ fontSize: 22, fontWeight: 600, color: dark ? "#dbe3dd" : "#1f2421", margin: "4px 4px 14px", textAlign: "center", fontFamily: 'Cambria, "Times New Roman", Times, serif' }}>{page.exhibitTitle}</div>
@@ -1908,6 +1931,11 @@ function InterviewerBlocks({
       {hasExhibit && (
         <PresentWrap presentable={presentable} title={page.title} label="Exhibit" share={share}>
           <PageExhibit page={page} />
+        </PresentWrap>
+      )}
+      {page.guideCharts && (
+        <PresentWrap presentable={presentable} title={page.title} label="Interviewer chart">
+          <ExtraCharts charts={page.guideCharts} />
         </PresentWrap>
       )}
       {page.calcLines && (

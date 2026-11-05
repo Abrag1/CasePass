@@ -103,6 +103,8 @@ export interface DataTableCell {
   split?: boolean;
   borderColor?: string; // colour of the `borders` lines (default black)
   rowSpan?: number; // cell spanning this many rows (rowspan); omit the covered cells from the following rows
+  indent?: number; // left padding in px (off by default)
+  splitPad?: string; // CSS padding of the split "$" cell, e.g. "0 15% 0 20%" (default: right padding 26%)
 }
 export interface DataTableRow {
   cells: DataTableCell[];
@@ -322,6 +324,10 @@ export interface CalcTableData {
   rowBg?: string[]; // plain: fill per body row
   boldRows?: number[]; // plain: whole rows in bold
   boldCols?: number[]; // plain: whole columns in bold (off by default)
+  leftCols?: number[]; // plain + center: columns kept left-aligned; plain also honours rowStyles[].indent on the first column (off by default)
+  headerFg?: string; // plain: header text colour (default white with headerBg)
+  cellBorder?: string; // plain: colour of a 2px gap line right of and above every cell (off by default)
+  spans?: { row: number; col: number; span: number; underline?: boolean; bold?: boolean }[]; // plain: body cell spanning columns (covered cells are skipped), optional underline
   colColors?: string[]; // plain: text colour per column, "" or missing = default (off by default)
   rulesAbove?: number[]; // plain: body rows with a black rule above
   boxRows?: [number, number]; // plain: black box around these body rows
@@ -392,6 +398,8 @@ export interface CasePage {
   calcAfterGuidance?: boolean; // draw `calcTable` after `guidanceLines` instead of before
   // Further tables shown after `calcTable`, in order (for slides that print several tables).
   calcTables?: CalcTableData[];
+  // Optional interviewer-only charts drawn after the calculation tables (never shown to the candidate)
+  guideCharts?: ExtraChart[];
 
   // Answer + "what a strong candidate spots" insight. Text supports **bold**
   // markup; when it contains it the answer renders in regular weight so only the
@@ -528,6 +536,7 @@ export interface CasePage {
   treeTitle?: string;
   treeRoot?: TreeNode;
   illustrationTitle?: string;
+  memoLines?: string[]; // optional text memo exhibit: one entry per printed line, "" = blank line (off by default)
   illustrationSrc?: string;
   illustrationAlt?: string;
   factPanels?: FactPanel[];
@@ -537,6 +546,7 @@ export interface CasePage {
   dataTableFontSize?: number; // cell text size in px (default 12.5)
   dataTableSerif?: boolean; // serif cell text, bold bottom-aligned header cells
   dataTableTitleBig?: boolean; // large bold grey serif title
+  dataTableTitleLeft?: boolean; // plain left-aligned title line in normal ink (off by default)
   dataTableFootnote?: string;
   dataTableTitleRules?: string; // colour: draw rules on both sides of each table title
   dataTableFootnoteLeft?: boolean; // footnotes bottom-left instead of right
@@ -593,6 +603,7 @@ export function pageHasExhibit(p: CasePage): boolean {
     p.axisStackCols ||
     p.treeRoot ||
     p.illustrationSrc ||
+    p.memoLines ||
     p.dataTableRows ||
     p.segmentTable ||
     p.extraCharts?.length
@@ -1813,9 +1824,11 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       treeRoot: p.treeRoot,
       illustrationTitle: p.illustrationTitle,
       illustrationSrc: p.illustrationSrc,
+      memoLines: p.memoLines,
       illustrationAlt: p.illustrationAlt,
       factPanels: p.factPanels,
       dataTableTitle: p.dataTableTitle,
+      dataTableTitleLeft: p.dataTableTitleLeft,
       dataTableSideBySide: p.dataTableSideBySide,
       dataTableTitleBold: p.dataTableTitleBold,
       dataTableFontSize: p.dataTableFontSize,
