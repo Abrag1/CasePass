@@ -145,11 +145,12 @@ function PlainCalcTable({ table }: { table: CalcTableData }) {
               ...(hs ? { gridColumn: `span ${hs.span}` } : {}),
               padding: "5px 8px",
               fontWeight: 700,
-              textAlign: table.headerBg && !table.center ? "left" : "center",
+              textAlign: table.gridBorders ? (table.center && !table.leftCols?.includes(i) ? "center" : "left") : table.headerBg && !table.center ? "left" : "center",
               background: table.headerBg,
               color: table.headerBg ? (table.headerFg ?? "#ffffff") : "#1f2421",
               borderBottom: table.headerRule && i > 0 ? K : undefined,
               ...(table.cellBorder ? { borderRight: `2px solid ${table.cellBorder}` } : {}),
+              ...(table.gridBorders ? { borderTop: "1px solid #000", borderRight: "1px solid #000", borderBottom: "1px solid #000", ...(i === 0 ? { borderLeft: "1px solid #000" } : {}) } : {}),
             }}
           >
             {h}
@@ -180,6 +181,7 @@ function PlainCalcTable({ table }: { table: CalcTableData }) {
                   borderLeft: inBox && ci === 0 ? K : undefined,
                   borderRight: inBox && ci === last ? K : undefined,
                   ...(table.cellBorder ? { borderRight: `2px solid ${table.cellBorder}`, borderTop: `2px solid ${table.cellBorder}` } : {}),
+                  ...(table.gridBorders ? { borderRight: "1px solid #000", borderBottom: "1px solid #000", ...(ci === 0 ? { borderLeft: "1px solid #000" } : {}) } : {}),
                 }}
               >
                 {cell.split("\n").map((ln, li) =>
@@ -1608,9 +1610,10 @@ function bordersOf(b?: string, color?: string): React.CSSProperties {
 }
 
 function DataGrid({
-  title, footnote, cols, headers, rows, dark, first, serif, titleLeft, bigTitle, boldTitle, fontSize, titleRules, footnoteLeft,
+  title, footnote, cols, headers, rows, dark, first, serif, titleLeft, bigTitle, boldTitle, fontSize, titleRules, titleRule, footnoteLeft,
 }: {
   titleRules?: string;
+  titleRule?: string;
   titleLeft?: boolean;
   footnoteLeft?: boolean;
   boldTitle?: boolean;
@@ -1643,6 +1646,7 @@ function DataGrid({
         <div style={titleLeft ? { fontSize: 14, color: dark ? "#dbe3dd" : "#111111", marginBottom: 8, maxWidth: maxW, margin: "0 auto 8px" } : boldTitle ? { fontSize: 20, fontWeight: 700, color: dark ? "#dbe3dd" : "#111111", marginBottom: 18, textAlign: "center" } : bigTitle ? { fontSize: 30, fontWeight: 700, fontFamily: '"Times New Roman", Georgia, serif', color: dark ? "#b7c2ba" : "#595959", marginBottom: 18, textAlign: "center" } : { fontSize: 12, fontWeight: 600, color: dark ? "#8a958d" : "#5b615c", marginBottom: 14, textAlign: "center" }}>{title}</div>
         )
       )}
+      {title && titleRule && !titleRules && <div style={{ maxWidth: maxW, margin: "0 auto 14px" }}><div style={{ height: 3, background: titleRule, margin: "0 -24px" }} /></div>}
       <div style={{ display: "grid", gridTemplateColumns: cols, gap: 0, fontSize: fontSize ?? 12.5, minWidth: 280, maxWidth: maxW, margin: "0 auto", fontFamily: serif ? '"Times New Roman", Georgia, serif' : undefined }}>
         {headers.map((h, i) => (
           <div key={i} style={{ fontWeight: 600, color: h.fg ?? head, background: h.bg, padding: "5px 4px", textAlign: h.align, ...(serif ? { fontWeight: 700, fontSize: 14, display: "flex", alignItems: "flex-end", justifyContent: "center" } : {}), ...(h.span ? { gridColumn: `span ${h.span}` } : {}), ...bordersOf(h.borders, h.borderColor) }}>{h.v}</div>
@@ -1719,6 +1723,7 @@ export function DataTable({ page, dark }: { page: CasePage; dark?: boolean }) {
         fontSize={page.dataTableFontSize}
         footnote={page.dataTableFootnote}
         titleRules={page.dataTableTitleRules}
+        titleRule={page.dataTableTitleRule}
         titleLeft={page.dataTableTitleLeft}
         footnoteLeft={page.dataTableFootnoteLeft}
         cols={page.dataTableCols ?? ""}

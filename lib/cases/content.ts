@@ -336,6 +336,7 @@ export interface CalcTableData {
   ruleSkipCols?: number[]; // plain: columns that get no `rulesAbove` rule (gap columns; off by default)
   rightCols?: number[]; // plain: columns whose body cells are right-aligned (off by default)
   headerRule?: boolean; // plain: black rule under the header cells except the first
+  gridBorders?: boolean; // plain: thin black border around every cell; header cells follow the body alignment (centred unless in leftCols when `center`) (off by default)
   // plain: cell lines starting "- " are bullets (lines split on newline)
 }
 
@@ -552,6 +553,7 @@ export interface CasePage {
   dataTableTitleBig?: boolean; // large bold grey serif title
   dataTableTitleLeft?: boolean; // plain left-aligned title line in normal ink (off by default)
   dataTableFootnote?: string;
+  dataTableTitleRule?: string; // colour: one thick rule under the table title, slightly wider than the table (off by default)
   dataTableTitleRules?: string; // colour: draw rules on both sides of each table title
   dataTableFootnoteLeft?: boolean; // footnotes bottom-left instead of right
   dataTableCols?: string;
@@ -1843,6 +1845,7 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       dataTableHeaders: p.dataTableHeaders,
       dataTableRows: p.dataTableRows,
       dataTableMore: p.dataTableMore,
+      dataTableTitleRule: p.dataTableTitleRule,
       dataTableTitleRules: p.dataTableTitleRules,
       dataTableFootnoteLeft: p.dataTableFootnoteLeft,
       dataTableIntro: p.dataTableIntro,

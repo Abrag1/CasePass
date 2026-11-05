@@ -404,6 +404,11 @@ export interface StackColsData {
   zeroLabels?: boolean; // a zero-value segment with a label is drawn as a small filled box carrying the label at the top of the bar
   topRows?: { label: string; cells: string[] }[]; // plain text rows above the plot: a row label at the left and one text aligned over each column of the first panel
   sideTable?: { headers: string[]; rows: string[][]; colWidths: number[]; headerBg: string; headerFg: string; rowBgs: string[] }; // small table at the right, under the "right" legend (newline in a header splits lines)
+  segNames?: string[]; // names printed right-aligned at the left of the first column, one per segment of its first panel column, bottom first (a newline splits lines); off by default
+  bottomRows?: { label: string; cells: string[]; boldLabel?: boolean }[]; // text rows under the column labels: a row label at the left and one text centred under each column of the first panel (off by default)
+  endArrow?: string; // text (e.g. "100%") with a left arrow, drawn right of the last column at the top of the plot (off by default)
+  titleRule?: boolean; // thick black rule under the title, title aligned to the left edge (off by default)
+  noYAxis?: boolean; // no Y axis line, ticks or tick texts; thin black baseline (off by default)
 }
 
 // Bubble chart on a fixed source-style canvas (1160 x 660 units): circle area is proportional to `size`, X is a tick index

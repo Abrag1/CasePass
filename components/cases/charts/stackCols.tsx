@@ -45,14 +45,14 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   if (!data.panels.length) return null;
   const barW = data.barWidth ?? 170;
   const slot = barW + 44;
-  const leftM = 84 + (data.yTitle ? 34 : 0);
+  const leftM = data.segNames ? 250 : 84 + (data.yTitle ? 34 : 0);
   const gap = 36;
   const plotH = 330;
   const border = data.segBorder === false ? undefined : (data.segBorder ?? (dark ? "#0d100e" : "#111111"));
   const connColor = data.connectorColor ?? ink.text;
 
   // Horizontal layout of the panels.
-  const pw = data.panels.map((p) => leftM + p.columns.length * slot + 20);
+  const pw = data.panels.map((p) => leftM + p.columns.length * slot + 20 + (data.endArrow ? 110 : 0));
   const px: number[] = [];
   let acc = 0;
   pw.forEach((w, i) => {
@@ -64,7 +64,7 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   // Header band: chart title (left) and the legend (top right).
   const titleLines = data.title && !data.titleStyle ? data.title.split("\n") : [];
   const titleFs = 21;
-  const titleH = titleLines.length ? titleLines.length * 27 + 6 : 0;
+  const titleH = titleLines.length ? titleLines.length * 27 + 6 + (data.titleRule ? 18 : 0) : 0;
   const titleW = Math.max(0, ...titleLines.map((l) => l.length * titleFs * 0.5)) + leftM;
   const legendTop = !!data.legend?.length && (data.legendPlacement ?? "topRight") === "topRight";
   const legendRight = !!data.legend?.length && data.legendPlacement === "right";
@@ -92,7 +92,10 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
   const xfit = data.panels.map((p) => p.columns.map((c) => fit(c.label, slot - 8, 200, 18, 11, data.labelBreaks)));
   const xLines = Math.max(1, ...xfit.flat().map((f) => f.lines.length));
   const xH = xLines * 24 + 14;
-  let H = base + xH;
+  const bottomRows = data.bottomRows ?? [];
+  const bottomRowHs = bottomRows.map((r) => Math.max(1, r.label.split("\n").length) * 24 + 22);
+  const bottomRowsY = base + xH;
+  let H = bottomRowsY + bottomRowHs.reduce((a, b) => a + b, 0);
   const xTitleY = H + 28;
   if (data.xTitle) H += 40;
   const legBottomRows = legendBottom ? (data.legend ?? []) : [];
@@ -115,11 +118,12 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
               {l}
             </text>
           ) : (
-            <text key={i} x={leftM - 8} y={24 + i * 27} fontSize={titleFs} fontWeight={data.titleLeftBold ? 700 : undefined} fill={ink.text}>
+            <text key={i} x={data.titleRule ? 4 : leftM - 8} y={24 + i * 27} fontSize={titleFs} fontWeight={data.titleLeftBold ? 700 : undefined} fill={ink.text}>
               {l}
             </text>
           ),
         )}
+        {data.titleRule && titleLines.length > 0 && <line x1={0} x2={panelsW} y1={titleH - 6} y2={titleH - 6} stroke={ink.text} strokeWidth={3.5} />}
         {legendTop &&
           (() => {
             let yy = 4;
@@ -219,6 +223,26 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
           );
         })}
 
+        {bottomRows.map((r, ri) => {
+          const y0 = bottomRowsY + bottomRowHs.slice(0, ri).reduce((a, b) => a + b, 0);
+          const mid = y0 + bottomRowHs[ri] / 2;
+          const lab = r.label.split("\n");
+          return (
+            <g key={`br${ri}`}>
+              {lab.map((ln, k) => (
+                <text key={k} x={4} y={mid + (k - (lab.length - 1) / 2) * 24 + 6} fontSize={18} fontWeight={r.boldLabel ? 700 : undefined} fill={ink.text}>
+                  {ln}
+                </text>
+              ))}
+              {r.cells.map((v, ci) => (
+                <text key={ci} x={leftM + 22 + ci * slot + barW / 2} y={mid + 6} textAnchor="middle" fontSize={18} fill={ink.text}>
+                  {v}
+                </text>
+              ))}
+            </g>
+          );
+        })}
+
         {data.yTitle && (
           <text transform={`rotate(-90 20 ${top + plotH / 2})`} x={20} y={top + plotH / 2 + 7} textAnchor="middle" fontSize={21} fill={ink.text}>
             {data.yTitle}
@@ -256,8 +280,8 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
                   <line key={`g${ti}`} x1={axisX} x2={x0 + pw[pi] - 20} y1={y(t)} y2={y(t)} stroke="#c8c8c8" strokeWidth={1.2} />
                 ))}
               {/* axes */}
-              {!data.plainAxes && <line x1={axisX} x2={axisX} y1={y(p.yMax)} y2={base} stroke={ink.text} strokeWidth={1.6} />}
-              <line x1={axisX} x2={x0 + pw[pi] - 20} y1={base} y2={base} stroke={data.plainAxes ? "#c8c8c8" : ink.text} strokeWidth={data.plainAxes ? 1.2 : 1.6} />
+              {!data.plainAxes && !data.noYAxis && <line x1={axisX} x2={axisX} y1={y(p.yMax)} y2={base} stroke={ink.text} strokeWidth={1.6} />}
+              <line x1={axisX} x2={data.noYAxis && data.endArrow ? x0 + pw[pi] - 75 : x0 + pw[pi] - 20} y1={base} y2={base} stroke={data.plainAxes && !data.noYAxis ? "#c8c8c8" : ink.text} strokeWidth={data.noYAxis ? 1.2 : data.plainAxes ? 1.2 : 1.6} />
               {data.xBand &&
                 p.columns.map((_, ci) => (
                   <g key={`xb${ci}`}>
@@ -265,7 +289,7 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
                     {ci === p.columns.length - 1 && <line x1={axisX + (ci + 1) * slot} x2={axisX + (ci + 1) * slot} y1={base} y2={base + xH} stroke="#c8c8c8" strokeWidth={1.2} />}
                   </g>
                 ))}
-              {ticks.map((t, ti) => {
+              {(data.noYAxis ? [] : ticks).map((t, ti) => {
                 const isTop = ti === ticks.length - 1;
                 const txt = isTop && p.topLabel ? p.topLabel : (p.yTickLabels?.[ti] ?? `${p.yTickPrefix ?? ""}${t}${p.yTickSuffix ?? ""}`);
                 return (
@@ -332,6 +356,21 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
                     {col.total && (
                       <text x={cx0 + barW / 2} y={y(total) - 9} textAnchor="middle" fontSize={20} fontWeight={data.boldTotals ? 700 : undefined} fill={ink.text}>
                         {col.total}
+                      </text>
+                    )}
+                    {data.segNames && pi === 0 && ci === 0 && col.segs.map((sg, si) => {
+                      const lo = col.segs.slice(0, si).reduce((a, g) => a + g.value, 0);
+                      const nm = (data.segNames?.[si] ?? "").split("\n");
+                      const mid = (y(lo) + y(lo + sg.value)) / 2;
+                      return nm.map((ln, k) => (
+                        <text key={`sn${si}-${k}`} x={cx0 - 22} y={mid + (k - (nm.length - 1) / 2) * 30 + 6} textAnchor="end" fontSize={20} fill={ink.text}>
+                          {ln}
+                        </text>
+                      ));
+                    })}
+                    {data.endArrow && pi === 0 && ci === p.columns.length - 1 && (
+                      <text x={cx0 + barW + 10} y={y(total) + 6} fontSize={19} fill={ink.text}>
+                        {"← " + data.endArrow}
                       </text>
                     )}
                     <text textAnchor="middle" fontSize={xfit[pi][ci].fs} fill={ink.text}>
