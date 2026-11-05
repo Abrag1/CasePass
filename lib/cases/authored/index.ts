@@ -57,6 +57,7 @@ import * as fuquaChipsterTechnology from "./fuqua_2018_2019_chipster_technology"
 import * as fuquaCongosDrumming from "./fuqua_2018_2019_congo_s_drumming";
 import * as fuquaDrugsRUs from "./fuqua_2018_2019_drugs_r_us";
 import * as fuquaFringeScience from "./fuqua_2018_2019_fringe_science";
+import * as fuquaGoingGreen from "./fuqua_2018_2019_going_green";
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
 import * as boothBurgerPalace from "./booth_2024_2025_burger_palace";
@@ -167,6 +168,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   fuquaCongosDrumming,
   fuquaDrugsRUs,
   fuquaFringeScience,
+  fuquaGoingGreen,
   boothApacheHelicopter,
   boothArmyHotel,
   boothBreastCancerSurgery,

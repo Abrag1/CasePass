@@ -123,7 +123,74 @@ export function CalcBox({ note, lines }: { note?: string; lines: { q: string; a:
 
 // Walkthrough laid out as a table (one row per item, one column per scenario) so a
 // total row can sit directly under the rows it sums. Cells accept **bold** / ==highlight==.
+function PlainCalcTable({ table }: { table: CalcTableData }) {
+  const ncols = Math.max(table.headers.length, table.rows[0]?.length ?? 0);
+  const cols = table.cols ?? `repeat(${ncols}, 1fr)`;
+  const K = "1px solid #000";
+  const last = ncols - 1;
+  return (
+    <div style={{ background: "#fafbf9", border: "1px solid #e6e7e3", borderRadius: 10, padding: "16px 18px", marginBottom: 14, overflowX: "auto" }}>
+      <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#8a8f8a", fontWeight: 700, marginBottom: 10 }}>
+        {table.title ?? "Calculation walkthrough"}
+      </div>
+      {table.subtitle && <div style={{ fontSize: 16, color: "#1f2421", marginBottom: 6 }}>{table.subtitle}</div>}
+      <div style={{ display: "grid", gridTemplateColumns: cols, fontSize: 13.5, minWidth: 460, color: "#1f2421" }}>
+        {table.headers.map((h, i) => (
+          <div
+            key={i}
+            style={{
+              padding: "5px 8px",
+              fontWeight: 700,
+              textAlign: table.headerBg && !table.center ? "left" : "center",
+              background: table.headerBg,
+              color: table.headerBg ? "#ffffff" : "#1f2421",
+              borderBottom: table.headerRule && i > 0 ? K : undefined,
+            }}
+          >
+            {h}
+          </div>
+        ))}
+        {table.rows.map((row, ri) =>
+          row.map((cell, ci) => {
+            const box = table.boxRows;
+            const inBox = !!box && ri >= box[0] && ri <= box[1];
+            const ruled = table.rulesAbove?.includes(ri) || (inBox && ri === box![0]);
+            return (
+              <div
+                key={`${ri}-${ci}`}
+                style={{
+                  padding: "5px 8px",
+                  minHeight: 22,
+                  background: table.rowBg?.[ri],
+                  fontWeight: table.boldRows?.includes(ri) ? 700 : 400,
+                  textAlign: table.center ? "center" : "left",
+                  borderTop: ruled ? K : undefined,
+                  borderBottom: inBox && ri === box![1] ? K : undefined,
+                  borderLeft: inBox && ci === 0 ? K : undefined,
+                  borderRight: inBox && ci === last ? K : undefined,
+                }}
+              >
+                {cell.split("\n").map((ln, li) =>
+                  ln.startsWith("- ") ? (
+                    <div key={li} style={{ display: "flex", gap: 8, textAlign: "left", fontSize: 12.5, padding: "1px 0" }}>
+                      <span>•</span>
+                      <span><Rich text={ln.slice(2)} /></span>
+                    </div>
+                  ) : (
+                    <div key={li}><Rich text={ln} /></div>
+                  ),
+                )}
+              </div>
+            );
+          }),
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function CalcTableBox({ note, table }: { note?: string; table: CalcTableData }) {
+  if (table.plain) return <PlainCalcTable table={table} />;
   const ncols = Math.max(table.headers.length, table.rows[0]?.length ?? 0);
   const cols = `minmax(110px, 0.9fr) ${Array.from({ length: ncols - 1 }, () => (ncols > 5 ? "minmax(70px, 1fr)" : "minmax(170px, 1.4fr)")).join(" ")}`;
   return (

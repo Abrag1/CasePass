@@ -313,6 +313,18 @@ export interface CalcTableData {
   // Optional per-row styling, parallel to `rows`: bold on/off for the label, indent level (steps of 18px).
   // When present, text after a newline in the first cell prints as a small second line.
   rowStyles?: { bold?: boolean; indent?: number }[];
+  // Optional "source look" (all off by default): plain slide-style table with no caps headers.
+  plain?: boolean;
+  subtitle?: string; // plain: line above the table
+  cols?: string; // plain: CSS grid-template-columns
+  center?: boolean; // plain: centre all cells (not the headers)
+  headerBg?: string; // plain: header fill (white bold text)
+  rowBg?: string[]; // plain: fill per body row
+  boldRows?: number[]; // plain: whole rows in bold
+  rulesAbove?: number[]; // plain: body rows with a black rule above
+  boxRows?: [number, number]; // plain: black box around these body rows
+  headerRule?: boolean; // plain: black rule under the header cells except the first
+  // plain: cell lines starting "- " are bullets (lines split on newline)
 }
 
 // Spreadsheet-style working (black title bar, boxed cells), used by `calcSheet`.
