@@ -344,6 +344,8 @@ export interface ComboChartData extends Partial<ComboPanel> {
   legend?: "topRight" | "right" | "bottom" | "inside" | "none"; // "inside": top right corner of the plot; // default "bottom" when series are named
   footnote?: string;
   footnoteBold?: boolean; // serif bold footnote in the ink colour (as printed under some exhibits)
+  frameBorder?: string; // border colour of a box around the plot and legend (the title stays above it); off by default
+  sideHatch?: boolean; // fine diagonal hatch over the whole plot area behind the columns (off by default)
 }
 
 // Stacked columns with labelled segments, in one or more panels side by side. Each panel has its own Y axis

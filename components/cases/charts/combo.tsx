@@ -175,6 +175,16 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
     const barW = p.bars ? (p.bars.widthRatio ? slot * p.bars.widthRatio : Math.min(60, slot * 0.6)) : 0;
     return (
       <g key={`p${pi}`}>
+        {data.sideHatch && (
+          <>
+            <defs>
+              <pattern id={`sh${pi}`} width={5} height={5} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1={0} y1={0} x2={0} y2={5} stroke="#d4d4d4" strokeWidth={1} />
+              </pattern>
+            </defs>
+            <rect x={x0} y={y(yMax)} width={plotW} height={base - y(yMax)} fill={`url(#sh${pi})`} />
+          </>
+        )}
         {data.yGrid && ticks.slice(noAxis ? 0 : 1).map((t, i) => <line key={`g${i}`} x1={x0} x2={x0 + plotW} y1={y(t)} y2={y(t)} stroke={noAxis && !data.lightBaseline && t === yMin ? "#c8c8c8" : ink.grid} strokeWidth={noAxis && !data.lightBaseline && t === yMin ? 2 : 1.2} />)}
         {noAxis && data.baselineOnly && !data.yGrid && <line x1={x0} x2={x0 + plotW} y1={base} y2={base} stroke={p.baselineColor ?? "#c8c8c8"} strokeWidth={1.4} />}
         {/* axes */}
@@ -487,9 +497,9 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
     );
   };
 
-  const svg = (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: 980, display: "block", margin: "0 auto", fontFamily: font, fontWeight: bold ? 700 : undefined }} role="img" aria-label={data.title ?? "Chart"}>
-      {titleLines.map((l, i) => (
+  const mkSvg = (vb: string, part: "all" | "title" | "body") => (
+    <svg viewBox={vb} style={{ width: "100%", maxWidth: 980, display: "block", margin: "0 auto", fontFamily: font, fontWeight: bold ? 700 : undefined }} role="img" aria-label={data.title ?? "Chart"} aria-hidden={part === "all" ? undefined : true}>
+      {part !== "body" && titleLines.map((l, i) => (
         <text
           key={i}
           x={data.titleAlign === "center" ? (firstX0 + (W - rightM)) / 2 : firstX0}
@@ -504,13 +514,25 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
           {l}
         </text>
       ))}
-      {data.yLabel && (
+      {part !== "title" && data.yLabel && (
         <text transform={`translate(16 ${top + plotH / 2}) rotate(-90)`} textAnchor="middle" fontSize={15 * fs} fontWeight={data.axisTitleBold || bold ? 700 : 400} fill={ink.text}>
           {data.yLabel}
         </text>
       )}
-      {panels.map(drawPanel)}
+      {part !== "title" && panels.map(drawPanel)}
     </svg>
+  );
+  const framed = !!data.frameBorder;
+  const svg = framed ? (
+    <>
+      {mkSvg(`0 0 ${W} ${titleH}`, "title")}
+      <div style={{ border: `1px solid ${data.frameBorder}`, padding: "0 0 8px" }}>
+        {mkSvg(`0 ${titleH} ${W} ${H - titleH}`, "body")}
+        {legendPos === "bottom" && legend}
+      </div>
+    </>
+  ) : (
+    mkSvg(`0 0 ${W} ${H}`, "all")
   );
 
   return (
@@ -532,7 +554,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
       ) : (
         svg
       )}
-      {legendPos === "bottom" && legend}
+      {legendPos === "bottom" && !framed && legend}
       {data.footnote && (
         <div
           style={{
