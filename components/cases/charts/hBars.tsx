@@ -3,6 +3,7 @@
 // title), tick marks between the categories, an HTML legend and a footnote.
 import type { HBarsData } from "@/lib/cases/extra-charts";
 import { ExhibitFrame, chartInk } from "./chart-kit";
+import { HBarsTwoPanel } from "./hBarsPanels";
 
 const CHAR_W = 0.56; // average glyph width as a share of the font size
 
@@ -33,7 +34,18 @@ function isVeryDark(hex: string) {
   return (0.299 * (c >> 16) + 0.587 * ((c >> 8) & 255) + 0.114 * (c & 255)) / 255 < 0.25;
 }
 
+// Frameless wrapper (optional `noFrame`): same title styles, no card; optional rule under the title.
+function NoFrame({ dark, title, rule, children }: { dark?: boolean; title?: string; titleStyle?: unknown; rule?: string; children: React.ReactNode }) {
+  return (
+    <div style={{ minWidth: 0 }}>
+      {title && <div style={{ fontSize: 16, fontWeight: 700, textAlign: "center", color: dark ? "#dbe3dd" : "#111111", paddingBottom: 8, marginBottom: 16, borderBottom: rule ? `2px solid ${rule}` : undefined }}>{title}</div>}
+      {children}
+    </div>
+  );
+}
+
 export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) {
+  if (data.rightPanel) return <HBarsTwoPanel data={data} dark={dark} />;
   const ink = chartInk(dark);
   const groups = data.groups;
   if (!groups.length || !(data.max > 0)) return null;
@@ -45,12 +57,12 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
   const tickFmt = (t: number) => (t === 0 && data.zeroLabel ? data.zeroLabel : (data.tickPrefix ?? "") + (data.tickPrefix ? t.toLocaleString("en-US", decimals !== undefined ? { minimumFractionDigits: decimals, maximumFractionDigits: decimals } : undefined) : decimals !== undefined ? t.toFixed(decimals) : String(Number(t.toFixed(2)))) + suffix);
   const fmt = (v: number) => (decimals !== undefined ? v.toFixed(decimals) : String(Number(v.toFixed(2)))) + suffix;
 
-  const fsLabel = 14;
-  const fsValue = 13;
-  const maxChars = 22;
+  const fsLabel = data.labelFontSize ?? 14;
+  const fsValue = data.valueFontSize ?? 13;
+  const maxChars = data.singleLineLabels ? 1000 : 22;
   const labelLines = groups.map((g) => wrapLabel(g.label, maxChars));
   const longestLine = Math.max(1, ...labelLines.flat().map((l) => l.length));
-  const labelW = Math.max(90, Math.min(220, Math.ceil(longestLine * fsLabel * CHAR_W) + 24));
+  const labelW = Math.max(90, Math.min(data.singleLineLabels ? 600 : 220, Math.ceil(longestLine * fsLabel * (data.singleLineLabels ? 0.5 : CHAR_W)) + 24));
   const plotW = data.plotWidth ?? 330;
   const texts = groups.map((g) => g.values.map((v, i) => g.valueTexts?.[i] ?? fmt(v)));
   const longestVal = Math.max(...texts.flat().map((t) => t.length), 1);
@@ -69,6 +81,8 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
   const axisH = hasAxis ? 24 : 0;
   const titleH = data.axisTitle ? 22 : 0;
   const H = bottomOfBars + axisH + titleH + 6;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Frame: React.ComponentType<any> = data.noFrame ? NoFrame : ExhibitFrame;
   const x = (v: number) => labelW + (Math.max(0, v) / data.max) * plotW;
 
   const ticks: number[] = [];
@@ -89,7 +103,7 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
     ) : null;
 
   return (
-    <ExhibitFrame dark={dark} title={data.title} titleStyle={data.titleStyle}>
+    <Frame dark={dark} title={data.title} titleStyle={data.titleStyle} rule={data.titleRule}>
       {swatches.length > 1 && !data.legendBottom && legendEl}
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", maxWidth: Math.max(W, 420) * 1.25, display: "block", margin: "0 auto" }} role="img" aria-label={data.title ?? "Horizontal bar chart"}>
         {/* Value axis: gridlines, ticks and labels */}
@@ -97,14 +111,14 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
           <g key={t}>
             {data.grid && t > 0 && <line x1={x(t)} x2={x(t)} y1={top} y2={bottomOfBars} stroke={ink.grid} strokeWidth={1} />}
             <line x1={x(t)} x2={x(t)} y1={bottomOfBars} y2={bottomOfBars + 4} stroke={ink.axis} strokeWidth={1} />
-            <text x={x(t)} y={bottomOfBars + 17} textAnchor="middle" fontSize={data.axisBold ? 10 : 12} fontWeight={data.axisBold ? 700 : undefined} fill={data.axisBold ? ink.text : ink.axis}>
+            <text x={x(t)} y={bottomOfBars + 17} textAnchor="middle" fontSize={data.axisBold ? 10 : (data.tickFontSize ?? 12)} fontWeight={data.axisBold ? 700 : undefined} fill={data.axisBold ? ink.text : ink.axis}>
               {tickFmt(t)}
             </text>
           </g>
         ))}
         {hasAxis && <line x1={labelW} x2={x(data.max)} y1={bottomOfBars} y2={bottomOfBars} stroke={frame} strokeWidth={1} />}
         {data.axisTitle && (
-          <text x={labelW + plotW / 2} y={bottomOfBars + axisH + 14} textAnchor="middle" fontSize={13} fontWeight={700} fill={ink.text}>
+          <text x={data.axisTitleEnd ? x(data.max) : labelW + plotW / 2} y={bottomOfBars + axisH + 14} textAnchor={data.axisTitleEnd ? "end" : "middle"} fontSize={13} fontWeight={700} fill={ink.text}>
             {data.axisTitle}
           </text>
         )}
@@ -120,7 +134,7 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
           const y0 = tops[gi] + (bands[gi] - clusterH) / 2;
           return (
             <g key={gi}>
-              <text textAnchor="end" fontSize={fsLabel} fill={ink.text}>
+              <text textAnchor="end" fontSize={fsLabel} fill={ink.text} display={data.hideLabels ? "none" : undefined}>
                 {lines.map((ln, li) => (
                   <tspan key={li} x={labelW - 12} y={cy - ((lines.length - 1) * lineH) / 2 + li * lineH} dominantBaseline="middle">
                     {ln}
@@ -170,6 +184,6 @@ export function HBarsChart({ data, dark }: { data: HBarsData; dark?: boolean }) 
           {data.footnote && <div>{data.footnote}</div>}
         </div>
       )}
-    </ExhibitFrame>
+    </Frame>
   );
 }

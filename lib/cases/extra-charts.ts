@@ -81,6 +81,19 @@ export interface HBarsData {
   axisBold?: boolean; // small bold value-axis tick texts
   plotWidth?: number; // width of the bar area in SVG units (default 330); smaller makes the text larger when the chart is narrow
   legendBottom?: boolean; // legend centred under the bars instead of above them
+  hideLabels?: boolean; // category labels are hidden but their space is kept, so a second panel drawn beside the first has the same scale
+  titleRule?: string; // colour of a rule drawn under the centred title (full width)
+  axisTitleEnd?: boolean; // value-axis title right-aligned under the axis end instead of centred
+  valueFontSize?: number; // value label size in SVG units (default 13)
+  tickFontSize?: number; // value-axis tick label size in SVG units (default 12)
+  singleLineLabels?: boolean; // category labels never wrap; the label column widens to fit
+  labelFontSize?: number; // category label size in SVG units (default 14)
+  // Second panel beside the first, in the same drawing and scale (category labels only at the left). The first value of each
+  // group is the left panel; `rightPanel.values` (one per group) the right one. Titles get a rule in `titleRule` (default blue).
+  rightPanel?: { title?: string; values: number[]; max: number; axisStep?: number; axisTitle?: string; plotWidth?: number };
+  axisTitleFontSize?: number; // two-panel layout: axis title size (regular weight)
+  panelTitleFontSize?: number; // two-panel layout: panel title size
+  noFrame?: boolean; // no bordered card or padding around the chart (for side-by-side panels)
 }
 
 // Two or more normal-distribution curves with vertical markers and call-out boxes.
@@ -370,4 +383,30 @@ export interface StackColsData {
   sideTable?: { headers: string[]; rows: string[][]; colWidths: number[]; headerBg: string; headerFg: string; rowBgs: string[] }; // small table at the right, under the "right" legend (newline in a header splits lines)
 }
 
-export type ExtraChart = StackColsData | MultiPieData | MarimekkoData | HBarsData | BellCurveData | FlowData | ComboChartData;
+// Bubble chart on a fixed source-style canvas (1160 x 660 units): circle area is proportional to `size`, X is a tick index
+// (ticks carry no labels), Y a value axis. Label and leader positions are canvas units, copied from the source.
+export interface BubbleData {
+  kind: "bubble";
+  yTitle?: string; // drawn above the Y axis, left
+  xTitle?: string; // drawn right-aligned under the X axis
+  yMin: number;
+  yMax: number;
+  yStep: number;
+  yTickSuffix?: string;
+  xTicks: number; // number of unlabelled X ticks, evenly spaced from just right of the Y axis to the right end (positions 0 .. xTicks-1)
+  radiusPerRootSize: number; // circle radius in canvas units = this * sqrt(size)
+  bubbles: {
+    x: number; // tick index
+    y: number;
+    size: number;
+    value: string; // printed value
+    valueAt?: [number, number]; // outside value label (start-anchored); omit to centre it inside the circle
+    name: string;
+    nameAt: [number, number]; // start-anchored text position (baseline)
+    nameLines?: string[]; // optional extra lines under `name`
+    leader?: [number, number][]; // thin polyline from the label to the circle
+  }[];
+  legend?: { text: string; box: [number, number, number, number] }; // x, y, w, h of the bordered box
+}
+
+export type ExtraChart = BubbleData | StackColsData | MultiPieData | MarimekkoData | HBarsData | BellCurveData | FlowData | ComboChartData;
