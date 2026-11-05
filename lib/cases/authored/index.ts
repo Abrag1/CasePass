@@ -55,6 +55,7 @@ import * as johnson2122WirelessCo from "./johnson_2021_2022_wireless_co";
 import * as fuquaChemicalImbalance from "./fuqua_2018_2019_chemical_imbalance";
 import * as fuquaChipsterTechnology from "./fuqua_2018_2019_chipster_technology";
 import * as fuquaCongosDrumming from "./fuqua_2018_2019_congo_s_drumming";
+import * as fuquaDrugsRUs from "./fuqua_2018_2019_drugs_r_us";
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
 import * as boothBurgerPalace from "./booth_2024_2025_burger_palace";
@@ -163,6 +164,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   fuquaChemicalImbalance,
   fuquaChipsterTechnology,
   fuquaCongosDrumming,
+  fuquaDrugsRUs,
   boothApacheHelicopter,
   boothArmyHotel,
   boothBreastCancerSurgery,

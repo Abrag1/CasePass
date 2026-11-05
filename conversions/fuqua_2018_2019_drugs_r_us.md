@@ -1,0 +1,10 @@
+VERDICT: PASS
+
+# Drugs "R" Us (Duke Fuqua 2018-2019, pp. 69-76)
+
+Independent verifier: PASS on content after one fix round (its literal FAIL is only the script's MECHANICAL flag; orchestrator override below). Page range confirmed from the page images: p.69 cover, p.70 behavioral questions, p.71 Prompt #1 + guidance, p.72 Exhibit #1, p.73 Exhibit guidance, p.74 Prompt #2, p.75 Recommendation, p.76 the case's own Evaluation Criteria rubric (dropped as furniture per SKILL.md section 5; owner may want it kept); the catalog/queue range 68-75 is wrong. Round 1 found one MAJOR: Exhibit #1 (p.72) merges the 70% and 30% cells across both rows but the render showed the values only on the RX Co row with blank Drug Corp cells (misleading). Fixed by adding an optional, off-by-default `rowSpan` on DataTableCell (components/cases/blocks.tsx one-line gridRow span; lib/cases/content.ts optional field); re-rendered and re-verified; no other case sets it.
+
+Four sections, none guidance-only. Math recomputed: 0.7 x 11,000 x 365 x 5,000 = $14.05B (~$14B); 14 x 1.15 = $16.1B; 0.7 x 7,800 x 365 x 900 = $1.79B (~$1.8B). Nesting verified (Exhibit #1 sub-bullet; Prompt #2 three items under "Candidate could mention:"; Recommendation risks). ==highlight== on key figures is house style. Typos kept ("What else should else should be considered", "Drugs has 900"). Source inconsistency kept as printed: guidance says 20% growth but computes $14B x 1.15.
+
+verify-case.mjs: 0 lint, 0 additions; MECHANICAL: FAIL on 2 omissions, documented orchestrator override: the Exhibit #1 table text is present in the data table (false positive), and the Evaluation Criteria rubric is the intentionally dropped p.76 slide (the tool also uses the wrong catalog range 68-75). tsc clean; eslint 0 errors (one pre-existing unused-import warning in blocks.tsx).
+Minor: table rows slightly more compact than the source. case_type "Market Entry" and tags are converter choices (cover chips: Pharma, Quantitative Medium, Qualitative Medium).

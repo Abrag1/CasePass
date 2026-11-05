@@ -1503,6 +1503,7 @@ function DataGrid({
                   background: c.bg,
                   borderTop: border,
                   ...bordersOf(c.borders, c.borderColor),
+                  ...(c.rowSpan ? { gridRow: `span ${c.rowSpan}` } : {}),
                   textAlign: c.align,
                   fontWeight: c.w,
                   color: dark ? "#dbe3dd" : c.fg,

@@ -102,6 +102,7 @@ export interface DataTableCell {
   // Currency style: a leading "$" stays at the left edge of the cell and the number sits to its right
   split?: boolean;
   borderColor?: string; // colour of the `borders` lines (default black)
+  rowSpan?: number; // cell spanning this many rows (rowspan); omit the covered cells from the following rows
 }
 export interface DataTableRow {
   cells: DataTableCell[];
