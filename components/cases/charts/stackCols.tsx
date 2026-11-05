@@ -103,7 +103,7 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
               {l}
             </text>
           ) : (
-            <text key={i} x={leftM - 8} y={24 + i * 27} fontSize={titleFs} fill={ink.text}>
+            <text key={i} x={leftM - 8} y={24 + i * 27} fontSize={titleFs} fontWeight={data.titleLeftBold ? 700 : undefined} fill={ink.text}>
               {l}
             </text>
           ),
@@ -240,7 +240,7 @@ export function StackColsChart({ data, dark }: { data: StackColsData; dark?: boo
                       );
                     })}
                     {col.total && (
-                      <text x={cx0 + barW / 2} y={y(total) - 9} textAnchor="middle" fontSize={20} fill={ink.text}>
+                      <text x={cx0 + barW / 2} y={y(total) - 9} textAnchor="middle" fontSize={20} fontWeight={data.boldTotals ? 700 : undefined} fill={ink.text}>
                         {col.total}
                       </text>
                     )}

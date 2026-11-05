@@ -52,6 +52,7 @@ import * as johnson2122SurgicalRobot from "./johnson_2021_2022_surgical_robot";
 import * as johnson2122Toothpaste from "./johnson_2021_2022_toothpaste_manufacturer";
 import * as johnson2122WirelessCo from "./johnson_2021_2022_wireless_co";
 // REGISTER-IMPORTS
+import * as fuquaChemicalImbalance from "./fuqua_2018_2019_chemical_imbalance";
 import * as boothArmyHotel from "./booth_2024_2025_army_hotel";
 import * as boothBreastCancerSurgery from "./booth_2024_2025_breast_cancer_surgery";
 import * as boothBurgerPalace from "./booth_2024_2025_burger_palace";
@@ -157,6 +158,7 @@ const MODULES: { CASE_ID: string; CASE_META: { review?: string }; PAGES: CasePag
   johnson2122Toothpaste,
   johnson2122WirelessCo,
   // REGISTER-ENTRIES
+  fuquaChemicalImbalance,
   boothApacheHelicopter,
   boothArmyHotel,
   boothBreastCancerSurgery,

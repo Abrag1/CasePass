@@ -1,0 +1,8 @@
+VERDICT: PASS
+
+# Chemical Imbalance (Duke Fuqua 2018-2019, pp. 85-95)
+
+Independent verifier: PASS after one fix round, 0 CRITICAL, 0 MAJOR. Round 1 found Exhibit #1 (stacked columns, p.89) differing from the source (totals not bold, mid-segment label colours white instead of dark grey, y-axis line/ticks drawn, title centred and non-bold); fixed by adding optional off-by-default stackCols options `boldTotals` and `titleLeftBold`, per-segment `textColor` and `plainAxes`; re-rendered and re-verified element for element. Six sections, no guidance-only section; guidance verbatim incl. p.87 "if asked" bullets, p.88 guidance, p.94 three-level list, p.95 recommendation/risks/next step. Numbers recomputed: stacks 300/144/220; % of cost 43/15/30/12, 45/17/22/15, 45/18/22/15; Exhibit #2 totals 1,235/3,145/695/3,281; p.93 sales per customer 0.33/0.45/2.50/3.50/12.00/25.00; "30% of customers" = 29.5%.
+
+verify-case.mjs: 0 lint, 0 additions; MECHANICAL: FAIL on 7 omissions (22.4%), documented orchestrator override, all judged false positives by the verifier: three are the previous case's last page (p.84, Utility Co., outside this case), one is the p.85 cover chips (kept as tags) plus p.86 behavioral questions (in the prompt note), one is a reworded match for Prompt #5 / p.95 (present in section 6), two are chart/table text carried by the exhibits. tsc and eslint clean. Shared renderer changes are optional and off by default; no other case sets them.
+Minor/cosmetic (no renderer support): Exhibit #2 title centred (source left-aligned) and header underline missing; p.93 table has no grouped header (reads "Commodity: Sales per customer ($M)"). No source errors found. case_type "Profitability" and tags are converter choices.

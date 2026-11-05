@@ -354,6 +354,8 @@ export interface StackColsData {
   xBand?: boolean; // grey cell borders around the column labels, one cell per column
   minLabelFont?: number; // smallest segment-label font (default 8); labels of thin segments may overflow them
   boldLabels?: boolean; // bold segment labels
+  boldTotals?: boolean; // bold column totals
+  titleLeftBold?: boolean; // plain left-aligned title drawn bold
   gridlines?: boolean; // light grey horizontal gridlines at every tick (default none)
   frame?: boolean; // thin grey border around the whole chart area (default none)
   titleBold?: boolean; // title bold, underlined and centred over the panels (default plain, left)
