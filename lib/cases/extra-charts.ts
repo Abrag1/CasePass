@@ -41,7 +41,7 @@ export interface MultiPieData {
 export interface MarimekkoData {
   kind: "marimekko";
   title?: string;
-  columns: { label: string; width: number; sub?: string; slices: { value: number }[] }[];
+  columns: { label: string; width: number; sub?: string; slices: { value: number; text?: string; textColor?: string }[] }[];
   series: ExtraSwatch[];
   yLabel?: string;
   xTitle?: string;
@@ -66,6 +66,14 @@ export interface MarimekkoData {
   panels?: Partial<Omit<MarimekkoData, "kind" | "panels">>[];
   leftPad?: number; // width left of the plot in chart units (default 78); widen for long row labels
   plainSlices?: boolean; // white slice separators and regular-weight value labels instead of a dark outline and bold labels
+  // Optional additions for printed-label charts (all off by default).
+  sliceTexts?: boolean; // each slice prints its own `text` (if any, in `textColor` or a colour chosen from the fill) instead of a percentage
+  labelBreaks?: boolean; // a newline in a column label starts a new line
+  sourceFrame?: boolean; // black box around the whole plot and no tick marks on the Y axis
+  topTickPercentOnly?: boolean; // the "%" suffix is printed only on the 100 tick
+  plotHeight?: number; // plot height in chart units (default 300)
+  sideNote?: string; // text right of the plot (a newline splits lines)
+  sideNoteAt?: number; // vertical position of the side note as a share of the plot height from the top (default 0.5)
 }
 
 // Horizontal (grouped) bars with value labels.
@@ -271,6 +279,7 @@ export interface ComboCluster {
   labelColor?: string; // default white
   labelsAbove?: boolean; // print the value above the column in regular grey text instead of inside its top
   valueSuffix?: string; // appended to the value label, e.g. "%"
+  valueDecimals?: number; // fixed number of decimals in the value label (off by default)
 }
 export interface ComboPanel {
   clusters?: ComboCluster[];

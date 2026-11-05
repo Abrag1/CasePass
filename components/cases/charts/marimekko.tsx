@@ -40,7 +40,7 @@ function MarimekkoPlot({ data, dark }: { data: MarimekkoData; dark?: boolean }) 
 
   const left = data.leftPad ?? 78;
   const plotW = 520;
-  const plotH = 300;
+  const plotH = data.plotHeight ?? 300;
   const right = left + plotW;
   const yStep = data.yStep ?? 10;
   const suffix = data.yTickSuffix ?? (data.yLabel ? "" : "%");
@@ -55,7 +55,7 @@ function MarimekkoPlot({ data, dark }: { data: MarimekkoData; dark?: boolean }) 
     return { x0, x1, w: x1 - x0, cx: (x0 + x1) / 2 };
   });
 
-  const labelFit = cols.map((c, i) => (data.plainSlices ? { lines: [c.label], size: 13 } : fitText(c.label, geo[i].w - 10, 15, 10)));
+  const labelFit = cols.map((c, i) => (data.plainSlices ? { lines: data.labelBreaks ? c.label.split("\n") : [c.label], size: 13 } : fitText(c.label, geo[i].w - 10, 15, 10)));
   const labelH = Math.max(...labelFit.map((f) => f.lines.length * (f.size + 3))) + 6;
   const subFit = cols.map((c, i) => (c.sub ? fitText(c.sub, geo[i].w - 10, 15, 10) : null));
   const hasSub = subFit.some(Boolean) && !data.topSub;
@@ -73,6 +73,7 @@ function MarimekkoPlot({ data, dark }: { data: MarimekkoData; dark?: boolean }) 
   const subY = bottom + below;
   below += subH;
   const xTitleY = bottom + below + 18;
+  const sideW = data.sideNote ? 150 : 0;
   const height = xTitleY + (data.xTitle ? 10 : -6);
 
   const ticks: number[] = [];
@@ -83,7 +84,7 @@ function MarimekkoPlot({ data, dark }: { data: MarimekkoData; dark?: boolean }) 
 
   return (
     <svg
-      viewBox={`0 0 ${right + 14} ${height}`}
+      viewBox={`0 0 ${right + 14 + sideW} ${height}`}
       style={{ flex: data.panelTitle ? "1 1 260px" : "1 1 420px", minWidth: 0, maxWidth: 720, display: "block" }}
       role="img"
       aria-label={data.title ?? "Marimekko chart"}
@@ -97,10 +98,10 @@ function MarimekkoPlot({ data, dark }: { data: MarimekkoData; dark?: boolean }) 
       {ticks.map((t) => (
         <g key={t}>
           {!data.noGrid && t > 0 && t < 100 && <line x1={left} x2={right} y1={y(t)} y2={y(t)} stroke={ink.grid} strokeWidth={1} />}
-          <line x1={left - 4} x2={left} y1={y(t)} y2={y(t)} stroke={ink.axis} strokeWidth={1} />
+          {!data.sourceFrame && <line x1={left - 4} x2={left} y1={y(t)} y2={y(t)} stroke={ink.axis} strokeWidth={1} />}
           <text x={left - 8} y={y(t)} textAnchor="end" dominantBaseline="middle" fontSize={13} fill={ink.axis}>
             {t}
-            {suffix}
+            {data.topTickPercentOnly && t !== 100 ? "" : suffix}
           </text>
         </g>
       ))}
@@ -144,8 +145,8 @@ function MarimekkoPlot({ data, dark }: { data: MarimekkoData; dark?: boolean }) 
               const h = y2 - y1;
               const color = data.series[si]?.color ?? "#cccccc";
               const fs = data.plainSlices ? 13 : Math.min(14, h - 4, Math.max(9, g.w / 5));
-              const txt = `${Math.round(pct * 10) / 10}%`;
-              const fits = fs >= 9 && txt.length * fs * CHAR_W <= g.w - 4;
+              const txt = data.sliceTexts ? (sl.text ?? "") : `${Math.round(pct * 10) / 10}%`;
+              const fits = data.sliceTexts ? txt.length > 0 : fs >= 9 && txt.length * fs * CHAR_W <= g.w - 4;
               return (
                 <g key={si}>
                   <rect x={g.x0} y={y1} width={g.w} height={h} fill={color} stroke={data.plainSlices ? "#ffffff" : frame} strokeWidth={0.8} />
@@ -153,7 +154,7 @@ function MarimekkoPlot({ data, dark }: { data: MarimekkoData; dark?: boolean }) 
                     <rect x={g.cx - (txt.length * fs * CHAR_W) / 2 - 3} y={(y1 + y2) / 2 - fs / 2 - 1} width={txt.length * fs * CHAR_W + 6} height={fs + 2} fill="#ffffff" />
                   )}
                   {showValues && fits && (
-                    <text x={g.cx} y={(y1 + y2) / 2} textAnchor="middle" dominantBaseline="middle" fontSize={fs} fontWeight={data.plainSlices ? 400 : 700} fill={boxes && h < 18 ? "#222222" : textOn(color)}>
+                    <text x={g.cx} y={(y1 + y2) / 2} textAnchor="middle" dominantBaseline="middle" fontSize={data.sliceTexts ? 12 : fs} fontWeight={data.plainSlices ? 400 : 700} fill={sl.textColor ?? (boxes && h < 18 ? "#222222" : textOn(color))}>
                       {txt}
                     </text>
                   )}
@@ -163,6 +164,7 @@ function MarimekkoPlot({ data, dark }: { data: MarimekkoData; dark?: boolean }) 
           </g>
         );
       })}
+      {data.sourceFrame && <rect x={left} y={top} width={plotW} height={plotH} fill="none" stroke="#000000" strokeWidth={1.2} />}
       <line x1={left} x2={left} y1={top} y2={bottom} stroke={frame} strokeWidth={1.2} />
       <line x1={left} x2={right} y1={bottom} y2={bottom} stroke={frame} strokeWidth={1.2} />
 
@@ -212,6 +214,16 @@ function MarimekkoPlot({ data, dark }: { data: MarimekkoData; dark?: boolean }) 
             );
           })}
         </g>
+      )}
+
+      {data.sideNote && (
+        <text textAnchor="start" fontSize={13} fill={ink.text}>
+          {data.sideNote.split("\n").map((ln, li) => (
+            <tspan key={li} x={right + 10} y={top + plotH * (data.sideNoteAt ?? 0.5) + li * 16}>
+              {ln}
+            </tspan>
+          ))}
+        </text>
       )}
 
       {data.xTitle && (

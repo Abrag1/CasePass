@@ -336,6 +336,7 @@ export interface CalcTableData {
   ruleSkipCols?: number[]; // plain: columns that get no `rulesAbove` rule (gap columns; off by default)
   rightCols?: number[]; // plain: columns whose body cells are right-aligned (off by default)
   headerRule?: boolean; // plain: black rule under the header cells except the first
+  slideRules?: boolean; // plain: header text bottom-aligned, black rule above the header and under the last row (off by default)
   gridBorders?: boolean; // plain: thin black border around every cell; header cells follow the body alignment (centred unless in leftCols when `center`) (off by default)
   // plain: cell lines starting "- " are bullets (lines split on newline)
 }

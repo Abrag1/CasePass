@@ -144,6 +144,7 @@ function PlainCalcTable({ table }: { table: CalcTableData }) {
             style={{
               ...(hs ? { gridColumn: `span ${hs.span}` } : {}),
               padding: "5px 8px",
+              ...(table.slideRules ? { display: "flex", alignItems: "flex-end", borderTop: "2px solid #000" } : {}),
               fontWeight: 700,
               textAlign: table.gridBorders ? (table.center && !table.leftCols?.includes(i) ? "center" : "left") : table.headerBg && !table.center ? "left" : "center",
               background: table.headerBg,
@@ -177,6 +178,7 @@ function PlainCalcTable({ table }: { table: CalcTableData }) {
                   textAlign: table.rightCols?.includes(ci) ? "right" : table.center && !table.leftCols?.includes(ci) ? "center" : "left",
                   ...(ci === 0 && table.rowStyles?.[ri]?.indent ? { paddingLeft: 8 + table.rowStyles[ri].indent! * 18 } : {}),
                   borderTop: ruled && !table.ruleSkipCols?.includes(ci) ? K : undefined,
+                  ...(table.slideRules && ri === table.rows.length - 1 ? { borderBottom: "2px solid #000" } : {}),
                   borderBottom: inBox && ri === box![1] ? K : undefined,
                   borderLeft: inBox && ci === 0 ? K : undefined,
                   borderRight: inBox && ci === last ? K : undefined,

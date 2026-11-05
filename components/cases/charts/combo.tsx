@@ -294,7 +294,7 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
                     <rect x={bx} y={y(v)} width={bw} height={Math.max(0, base - y(v))} fill={cl.color} />
                     {cl.valueLabels && (
                       <text x={bx + bw / 2} y={cl.labelsAbove ? y(v) - 6 : y(v) + 15 * fs} textAnchor="middle" fontSize={(cl.labelsAbove ? 13 : 11) * fs} fontWeight={cl.labelsAbove ? 400 : 700} fill={cl.labelColor ?? (cl.labelsAbove ? "#595959" : "#ffffff")}>
-                        {(cl.valuePrefix ?? "") + v.toLocaleString("en-US") + (cl.valueSuffix ?? "")}
+                        {(cl.valuePrefix ?? "") + (cl.valueDecimals !== undefined ? v.toFixed(cl.valueDecimals) : v.toLocaleString("en-US")) + (cl.valueSuffix ?? "")}
                       </text>
                     )}
                   </g>
