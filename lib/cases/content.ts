@@ -517,6 +517,8 @@ export interface CasePage {
   // Values are the flex ratios [left, right]. `exhibitTitle` is a plain large title above the exhibit.
   exhibitColumns?: [number, number];
   exhibitTitle?: string;
+  tablesBelowCharts?: boolean; // draw the data table(s) after the extra charts instead of before them
+  exhibitMoreBelow?: boolean; // with exhibitColumns: only the main table goes in the right column; the first `dataTableMore` table is drawn full width below
 
   // Interviewer cheat sheet (kind: 'cheat')
   cheatRows?: CheatRow[];
@@ -1794,6 +1796,8 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       extraCharts: p.extraCharts,
       calcAfterGuidance: p.calcAfterGuidance,
       exhibitColumns: p.exhibitColumns,
+      tablesBelowCharts: p.tablesBelowCharts,
+      exhibitMoreBelow: p.exhibitMoreBelow,
       exhibitTitle: p.exhibitTitle,
     }));
 }

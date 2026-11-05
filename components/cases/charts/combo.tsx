@@ -211,10 +211,10 @@ export function ComboChart({ data, dark }: { data: ComboChartData; dark?: boolea
         )}
         {hasY2 && (
           <g>
-            <line x1={x0 + plotW} x2={x0 + plotW} y1={y(yMax)} y2={base} stroke={ink.axis} strokeWidth={1.2} />
+            {!data.y2Plain && <line x1={x0 + plotW} x2={x0 + plotW} y1={y(yMax)} y2={base} stroke={ink.axis} strokeWidth={1.2} />}
             {ticks2.map((t, i) => (
               <g key={`t2${i}`}>
-                <line x1={x0 + plotW} x2={x0 + plotW + 5} y1={yOn2(t)} y2={yOn2(t)} stroke={ink.axis} strokeWidth={1.2} />
+                {!data.y2Plain && <line x1={x0 + plotW} x2={x0 + plotW + 5} y1={yOn2(t)} y2={yOn2(t)} stroke={ink.axis} strokeWidth={1.2} />}
                 <text x={x0 + plotW + 10} y={yOn2(t)} textAnchor="start" dominantBaseline="middle" fontSize={14 * fs} fill={ink.text}>
                   {tick2At(t, i)}
                 </text>

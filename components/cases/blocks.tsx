@@ -1640,15 +1640,28 @@ export function PageExhibit({ page, dark }: { page: CasePage; dark?: boolean }) 
         <div style={{ fontSize: 22, fontWeight: 600, color: dark ? "#dbe3dd" : "#1f2421", margin: "4px 4px 14px", textAlign: "center", fontFamily: 'Cambria, "Times New Roman", Times, serif' }}>{page.exhibitTitle}</div>
       )}
       {page.exhibitColumns && page.extraCharts?.length ? (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "flex-start" }}>
-          <div style={{ flex: `${page.exhibitColumns[0]} 1 320px`, minWidth: 0 }}>
-            <ExtraCharts charts={page.extraCharts.slice(0, 1)} dark={dark} />
+        <>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "flex-start" }}>
+            <div style={{ flex: `${page.exhibitColumns[0]} 1 320px`, minWidth: 0 }}>
+              <ExtraCharts charts={page.extraCharts.slice(0, 1)} dark={dark} />
+            </div>
+            <div style={{ flex: `${page.exhibitColumns[1]} 1 280px`, minWidth: 0 }}>
+              <DataTable page={page.exhibitMoreBelow ? { ...page, dataTableMore: undefined } : page} dark={dark} />
+              <ExtraCharts charts={page.extraCharts.slice(1)} dark={dark} />
+            </div>
           </div>
-          <div style={{ flex: `${page.exhibitColumns[1]} 1 280px`, minWidth: 0 }}>
-            <DataTable page={page} dark={dark} />
-            <ExtraCharts charts={page.extraCharts.slice(1)} dark={dark} />
-          </div>
-        </div>
+          {page.exhibitMoreBelow && page.dataTableMore?.[0] && (
+            <DataTable
+              page={{ ...page, dataTableTitle: page.dataTableMore[0].title, dataTableFootnote: page.dataTableMore[0].footnote, dataTableCols: page.dataTableMore[0].cols, dataTableHeaders: page.dataTableMore[0].headers, dataTableRows: page.dataTableMore[0].rows, dataTableMore: undefined, dataTableIntro: undefined }}
+              dark={dark}
+            />
+          )}
+        </>
+      ) : page.tablesBelowCharts ? (
+        <>
+          <ExtraCharts charts={page.extraCharts} dark={dark} />
+          <DataTable page={page} dark={dark} />
+        </>
       ) : (
         <>
           <DataTable page={page} dark={dark} />

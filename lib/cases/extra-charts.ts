@@ -286,6 +286,7 @@ export interface ComboChartData extends Partial<ComboPanel> {
   y2TickLabels?: string[]; // custom text per right-axis tick, bottom to top
   axisBold?: boolean; // bold tick labels, category labels, legend entries and axis titles
   y2Step?: number;
+  y2Plain?: boolean; // secondary axis: tick texts only, no axis line or tick marks
   y2TickPrefix?: string;
   y2TickSuffix?: string;
   legendBox?: boolean; // border around the legend
