@@ -19,6 +19,11 @@ export function AiSearchBar({
   nextInterviewee,
   count,
   total,
+  basePath = "/cases",
+  baseParams = { tab: "browse" },
+  clearHref,
+  examples,
+  description,
 }: {
   q: string;
   view: string;
@@ -33,12 +38,21 @@ export function AiSearchBar({
   nextInterviewee: { id: string; name: string } | null;
   count: number;
   total: number;
+  /** Page the search runs on (the case library by default; the assign-a-case screen reuses this bar). */
+  basePath?: string;
+  /** Params that must survive every search (e.g. the picked case), sent as hidden inputs and kept in chip links. */
+  baseParams?: Record<string, string>;
+  /** Where "Clear" goes. Defaults to the library root. */
+  clearHref?: string;
+  /** Replaces the default "Try:" examples; each is a ready-made sentence. */
+  examples?: { query: string; note?: string }[];
+  description?: string;
 }) {
   const href = (query: string, drop: string[]) => {
-    const p = new URLSearchParams({ tab: "browse", ai: query });
+    const p = new URLSearchParams({ ...baseParams, ai: query });
     if (drop.length) p.set("drop", drop.join(","));
     if (view === "grid") p.set("view", "grid");
-    return `/cases?${p.toString()}`;
+    return `${basePath}?${p.toString()}`;
   };
 
   return (
@@ -63,10 +77,12 @@ export function AiSearchBar({
         </span>
       </div>
       <p className="text-[13px] text-[#3a5a4a] mb-3.5 ml-[38px]">
-        Just describe what you&apos;re looking for in your own words — it uses your prepped list and the mocks you&apos;ve run.
+        {description ?? "Just describe what you're looking for in your own words — it uses your prepped list and the mocks you've run."}
       </p>
-      <form method="get" className="flex gap-2 items-stretch">
-        <input type="hidden" name="tab" value="browse" />
+      <form method="get" action={basePath} className="flex gap-2 items-stretch">
+        {Object.entries(baseParams).map(([k, v]) => (
+          <input key={k} type="hidden" name={k} value={v} />
+        ))}
         {view === "grid" && <input type="hidden" name="view" value="grid" />}
         <div className="relative flex-1">
           <input
@@ -85,7 +101,7 @@ export function AiSearchBar({
         </button>
         {q && (
           <Link
-            href={view === "grid" ? "/cases?view=grid" : "/cases"}
+            href={clearHref ?? (view === "grid" ? "/cases?view=grid" : "/cases")}
             className="rounded-xl border border-(--color-border) bg-white px-4 flex items-center text-[13px] font-semibold text-(--color-muted) hover:text-(--color-fg) whitespace-nowrap"
           >
             Clear
@@ -93,7 +109,23 @@ export function AiSearchBar({
         )}
       </form>
 
-      {!q && (
+      {!q && examples && (
+        <div className="flex flex-wrap items-center gap-2 mt-2.5 text-[12px] text-(--color-muted)">
+          <span>Try:</span>
+          {examples.map((e) => (
+            <Link
+              key={e.query}
+              href={href(e.query, [])}
+              className="rounded-full border border-(--color-border) bg-white px-3 py-1 hover:border-(--color-green)/50 hover:text-(--color-fg)"
+            >
+              {e.query}
+              {e.note && <span className="text-(--color-muted)"> · {e.note}</span>}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {!q && !examples && (
         <div className="flex flex-wrap items-center gap-2 mt-2.5 text-[12px] text-(--color-muted)">
           <span>Try:</span>
           <Link
