@@ -1945,12 +1945,17 @@ function InterviewerBlocks({
           <GuidancePreBox label={page.guidancePreLabel} note={page.guidancePreNote} intro={page.guidancePreIntro} lines={page.guidancePreLines} />
         </PresentWrap>
       )}
+      {hasExhibit && page.exhibitFirst && (
+        <PresentWrap presentable={presentable} title={page.title} label="Exhibit" share={share}>
+          <PageExhibit page={page} />
+        </PresentWrap>
+      )}
       {page.infoSections && (
         <PresentWrap presentable={presentable} title={page.title} label={page.infoBoxLabel ?? "Reference"}>
           <InfoSectionsBox label={page.infoBoxLabel} sections={page.infoSections} />
         </PresentWrap>
       )}
-      {hasExhibit && (
+      {hasExhibit && !page.exhibitFirst && (
         <PresentWrap presentable={presentable} title={page.title} label="Exhibit" share={share}>
           <PageExhibit page={page} />
         </PresentWrap>

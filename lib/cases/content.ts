@@ -408,6 +408,7 @@ export interface CasePage {
   calcAfterGuidance?: boolean; // draw `calcTable` after `guidanceLines` instead of before
   // Further tables shown after `calcTable`, in order (for slides that print several tables).
   calcTables?: CalcTableData[];
+  exhibitFirst?: boolean; // draw the exhibit right after the prompt, before the Approach / Analysis box (off by default)
   // Optional interviewer-only charts drawn after the calculation tables (never shown to the candidate)
   guideCharts?: ExtraChart[];
 
@@ -1861,6 +1862,7 @@ export function redactPagesForCandidate(pages: CasePage[]): CasePage[] {
       calcAfterGuidance: p.calcAfterGuidance,
       exhibitColumns: p.exhibitColumns,
       tablesBelowCharts: p.tablesBelowCharts,
+      exhibitFirst: p.exhibitFirst,
       exhibitMoreBelow: p.exhibitMoreBelow,
       exhibitTitle: p.exhibitTitle,
     }));
